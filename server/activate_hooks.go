@@ -27,9 +27,3 @@ func (p *Plugin) OnActivate() error {
 
 	return nil
 }
-
-// OnDeactivate is invoked when the plugin is deactivated. This is the plugin's last chance to use
-// the API, and the plugin will be terminated shortly after this invocation.
-func (p *Plugin) OnDeactivate() error {
-	return nil
-}

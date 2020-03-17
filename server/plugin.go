@@ -1,7 +1,6 @@
 package main
 
 import (
-	"net/http"
 	"sync"
 
 	pluginapi "github.com/mattermost/mattermost-plugin-api"
@@ -21,9 +20,4 @@ type Plugin struct {
 
 	client *pluginapi.Client
 	botID  string
-}
-
-// ServeHTTP handles HTTP requests
-func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "API not implemented", http.StatusMethodNotAllowed)
 }
