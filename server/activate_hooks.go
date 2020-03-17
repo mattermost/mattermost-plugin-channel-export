@@ -13,7 +13,7 @@ func (p *Plugin) OnActivate() error {
 	botID, ensureBotError := p.Helpers.EnsureBot(&model.Bot{
 		Username:    "channelexport",
 		DisplayName: "Channel Export Bot",
-		Description: "A bot account created by the demo plugin.",
+		Description: "A bot account created by the channel export plugin.",
 	})
 	if ensureBotError != nil {
 		return errors.Wrap(ensureBotError, "failed to ensure bot.")
