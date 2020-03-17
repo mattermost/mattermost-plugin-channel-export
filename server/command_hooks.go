@@ -17,7 +17,7 @@ func (p *Plugin) registerCommands() error {
 	if err := p.client.SlashCommand.Register(&model.Command{
 		Trigger:          commandTriggerExport,
 		AutoComplete:     true,
-		AutoCompleteDesc: "Export the channel you are on right now.",
+		AutoCompleteDesc: "Export the current channel.",
 	}); err != nil {
 		return errors.Wrapf(err, "failed to register %s command", commandTriggerExport)
 	}
