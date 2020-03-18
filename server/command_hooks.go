@@ -43,89 +43,80 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 }
 
 func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandResponse {
-	go p.exportChannel(args)
+	channelToExport, err := p.client.Channel.Get(args.ChannelId)
+	if err != nil {
+		p.client.Log.Error("unable to retrieve the channel to export",
+			"Channel ID", args.ChannelId, "Error", err)
 
-	text := "Exporting the channel. Wait while we create the file for you. Our bot will send you a message when we are finished."
+		return &model.CommandResponse{
+			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
+			Text:         "Unable to retrieve the channel to export.",
+		}
+	}
+
+	channelDM, err := p.client.Channel.GetDirect(args.UserId, p.botID)
+	if err != nil {
+		p.client.Log.Error("unable to create a direct message channel between the bot and the user",
+			"Bot ID", p.botID, "User ID", args.UserId, "Error", err)
+
+		return &model.CommandResponse{
+			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
+			Text:         fmt.Sprintf("An error occurred trying to create a direct message channel between you and @%s.", botUsername),
+		}
+	}
+
+	go func() {
+		fileName := fmt.Sprintf("%d_%s.json", time.Now().Unix(), channelToExport.Name)
+		fileContents, err := p.exportChannel(channelToExport)
+		if err != nil {
+			p.client.Post.CreatePost(&model.Post{
+				UserId:    p.botID,
+				ChannelId: channelDM.Id,
+				Message:   fmt.Sprintf("An error occurred exporting channel ~%s.", channelToExport.Name),
+			})
+
+			return
+		}
+
+		file, err := p.uploadExportedChannelTo(fileName, fileContents, args.UserId)
+		if err != nil {
+			p.client.Post.CreatePost(&model.Post{
+				UserId:    p.botID,
+				ChannelId: channelDM.Id,
+				Message:   fmt.Sprintf("An error occurred uploading the exported channel ~%s.", channelToExport.Name),
+			})
+
+			return
+		}
+
+		p.client.Post.CreatePost(&model.Post{
+			UserId:    p.botID,
+			ChannelId: channelDM.Id,
+			Message:   fmt.Sprintf("Channel ~%s exported:", channelToExport.Name),
+			FileIds:   []string{file.Id},
+		})
+	}()
+
 	return &model.CommandResponse{
 		ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
-		Text:         text,
+		Text: fmt.Sprintf("Exporting ~%s. @%s will send you a direct message when the export is ready.",
+			channelToExport.Name, botUsername),
 	}
 }
 
-func (p *Plugin) exportChannel(args *model.CommandArgs) {
-	type channelChan struct {
-		channel *model.Channel
-		err     error
-	}
-
-	// Create a Direct Message channel between the user and the plugin's bot
-	dmChan := make(chan channelChan, 1)
-	go func() {
-		channel, err := p.client.Channel.GetDirect(args.UserId, p.botID)
-		dmChan <- channelChan{channel, err}
-		close(dmChan)
-	}()
-
-	// Retrieve the channel to export
-	toExportChan := make(chan channelChan, 1)
-	go func() {
-		channel, err := p.client.Channel.Get(args.ChannelId)
-		toExportChan <- channelChan{channel, err}
-		close(toExportChan)
-	}()
-
-	dmChanResponse := <-dmChan
-	channelDM, err := dmChanResponse.channel, dmChanResponse.err
-	if err != nil {
-		p.client.Log.Error("Unable to create a Direct Message channel between the bot and the user.",
-			"Bot ID", p.botID, "User ID", args.UserId, "Error", err)
-
-		text := "There was an error trying to create a Direct Message channel between you and our bot."
-		p.client.Post.SendEphemeralPost(args.UserId, &model.Post{
-			UserId:    p.botID,
-			ChannelId: args.ChannelId,
-			Message:   text,
-		})
-		return
-	}
-
-	toExportChanResponse := <-toExportChan
-	channelToExport, err := toExportChanResponse.channel, toExportChanResponse.err
-	if err != nil {
-		p.client.Log.Error("Unable to retrieve the channel to export",
-			"Channel ID", args.ChannelId, "Error", err)
-
-		text := "There was an error trying to retrieve the channel to export: \n" + err.Error()
-		p.client.Post.SendEphemeralPost(args.UserId, &model.Post{
-			UserId:    p.botID,
-			ChannelId: args.ChannelId,
-			Message:   text,
-		})
-		return
-	}
-
-	// Send an empty JSON file for now. The actual implementation will come later.
-	fileName := fmt.Sprintf("%d_%s.json", time.Now().Unix(), channelToExport.Name)
+// Export an empty JSON file for now. The actual implementation will come later.
+func (p *Plugin) exportChannel(channel *model.Channel) (io.Reader, error) {
 	fileContents := strings.NewReader("{}")
-	file, err := p.client.File.Upload(fileContents, fileName, channelDM.Id)
-	if err != nil {
-		p.client.Log.Error("Unable to upload the exported file to the channel.",
-			"Channel ID", channelDM.Id, "Error", err)
+	return fileContents, nil
+}
 
-		text := "There was an error exporting the file."
-		p.client.Post.SendEphemeralPost(args.UserId, &model.Post{
-			UserId:    p.botID,
-			ChannelId: channelDM.Id,
-			Message:   text,
-		})
-		return
+func (p *Plugin) uploadExportedChannelTo(fileName string, fileContents io.Reader, receiverID string) (*model.FileInfo, error) {
+	file, err := p.client.File.Upload(fileContents, fileName, receiverID)
+	if err != nil {
+		p.client.Log.Error("unable to upload the exported file to the channel",
+			"Channel ID", receiverID, "Error", err)
+		return nil, fmt.Errorf("unable to upload the exported file")
 	}
 
-	text := fmt.Sprintf("Channel ~%s exported:", channelToExport.Name)
-	p.client.Post.CreatePost(&model.Post{
-		UserId:    p.botID,
-		ChannelId: channelDM.Id,
-		Message:   text,
-		FileIds:   []string{file.Id},
-	})
+	return file, nil
 }
