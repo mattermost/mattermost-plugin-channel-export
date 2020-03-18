@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -11,15 +12,15 @@ import (
 	"github.com/mattermost/mattermost-server/v5/plugin"
 )
 
-const commandTriggerExport = "export"
+const exportCommandTrigger = "export"
 
 func (p *Plugin) registerCommands() error {
 	if err := p.client.SlashCommand.Register(&model.Command{
-		Trigger:          commandTriggerExport,
+		Trigger:          exportCommandTrigger,
 		AutoComplete:     true,
 		AutoCompleteDesc: "Export the current channel.",
 	}); err != nil {
-		return errors.Wrapf(err, "failed to register %s command", commandTriggerExport)
+		return errors.Wrapf(err, "failed to register %s command", exportCommandTrigger)
 	}
 
 	return nil
@@ -30,7 +31,7 @@ func (p *Plugin) registerCommands() error {
 func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	trigger := strings.TrimPrefix(strings.Fields(args.Command)[0], "/")
 	switch trigger {
-	case commandTriggerExport:
+	case exportCommandTrigger:
 		return p.executeCommandExport(args), nil
 
 	default:

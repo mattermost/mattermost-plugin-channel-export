@@ -6,17 +6,23 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	botUsername    = "channelexport"
+	botDisplayName = "Channel Export Bot"
+	botDescription = "A bot account created by the channel export plugin."
+)
+
 // OnActivate is invoked when the plugin is activated.
 func (p *Plugin) OnActivate() error {
 	p.client = pluginapi.NewClient(p.API)
 
-	botID, ensureBotError := p.Helpers.EnsureBot(&model.Bot{
-		Username:    "channelexport",
-		DisplayName: "Channel Export Bot",
-		Description: "A bot account created by the channel export plugin.",
+	botID, err := p.Helpers.EnsureBot(&model.Bot{
+		Username:    botUsername,
+		DisplayName: botDisplayName,
+		Description: botDescription,
 	})
-	if ensureBotError != nil {
-		return errors.Wrap(ensureBotError, "failed to ensure bot.")
+	if err != nil {
+		return errors.Wrap(err, "failed to ensure bot.")
 	}
 
 	p.botID = botID
