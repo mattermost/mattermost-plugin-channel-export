@@ -7,9 +7,17 @@ import (
 	"strconv"
 )
 
-type CSVExporter struct {
+// CSVExporter exports all the posts in a channel to a chronollogically
+// ordered file in CSV format
+type CSVExporter struct{}
+
+// FileName returns the passed name with the .csv extension added
+func (e *CSVExporter) FileName(name string) string {
+	return fmt.Sprintf("%s.csv", name)
 }
 
+// Export consumes all the posts returned by the iterator and writes them in
+// CSV format to the writer
 func (e *CSVExporter) Export(nextPosts PostIterator, writer io.Writer) error {
 	csvWriter := csv.NewWriter(writer)
 	err := csvWriter.Write([]string{
@@ -28,11 +36,10 @@ func (e *CSVExporter) Export(nextPosts PostIterator, writer io.Writer) error {
 		return fmt.Errorf("Unable to create a CSV file: %w", err)
 	}
 
-	batchSize := 100
 	for {
-		posts, err := nextPosts(batchSize)
+		posts, err := nextPosts()
 		if err != nil {
-			return fmt.Errorf("unable to retrieve next %d posts: %w", batchSize, err)
+			return fmt.Errorf("unable to retrieve next posts: %w", err)
 		}
 
 		for _, post := range posts {
@@ -49,9 +56,10 @@ func (e *CSVExporter) Export(nextPosts PostIterator, writer io.Writer) error {
 			})
 		}
 
-		if len(posts) < batchSize {
+		if len(posts) == 0 {
 			break
 		}
+
 	}
 
 	csvWriter.Flush()

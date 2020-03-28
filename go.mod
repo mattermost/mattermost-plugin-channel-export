@@ -1,6 +1,6 @@
-module github.com/mattermost/mattermost-plugin-starter-template
+module github.com/mattermost/mattermost-plugin-channel-export
 
-go 1.12
+go 1.14
 
 require (
 	github.com/mattermost/mattermost-plugin-api v0.0.9

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"time"
 
 	"github.com/pkg/errors"
 
@@ -65,16 +64,14 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		}
 	}
 
-	pipeReader, pipeWriter := io.Pipe()
-	fileName := fmt.Sprintf("%d_%s.csv", time.Now().Unix(), channelToExport.Name)
-
-	// TODO: Add logic to choose from different exporters when they are implemented
 	exporter := CSVExporter{}
+	fileName := exporter.FileName(channelToExport.Name)
 
+	exportedFileReader, exportedFileWriter := io.Pipe()
 	go func() {
-		defer pipeWriter.Close()
+		defer exportedFileWriter.Close()
 
-		err := exporter.Export(p.postIterator(channelToExport), pipeWriter)
+		err := exporter.Export(p.channelPostsIterator(channelToExport), exportedFileWriter)
 		if err != nil {
 			p.client.Post.CreatePost(&model.Post{
 				UserId:    p.botID,
@@ -87,7 +84,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	}()
 
 	go func() {
-		file, err := p.uploadExportedChannelTo(fileName, pipeReader, args.UserId)
+		file, err := p.uploadFileTo(fileName, exportedFileReader, channelDM.Id)
 		if err != nil {
 			p.client.Post.CreatePost(&model.Post{
 				UserId:    p.botID,
@@ -113,43 +110,13 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	}
 }
 
-func (p *Plugin) uploadExportedChannelTo(fileName string, contents io.Reader, receiverID string) (*model.FileInfo, error) {
-	file, err := p.client.File.Upload(contents, fileName, receiverID)
+func (p *Plugin) uploadFileTo(fileName string, contents io.Reader, channelID string) (*model.FileInfo, error) {
+	file, err := p.client.File.Upload(contents, fileName, channelID)
 	if err != nil {
 		p.client.Log.Error("unable to upload the exported file to the channel",
-			"Channel ID", receiverID, "Error", err)
+			"Channel ID", channelID, "Error", err)
 		return nil, fmt.Errorf("unable to upload the exported file")
 	}
 
 	return file, nil
-}
-
-func (p *Plugin) postIterator(channel *model.Channel) PostIterator {
-	page := 0
-	return func(perPage int) ([]*ExportedPost, error) {
-		// FIXME: Swap page and perPage parameters when https://github.com/mattermost/mattermost-server/
-		postList, err := p.client.Post.GetPostsForChannel(channel.Id, perPage, page)
-		if err != nil {
-			return nil, err
-		}
-
-		var exportedPostList []*ExportedPost
-		for _, key := range postList.Order {
-			post := postList.Posts[key]
-			// Ignore posts that have been edited; exporting only what's visible in the channel
-			if post.OriginalId != "" {
-				continue
-			}
-
-			exportedPost, err := ToExportedPost(p.client, post)
-			if err != nil {
-				return nil, fmt.Errorf("Unable to export post: %w", err)
-			}
-
-			exportedPostList = append(exportedPostList, exportedPost)
-		}
-
-		page += 1
-		return exportedPostList, nil
-	}
 }
