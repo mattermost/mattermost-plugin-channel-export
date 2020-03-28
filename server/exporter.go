@@ -8,8 +8,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+type PostIterator func(int) ([]*ExportedPost, error)
+
 type Exporter interface {
-	Export(channel *model.Channel, writer io.Writer) error
+	Export(nextPosts PostIterator, writer io.Writer) error
 }
 
 // ExportedPost contains all the information from a post needed in

@@ -69,11 +69,12 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	fileName := fmt.Sprintf("%d_%s.csv", time.Now().Unix(), channelToExport.Name)
 
 	// TODO: Add logic to choose from different exporters when they are implemented
-	exporter := CSVExporter{p.client}
+	exporter := CSVExporter{}
 
 	go func() {
 		defer pipeWriter.Close()
-		err := exporter.Export(channelToExport, pipeWriter)
+
+		err := exporter.Export(p.postIterator(channelToExport), pipeWriter)
 		if err != nil {
 			p.client.Post.CreatePost(&model.Post{
 				UserId:    p.botID,
@@ -121,4 +122,34 @@ func (p *Plugin) uploadExportedChannelTo(fileName string, contents io.Reader, re
 	}
 
 	return file, nil
+}
+
+func (p *Plugin) postIterator(channel *model.Channel) PostIterator {
+	page := 0
+	return func(perPage int) ([]*ExportedPost, error) {
+		// FIXME: Swap page and perPage parameters when https://github.com/mattermost/mattermost-server/
+		postList, err := p.client.Post.GetPostsForChannel(channel.Id, perPage, page)
+		if err != nil {
+			return nil, err
+		}
+
+		var exportedPostList []*ExportedPost
+		for _, key := range postList.Order {
+			post := postList.Posts[key]
+			// Ignore posts that have been edited; exporting only what's visible in the channel
+			if post.OriginalId != "" {
+				continue
+			}
+
+			exportedPost, err := ToExportedPost(p.client, post)
+			if err != nil {
+				return nil, fmt.Errorf("Unable to export post: %w", err)
+			}
+
+			exportedPostList = append(exportedPostList, exportedPost)
+		}
+
+		page += 1
+		return exportedPostList, nil
+	}
 }
