@@ -115,7 +115,7 @@ func (p *Plugin) uploadFileTo(fileName string, contents io.Reader, channelID str
 	if err != nil {
 		p.client.Log.Error("unable to upload the exported file to the channel",
 			"Channel ID", channelID, "Error", err)
-		return nil, fmt.Errorf("unable to upload the exported file")
+		return nil, errors.New("unable to upload the exported file")
 	}
 
 	return file, nil

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"strconv"
 	"strings"
 	"testing"
@@ -136,7 +136,7 @@ func TestExport(t *testing.T) {
 		var actualString strings.Builder
 
 		err := exporter.Export(
-			func() ([]*ExportedPost, error) { return nil, fmt.Errorf("Forcing an error") },
+			func() ([]*ExportedPost, error) { return nil, errors.New("forcing an error") },
 			&actualString,
 		)
 

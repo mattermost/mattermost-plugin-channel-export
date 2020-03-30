@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 
 	"github.com/mattermost/mattermost-server/v5/model"
@@ -57,7 +56,7 @@ func (p *Plugin) channelPostsIterator(channel *model.Channel) PostIterator {
 
 			exportedPost, err := p.toExportedPost(post)
 			if err != nil {
-				return nil, fmt.Errorf("Unable to export post: %w", err)
+				return nil, errors.Wrap(err, "unable to export post")
 			}
 
 			exportedPostList = append(exportedPostList, exportedPost)

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"github.com/pkg/errors"
 )
 
 // CSVExporter exports all the posts in a channel to a chronollogically
@@ -33,13 +35,13 @@ func (e *CSVExporter) Export(nextPosts PostIterator, writer io.Writer) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Unable to create a CSV file: %w", err)
+		return errors.Wrap(err, "unable to create a CSV file")
 	}
 
 	for {
 		posts, err := nextPosts()
 		if err != nil {
-			return fmt.Errorf("unable to retrieve next posts: %w", err)
+			return errors.Wrap(err, "unable to retrieve next posts")
 		}
 
 		for _, post := range posts {
