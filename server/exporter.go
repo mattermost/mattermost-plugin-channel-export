@@ -39,7 +39,7 @@ type ExportedPost struct {
 // (most recent first), until all posts have been consumed.
 func (p *Plugin) channelPostsIterator(channel *model.Channel) PostIterator {
 	page := 0
-	perPage := 100
+	perPage := 1000
 	return func() ([]*ExportedPost, error) {
 		postList, err := p.client.Post.GetPostsForChannel(channel.Id, page, perPage)
 		if err != nil {
