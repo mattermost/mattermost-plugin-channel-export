@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"strconv"
 
 	"github.com/pkg/errors"
 )
@@ -46,7 +45,7 @@ func (e *CSVExporter) Export(nextPosts PostIterator, writer io.Writer) error {
 
 		for _, post := range posts {
 			csvWriter.Write([]string{
-				strconv.FormatInt(post.CreateAt, 10),
+				post.CreateAt.String(),
 				post.UserID,
 				post.UserEmail,
 				post.UserType,

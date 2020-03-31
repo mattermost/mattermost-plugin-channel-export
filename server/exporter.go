@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"time"
 
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/pkg/errors"
@@ -22,7 +23,7 @@ type Exporter interface {
 // ExportedPost contains all the information from a post needed in
 // an export, with all the relevant information already resolved
 type ExportedPost struct {
-	CreateAt     int64
+	CreateAt     time.Time
 	UserID       string
 	UserEmail    string
 	UserType     string
@@ -86,8 +87,12 @@ func (p *Plugin) toExportedPost(post *model.Post) (*ExportedPost, error) {
 		userType = "system"
 	}
 
+	seconds := post.CreateAt / 1e3
+	nanoseconds := (post.CreateAt % 1e3) * 1e9
+	createAt := time.Unix(seconds, nanoseconds)
+
 	return &ExportedPost{
-		CreateAt:     post.CreateAt,
+		CreateAt:     createAt,
 		UserID:       post.UserId,
 		UserEmail:    user.Email,
 		UserType:     userType,

@@ -2,9 +2,9 @@ package main
 
 import (
 	"errors"
-	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -39,7 +39,7 @@ func min(a, b int) int {
 }
 
 var exportedPost = &ExportedPost{
-	CreateAt:     1,
+	CreateAt:     time.Now(),
 	UserID:       "dummyUserID",
 	UserEmail:    "dummy@email.com",
 	UserType:     "user",
@@ -52,7 +52,7 @@ var exportedPost = &ExportedPost{
 
 func exportedPostToCSV(post *ExportedPost) string {
 	fields := []string{
-		strconv.FormatInt(post.CreateAt, 10),
+		post.CreateAt.String(),
 		post.UserID,
 		post.UserEmail,
 		post.UserType,
