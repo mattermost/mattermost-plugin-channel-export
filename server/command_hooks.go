@@ -67,12 +67,14 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	exporter := CSV{}
 	fileName := exporter.FileName(channelToExport.Name)
 
+	exportError := errors.New("failed to export channel")
+
 	exportedFileReader, exportedFileWriter := io.Pipe()
 	go func() {
-		defer exportedFileWriter.Close()
-
 		err := exporter.Export(p.channelPostsIterator(channelToExport), exportedFileWriter)
 		if err != nil {
+			exportedFileWriter.CloseWithError(errors.Wrap(exportError, err.Error()))
+
 			p.client.Post.CreatePost(&model.Post{
 				UserId:    p.botID,
 				ChannelId: channelDM.Id,
@@ -81,16 +83,21 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 
 			return
 		}
+
+		exportedFileWriter.Close()
 	}()
 
 	go func() {
 		file, err := p.uploadFileTo(fileName, exportedFileReader, channelDM.Id)
 		if err != nil {
-			p.client.Post.CreatePost(&model.Post{
-				UserId:    p.botID,
-				ChannelId: channelDM.Id,
-				Message:   fmt.Sprintf("An error occurred uploading the exported channel ~%s.", channelToExport.Name),
-			})
+			// Post the upload error only if the exporter did not do it before
+			if !errors.Is(err, exportError) {
+				p.client.Post.CreatePost(&model.Post{
+					UserId:    p.botID,
+					ChannelId: channelDM.Id,
+					Message:   fmt.Sprintf("An error occurred uploading the exported channel ~%s.", channelToExport.Name),
+				})
+			}
 
 			return
 		}
@@ -115,7 +122,7 @@ func (p *Plugin) uploadFileTo(fileName string, contents io.Reader, channelID str
 	if err != nil {
 		p.client.Log.Error("unable to upload the exported file to the channel",
 			"Channel ID", channelID, "Error", err)
-		return nil, errors.New("unable to upload the exported file")
+		return nil, errors.Wrap(err, "unable to upload the exported file")
 	}
 
 	return file, nil
