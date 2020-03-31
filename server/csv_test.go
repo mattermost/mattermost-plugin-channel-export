@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFileName(t *testing.T) {
+func TestCSVFileName(t *testing.T) {
 	exporter := CSV{}
 
 	testCases := []struct {
@@ -53,7 +53,7 @@ func exportedPostToCSV(post *ExportedPost) string {
 	return strings.Join(fields, ",") + "\n"
 }
 
-func TestExport(t *testing.T) {
+func TestCSVExport(t *testing.T) {
 	header := []string{
 		"Post Creation Time",
 		"User Id",
