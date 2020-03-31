@@ -71,7 +71,7 @@ func (p *Plugin) channelPostsIterator(channel *model.Channel) PostIterator {
 // toExportedPost resolves all the data from post that is needed in
 // ExportedPost, as the user information and the type of message
 func (p *Plugin) toExportedPost(post *model.Post) (*ExportedPost, error) {
-	user, err := p.client.User.Get(post.UserId)
+	user, err := p.getUser(post.UserId)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed retrieving post's author information")
 	}
@@ -102,4 +102,21 @@ func (p *Plugin) toExportedPost(post *model.Post) (*ExportedPost, error) {
 		Message:      post.Message,
 		Type:         postType,
 	}, nil
+}
+
+// getUser retrives the user identified by the passed id from the users cache,
+// calling the API when needed and updating the cache accordingly
+func (p *Plugin) getUser(id string) (*model.User, error) {
+	if user, ok := p.usersCache.Get(id); ok {
+		return user.(*model.User), nil
+	}
+
+	newUser, err := p.client.User.Get(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed retrieving user from API")
+	}
+
+	p.usersCache.Add(id, newUser)
+
+	return newUser, nil
 }

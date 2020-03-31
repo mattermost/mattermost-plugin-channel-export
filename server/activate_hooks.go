@@ -3,6 +3,7 @@ package main
 import (
 	pluginapi "github.com/mattermost/mattermost-plugin-api"
 	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v5/services/cache/lru"
 	"github.com/pkg/errors"
 )
 
@@ -24,8 +25,9 @@ func (p *Plugin) OnActivate() error {
 	if err != nil {
 		return errors.Wrap(err, "failed to ensure bot.")
 	}
-
 	p.botID = botID
+
+	p.usersCache = lru.New(1000)
 
 	if err := p.registerCommands(); err != nil {
 		return errors.Wrap(err, "failed to register commands")
