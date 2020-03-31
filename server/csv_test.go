@@ -38,18 +38,6 @@ func min(a, b int) int {
 	return b
 }
 
-var exportedPost = &ExportedPost{
-	CreateAt:     time.Now(),
-	UserID:       "dummyUserID",
-	UserEmail:    "dummy@email.com",
-	UserType:     "user",
-	UserName:     "dummy",
-	ID:           "dummyPostID",
-	ParentPostID: "",
-	Message:      "Lorem ipsum",
-	Type:         "message",
-}
-
 func exportedPostToCSV(post *ExportedPost) string {
 	fields := []string{
 		post.CreateAt.String(),
@@ -78,6 +66,18 @@ func TestExport(t *testing.T) {
 		"Post Type",
 	}
 	headerCSV := strings.Join(header, ",") + "\n"
+
+	var exportedPost = &ExportedPost{
+		CreateAt:     time.Now(),
+		UserID:       "dummyUserID",
+		UserEmail:    "dummy@email.com",
+		UserType:     "user",
+		UserName:     "dummy",
+		ID:           "dummyPostID",
+		ParentPostID: "",
+		Message:      "Lorem ipsum",
+		Type:         "message",
+	}
 
 	genIterator := func(numPosts, batchSize int) PostIterator {
 		sent := 0
