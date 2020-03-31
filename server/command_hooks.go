@@ -64,7 +64,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		}
 	}
 
-	exporter := CSVExporter{}
+	exporter := CSV{}
 	fileName := exporter.FileName(channelToExport.Name)
 
 	exportedFileReader, exportedFileWriter := io.Pipe()

@@ -8,18 +8,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CSVExporter exports all the posts in a channel to a chronollogically
+// CSV exports all the posts in a channel to a chronollogically
 // ordered file in CSV format
-type CSVExporter struct{}
+type CSV struct{}
 
 // FileName returns the passed name with the .csv extension added
-func (e *CSVExporter) FileName(name string) string {
+func (e *CSV) FileName(name string) string {
 	return fmt.Sprintf("%s.csv", name)
 }
 
 // Export consumes all the posts returned by the iterator and writes them in
 // CSV format to the writer
-func (e *CSVExporter) Export(nextPosts PostIterator, writer io.Writer) error {
+func (e *CSV) Export(nextPosts PostIterator, writer io.Writer) error {
 	csvWriter := csv.NewWriter(writer)
 	err := csvWriter.Write([]string{
 		"Post Creation Time",

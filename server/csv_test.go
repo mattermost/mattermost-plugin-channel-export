@@ -10,7 +10,7 @@ import (
 )
 
 func TestFileName(t *testing.T) {
-	exporter := CSVExporter{}
+	exporter := CSV{}
 
 	testCases := []struct {
 		testName         string
@@ -98,7 +98,7 @@ func TestExport(t *testing.T) {
 		}
 	}
 
-	exporter := CSVExporter{}
+	exporter := CSV{}
 
 	t.Run("Empty iterator", func(t *testing.T) {
 		var actualString strings.Builder
