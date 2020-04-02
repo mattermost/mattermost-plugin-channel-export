@@ -180,6 +180,19 @@ else
 endif
 endif
 
+## Generate mocks
+mock:
+ifneq ($(HAS_SERVER),)
+	go install github.com/golang/mock/mockgen
+	mockgen -destination server/apiwrapper/mocks/channel.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper Channel
+	mockgen -destination server/apiwrapper/mocks/file.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper File
+	mockgen -destination server/apiwrapper/mocks/log.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper Log
+	mockgen -destination server/apiwrapper/mocks/post.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper Post
+	mockgen -destination server/apiwrapper/mocks/slashcommand.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper SlashCommand
+	mockgen -destination server/apiwrapper/mocks/user.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper User
+endif
+
+
 ## Clean removes all build artifacts.
 .PHONY: clean
 clean:
