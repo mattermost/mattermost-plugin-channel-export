@@ -184,12 +184,12 @@ endif
 mock:
 ifneq ($(HAS_SERVER),)
 	go install github.com/golang/mock/mockgen
-	mockgen -destination server/apiwrapper/mocks/channel.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper Channel
-	mockgen -destination server/apiwrapper/mocks/file.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper File
-	mockgen -destination server/apiwrapper/mocks/log.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper Log
-	mockgen -destination server/apiwrapper/mocks/post.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper Post
-	mockgen -destination server/apiwrapper/mocks/slashcommand.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper SlashCommand
-	mockgen -destination server/apiwrapper/mocks/user.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper User
+	mockgen -destination server/apiwrapper/mock_apiwrapper/channel.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper Channel
+	mockgen -destination server/apiwrapper/mock_apiwrapper/file.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper File
+	mockgen -destination server/apiwrapper/mock_apiwrapper/log.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper Log
+	mockgen -destination server/apiwrapper/mock_apiwrapper/post.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper Post
+	mockgen -destination server/apiwrapper/mock_apiwrapper/slashcommand.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper SlashCommand
+	mockgen -destination server/apiwrapper/mock_apiwrapper/user.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper User
 endif
 
 

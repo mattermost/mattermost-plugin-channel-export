@@ -57,7 +57,9 @@ type Wrapper struct {
 	User         User
 }
 
-func newWrapper(
+// CustomWrapper builds a Wrapper with the implementations of the different
+// interfaces passed
+func CustomWrapper(
 	channel Channel,
 	file File,
 	log Log,
@@ -80,7 +82,7 @@ func newWrapper(
 func Wrap(api plugin.API) *Wrapper {
 	underlyingWrapper := pluginapi.NewClient(api)
 
-	return newWrapper(
+	return CustomWrapper(
 		&underlyingWrapper.Channel,
 		&underlyingWrapper.File,
 		&underlyingWrapper.Log,
