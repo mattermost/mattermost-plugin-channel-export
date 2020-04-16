@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"time"
 
 	"github.com/pkg/errors"
 
@@ -65,10 +64,17 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		}
 	}
 
+	exporter := CSV{}
+	fileName := exporter.FileName(channelToExport.Name)
+
+	exportError := errors.New("failed to export channel")
+
+	exportedFileReader, exportedFileWriter := io.Pipe()
 	go func() {
-		fileName := fmt.Sprintf("%d_%s.json", time.Now().Unix(), channelToExport.Name)
-		fileContents, err := p.exportChannel(channelToExport)
+		err := exporter.Export(p.channelPostsIterator(channelToExport), exportedFileWriter)
 		if err != nil {
+			exportedFileWriter.CloseWithError(errors.Wrap(exportError, err.Error()))
+
 			p.client.Post.CreatePost(&model.Post{
 				UserId:    p.botID,
 				ChannelId: channelDM.Id,
@@ -78,13 +84,20 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 			return
 		}
 
-		file, err := p.uploadExportedChannelTo(fileName, fileContents, args.UserId)
+		exportedFileWriter.Close()
+	}()
+
+	go func() {
+		file, err := p.uploadFileTo(fileName, exportedFileReader, channelDM.Id)
 		if err != nil {
-			p.client.Post.CreatePost(&model.Post{
-				UserId:    p.botID,
-				ChannelId: channelDM.Id,
-				Message:   fmt.Sprintf("An error occurred uploading the exported channel ~%s.", channelToExport.Name),
-			})
+			// Post the upload error only if the exporter did not do it before
+			if !errors.Is(err, exportError) {
+				p.client.Post.CreatePost(&model.Post{
+					UserId:    p.botID,
+					ChannelId: channelDM.Id,
+					Message:   fmt.Sprintf("An error occurred uploading the exported channel ~%s.", channelToExport.Name),
+				})
+			}
 
 			return
 		}
@@ -104,18 +117,12 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	}
 }
 
-// Export an empty JSON file for now. The actual implementation will come later.
-func (p *Plugin) exportChannel(channel *model.Channel) (io.Reader, error) {
-	fileContents := strings.NewReader("{}")
-	return fileContents, nil
-}
-
-func (p *Plugin) uploadExportedChannelTo(fileName string, fileContents io.Reader, receiverID string) (*model.FileInfo, error) {
-	file, err := p.client.File.Upload(fileContents, fileName, receiverID)
+func (p *Plugin) uploadFileTo(fileName string, contents io.Reader, channelID string) (*model.FileInfo, error) {
+	file, err := p.client.File.Upload(contents, fileName, channelID)
 	if err != nil {
 		p.client.Log.Error("unable to upload the exported file to the channel",
-			"Channel ID", receiverID, "Error", err)
-		return nil, fmt.Errorf("unable to upload the exported file")
+			"Channel ID", channelID, "Error", err)
+		return nil, errors.Wrap(err, "unable to upload the exported file")
 	}
 
 	return file, nil
