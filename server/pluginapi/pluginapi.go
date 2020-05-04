@@ -1,4 +1,4 @@
-package apiwrapper
+package pluginapi
 
 import (
 	"io"

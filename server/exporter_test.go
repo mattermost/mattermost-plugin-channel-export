@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper"
-	"github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper/mock_apiwrapper"
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
@@ -17,14 +17,14 @@ func TestChannelPostsIterator(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockChannel := mock_apiwrapper.NewMockChannel(mockCtrl)
-	mockFile := mock_apiwrapper.NewMockFile(mockCtrl)
-	mockLog := mock_apiwrapper.NewMockLog(mockCtrl)
-	mockPost := mock_apiwrapper.NewMockPost(mockCtrl)
-	mockSlashCommand := mock_apiwrapper.NewMockSlashCommand(mockCtrl)
-	mockUser := mock_apiwrapper.NewMockUser(mockCtrl)
+	mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+	mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+	mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+	mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+	mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+	mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 
-	mockAPI := apiwrapper.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser)
+	mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser)
 
 	channel := &model.Channel{
 		Id: "jx2289hnvko3dypmc3thfcafpb",
@@ -161,14 +161,14 @@ func TestToExportedPost(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockChannel := mock_apiwrapper.NewMockChannel(mockCtrl)
-	mockFile := mock_apiwrapper.NewMockFile(mockCtrl)
-	mockLog := mock_apiwrapper.NewMockLog(mockCtrl)
-	mockPost := mock_apiwrapper.NewMockPost(mockCtrl)
-	mockSlashCommand := mock_apiwrapper.NewMockSlashCommand(mockCtrl)
-	mockUser := mock_apiwrapper.NewMockUser(mockCtrl)
+	mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+	mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+	mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+	mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+	mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+	mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 
-	mockAPI := apiwrapper.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser)
+	mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser)
 
 	var timestamp int64 = 1586520040073
 	userID := "h6itnszvtit5k2jhi2c1o3p7ox"

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper"
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/pkg/errors"
@@ -15,7 +15,7 @@ const (
 
 // OnActivate is invoked when the plugin is activated.
 func (p *Plugin) OnActivate() error {
-	p.client = apiwrapper.Wrap(p.API)
+	p.client = pluginapi.Wrap(p.API)
 
 	botID, err := p.Helpers.EnsureBot(&model.Bot{
 		Username:    botUsername,

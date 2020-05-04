@@ -3,7 +3,7 @@ package main
 import (
 	"sync"
 
-	"github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper"
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 
 	"github.com/mattermost/mattermost-server/v5/plugin"
 )
@@ -19,6 +19,6 @@ type Plugin struct {
 	// setConfiguration for usage.
 	configuration *configuration
 
-	client *apiwrapper.Wrapper
+	client *pluginapi.Wrapper
 	botID  string
 }

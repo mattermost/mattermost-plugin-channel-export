@@ -184,12 +184,12 @@ endif
 mock:
 ifneq ($(HAS_SERVER),)
 	go install github.com/golang/mock/mockgen
-	mockgen -destination server/apiwrapper/mock_apiwrapper/channel.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper Channel
-	mockgen -destination server/apiwrapper/mock_apiwrapper/file.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper File
-	mockgen -destination server/apiwrapper/mock_apiwrapper/log.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper Log
-	mockgen -destination server/apiwrapper/mock_apiwrapper/post.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper Post
-	mockgen -destination server/apiwrapper/mock_apiwrapper/slashcommand.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper SlashCommand
-	mockgen -destination server/apiwrapper/mock_apiwrapper/user.go github.com/mattermost/mattermost-plugin-channel-export/server/apiwrapper User
+	mockgen -destination server/pluginapi/mock_pluginapi/channel.go github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi Channel
+	mockgen -destination server/pluginapi/mock_pluginapi/file.go github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi File
+	mockgen -destination server/pluginapi/mock_pluginapi/log.go github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi Log
+	mockgen -destination server/pluginapi/mock_pluginapi/post.go github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi Post
+	mockgen -destination server/pluginapi/mock_pluginapi/slashcommand.go github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi SlashCommand
+	mockgen -destination server/pluginapi/mock_pluginapi/user.go github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi User
 endif
 
 
