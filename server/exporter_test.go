@@ -15,7 +15,6 @@ import (
 
 func TestChannelPostsIterator(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
 
 	mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
 	mockFile := mock_pluginapi.NewMockFile(mockCtrl)
@@ -159,7 +158,6 @@ func TestChannelPostsIterator(t *testing.T) {
 
 func TestToExportedPost(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
 
 	mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
 	mockFile := mock_pluginapi.NewMockFile(mockCtrl)
