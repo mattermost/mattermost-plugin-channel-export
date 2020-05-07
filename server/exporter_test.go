@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
@@ -29,7 +30,7 @@ func TestChannelPostsIterator(t *testing.T) {
 		Id: "jx2289hnvko3dypmc3thfcafpb",
 	}
 
-	var timestamp int64 = 1586520040073
+	now := time.Now().Round(time.Millisecond)
 	userID := "h6itnszvtit5k2jhi2c1o3p7ox"
 
 	user := model.User{
@@ -42,7 +43,7 @@ func TestChannelPostsIterator(t *testing.T) {
 	post := model.Post{
 		UserId:   userID,
 		Type:     "",
-		CreateAt: timestamp,
+		CreateAt: model.GetMillisForTime(now),
 		Id:       "3j6wc01x7ox5joy3jupjmo69zu",
 		ParentId: "o3p7oxj1yqtnwg66u95802y08j",
 		Message:  "test",
@@ -168,13 +169,13 @@ func TestToExportedPost(t *testing.T) {
 
 	mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser)
 
-	var timestamp int64 = 1586520040073
+	now := time.Now().Round(time.Millisecond)
 	userID := "h6itnszvtit5k2jhi2c1o3p7ox"
 
 	post := model.Post{
 		UserId:   userID,
 		Type:     "",
-		CreateAt: timestamp,
+		CreateAt: model.GetMillisForTime(now),
 		Id:       "3j6wc01x7ox5joy3jupjmo69zu",
 		ParentId: "o3p7oxj1yqtnwg66u95802y08j",
 		Message:  "test",
@@ -188,7 +189,7 @@ func TestToExportedPost(t *testing.T) {
 	}
 
 	exportedPost := ExportedPost{
-		CreateAt:     millisToUnix(post.CreateAt),
+		CreateAt:     now,
 		UserID:       post.UserId,
 		UserEmail:    user.Email,
 		UserType:     "user",
