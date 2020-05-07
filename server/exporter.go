@@ -72,7 +72,7 @@ func channelPostsIterator(client *pluginapi.Wrapper, channel *model.Channel) Pos
 
 func millisToUnix(millis int64) time.Time {
 	seconds := millis / 1e3
-	nanoseconds := (millis % 1e3) * 1e9
+	nanoseconds := (millis % 1e3) * 1e6
 
 	return time.Unix(seconds, nanoseconds)
 }
