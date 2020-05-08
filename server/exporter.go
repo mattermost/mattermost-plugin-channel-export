@@ -6,6 +6,7 @@ import (
 
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v5/utils"
 	"github.com/pkg/errors"
 )
 
@@ -70,13 +71,6 @@ func channelPostsIterator(client *pluginapi.Wrapper, channel *model.Channel) Pos
 	}
 }
 
-func millisToUnix(millis int64) time.Time {
-	seconds := millis / 1e3
-	nanoseconds := (millis % 1e3) * 1e6
-
-	return time.Unix(seconds, nanoseconds)
-}
-
 // toExportedPost resolves all the data from post that is needed in
 // ExportedPost, as the user information and the type of message
 func toExportedPost(client *pluginapi.Wrapper, post *model.Post, usersCache map[string]*model.User) (*ExportedPost, error) {
@@ -103,7 +97,7 @@ func toExportedPost(client *pluginapi.Wrapper, post *model.Post, usersCache map[
 	}
 
 	return &ExportedPost{
-		CreateAt:     millisToUnix(post.CreateAt),
+		CreateAt:     utils.TimeFromMillis(post.CreateAt),
 		UserID:       post.UserId,
 		UserEmail:    user.Email,
 		UserType:     userType,
