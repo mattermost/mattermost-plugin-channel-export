@@ -4,7 +4,9 @@ import (
 	"io"
 	"time"
 
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v5/utils"
 	"github.com/pkg/errors"
 )
 
@@ -37,12 +39,12 @@ type ExportedPost struct {
 // channelPostsIterator returns a function that returns, every time it is
 // called, a new batch of posts from the channel, chronollogically ordered
 // (most recent first), until all posts have been consumed.
-func (p *Plugin) channelPostsIterator(channel *model.Channel) PostIterator {
+func channelPostsIterator(client *pluginapi.Wrapper, channel *model.Channel) PostIterator {
 	usersCache := make(map[string]*model.User)
 	page := 0
 	perPage := 1000
 	return func() ([]*ExportedPost, error) {
-		postList, err := p.client.Post.GetPostsForChannel(channel.Id, page, perPage)
+		postList, err := client.Post.GetPostsForChannel(channel.Id, page, perPage)
 		if err != nil {
 			return nil, err
 		}
@@ -56,7 +58,7 @@ func (p *Plugin) channelPostsIterator(channel *model.Channel) PostIterator {
 				continue
 			}
 
-			exportedPost, err := p.toExportedPost(post, usersCache)
+			exportedPost, err := toExportedPost(client, post, usersCache)
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to export post")
 			}
@@ -71,10 +73,10 @@ func (p *Plugin) channelPostsIterator(channel *model.Channel) PostIterator {
 
 // toExportedPost resolves all the data from post that is needed in
 // ExportedPost, as the user information and the type of message
-func (p *Plugin) toExportedPost(post *model.Post, usersCache map[string]*model.User) (*ExportedPost, error) {
+func toExportedPost(client *pluginapi.Wrapper, post *model.Post, usersCache map[string]*model.User) (*ExportedPost, error) {
 	user, ok := usersCache[post.UserId]
 	if !ok {
-		newUser, err := p.client.User.Get(post.UserId)
+		newUser, err := client.User.Get(post.UserId)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed retrieving post's author information")
 		}
@@ -94,12 +96,8 @@ func (p *Plugin) toExportedPost(post *model.Post, usersCache map[string]*model.U
 		userType = "system"
 	}
 
-	seconds := post.CreateAt / 1e3
-	nanoseconds := (post.CreateAt % 1e3) * 1e9
-	createAt := time.Unix(seconds, nanoseconds)
-
 	return &ExportedPost{
-		CreateAt:     createAt,
+		CreateAt:     utils.TimeFromMillis(post.CreateAt),
 		UserID:       post.UserId,
 		UserEmail:    user.Email,
 		UserType:     userType,
