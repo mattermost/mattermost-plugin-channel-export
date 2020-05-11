@@ -71,7 +71,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 
 	exportedFileReader, exportedFileWriter := io.Pipe()
 	go func() {
-		err := exporter.Export(p.channelPostsIterator(channelToExport), exportedFileWriter)
+		err := exporter.Export(channelPostsIterator(p.client, channelToExport), exportedFileWriter)
 		if err != nil {
 			exportedFileWriter.CloseWithError(errors.Wrap(exportError, err.Error()))
 
