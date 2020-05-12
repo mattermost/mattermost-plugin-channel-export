@@ -183,8 +183,9 @@ func TestToExportedPost(t *testing.T) {
 
 	user := model.User{
 		Id:       userID,
+		Username: "alex",
 		Email:    "alex@example.com",
-		Nickname: "alex",
+		Nickname: "alex is the man",
 		IsBot:    false,
 	}
 
@@ -193,7 +194,7 @@ func TestToExportedPost(t *testing.T) {
 		UserID:       post.UserId,
 		UserEmail:    user.Email,
 		UserType:     "user",
-		UserName:     user.Nickname,
+		UserName:     user.Username,
 		ID:           post.Id,
 		ParentPostID: post.ParentId,
 		Message:      post.Message,
