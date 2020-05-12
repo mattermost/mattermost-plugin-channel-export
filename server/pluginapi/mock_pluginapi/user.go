@@ -47,3 +47,31 @@ func (mr *MockUserMockRecorder) Get(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockUser)(nil).Get), arg0)
 }
+
+// HasPermissionTo mocks base method
+func (m *MockUser) HasPermissionTo(arg0 string, arg1 *model.Permission) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasPermissionTo", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// HasPermissionTo indicates an expected call of HasPermissionTo
+func (mr *MockUserMockRecorder) HasPermissionTo(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasPermissionTo", reflect.TypeOf((*MockUser)(nil).HasPermissionTo), arg0, arg1)
+}
+
+// HasPermissionToChannel mocks base method
+func (m *MockUser) HasPermissionToChannel(arg0, arg1 string, arg2 *model.Permission) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasPermissionToChannel", arg0, arg1, arg2)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// HasPermissionToChannel indicates an expected call of HasPermissionToChannel
+func (mr *MockUserMockRecorder) HasPermissionToChannel(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasPermissionToChannel", reflect.TypeOf((*MockUser)(nil).HasPermissionToChannel), arg0, arg1, arg2)
+}

@@ -17,6 +17,11 @@ func (e *CSV) FileName(name string) string {
 	return fmt.Sprintf("%s.csv", name)
 }
 
+// ContentType returns the content type of the file format being exported.
+func (e *CSV) ContentType() string {
+	return "text/csv"
+}
+
 // Export consumes all the posts returned by the iterator and writes them in
 // CSV format to the writer
 func (e *CSV) Export(nextPosts PostIterator, writer io.Writer) error {
