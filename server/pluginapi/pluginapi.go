@@ -43,7 +43,6 @@ type SlashCommand interface {
 // mattermost-plugin-api UserService that are used in this plugin
 type User interface {
 	Get(userID string) (*model.User, error)
-	HasPermissionTo(userID string, permission *model.Permission) bool
 	HasPermissionToChannel(userID, channelID string, permission *model.Permission) bool
 }
 

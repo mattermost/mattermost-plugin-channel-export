@@ -157,44 +157,10 @@ func TestHandler(t *testing.T) {
 		client.SetToken("token")
 
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
-		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
 		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL).Return(false).Times(1)
 
 		err := client.ExportChannel(ioutil.Discard, channelID, FormatCSV)
 		require.EqualError(t, err, "channel 'channel_id' not found or user does not have permission")
-	})
-
-	t.Run("export as system administrator", func(t *testing.T) {
-		mockCtrl := gomock.NewController(t)
-
-		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
-		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
-		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
-		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
-		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
-		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
-
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser)
-
-		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
-		userID := "user_id"
-		channelID := "channel_id"
-		address := setupAPI(t, mockAPI, now, userID, channelID)
-		client := NewClient(address)
-		client.SetToken("token")
-
-		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
-		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(true).Times(1)
-
-		var buffer bytes.Buffer
-		err := client.ExportChannel(&buffer, channelID, FormatCSV)
-		require.NoError(t, err)
-
-		expected := `Post Creation Time,User Id,User Email,User Type,User Name,Post Id,Parent Post Id,Post Message,Post Type
-2009-11-11 07:00:00 +0000 UTC,post_user_id,post_user_email,user,post_user_nickname,post_id,post_parent_id,post_message,message
-`
-
-		require.Equal(t, expected, string(buffer.Bytes()))
 	})
 
 	t.Run("export with channel read permission", func(t *testing.T) {
@@ -217,7 +183,6 @@ func TestHandler(t *testing.T) {
 		client.SetToken("token")
 
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
-		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
 		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL).Return(true).Times(1)
 
 		var buffer bytes.Buffer

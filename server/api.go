@@ -78,10 +78,6 @@ func (h *Handler) hasPermissionToChannel(userID, channelID string) (*model.Chann
 		return nil, false
 	}
 
-	if h.client.User.HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM) {
-		return channel, true
-	}
-
 	if h.client.User.HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL) {
 		return channel, true
 	}
