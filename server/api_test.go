@@ -35,6 +35,8 @@ func setupAPI(t *testing.T, mockAPI *pluginapi.Wrapper, now time.Time, userID, c
 	registerAPI(router, mockAPI, func(channel *model.Channel) PostIterator {
 		return func() ([]*ExportedPost, error) {
 			retExportedPosts := exportedPosts
+
+			// Once consumed, mark it as nil so the iterator ends.
 			exportedPosts = nil
 
 			return retExportedPosts, nil
