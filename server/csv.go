@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // CSV exports all the posts in a channel to a chronollogically
@@ -15,6 +16,11 @@ type CSV struct{}
 // FileName returns the passed name with the .csv extension added
 func (e *CSV) FileName(name string) string {
 	return fmt.Sprintf("%s.csv", name)
+}
+
+// ContentType returns the content type of the file format being exported.
+func (e *CSV) ContentType() string {
+	return "text/csv"
 }
 
 // Export consumes all the posts returned by the iterator and writes them in
@@ -32,7 +38,6 @@ func (e *CSV) Export(nextPosts PostIterator, writer io.Writer) error {
 		"Post Message",
 		"Post Type",
 	})
-
 	if err != nil {
 		return errors.Wrap(err, "unable to create a CSV file")
 	}
@@ -64,6 +69,9 @@ func (e *CSV) Export(nextPosts PostIterator, writer io.Writer) error {
 	}
 
 	csvWriter.Flush()
+	if err := csvWriter.Error(); err != nil {
+		logrus.WithError(err).Warnf("failed to flush CSV file")
+	}
 
 	return nil
 }
