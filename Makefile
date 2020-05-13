@@ -190,6 +190,7 @@ ifneq ($(HAS_SERVER),)
 	mockgen -destination server/pluginapi/mock_pluginapi/post.go github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi Post
 	mockgen -destination server/pluginapi/mock_pluginapi/slashcommand.go github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi SlashCommand
 	mockgen -destination server/pluginapi/mock_pluginapi/user.go github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi User
+	mockgen -destination server/pluginapi/mock_pluginapi/system.go github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi System
 endif
 
 

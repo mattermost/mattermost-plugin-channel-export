@@ -46,6 +46,12 @@ type User interface {
 	HasPermissionToChannel(userID, channelID string, permission *model.Permission) bool
 }
 
+// System is an interface declaring only the functions from
+// mattermost-plugin-api SystemService that are used in this plugin
+type System interface {
+	GetLicense() *model.License
+}
+
 // Wrapper is a wrapper over the mattermost-plugin-api layer, defining
 // interfaces implemented by that package, that are also mockable
 type Wrapper struct {
@@ -55,6 +61,7 @@ type Wrapper struct {
 	Post         Post
 	SlashCommand SlashCommand
 	User         User
+	System       System
 }
 
 // CustomWrapper builds a Wrapper with the implementations of the different
@@ -66,6 +73,7 @@ func CustomWrapper(
 	post Post,
 	slashCommand SlashCommand,
 	user User,
+	system System,
 ) *Wrapper {
 	return &Wrapper{
 		Channel:      channel,
@@ -74,6 +82,7 @@ func CustomWrapper(
 		Post:         post,
 		SlashCommand: slashCommand,
 		User:         user,
+		System:       system,
 	}
 }
 
@@ -87,5 +96,6 @@ func Wrap(client *pluginapi.Client) *Wrapper {
 		&client.Post,
 		&client.SlashCommand,
 		&client.User,
+		&client.System,
 	)
 }
