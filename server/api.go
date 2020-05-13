@@ -88,13 +88,13 @@ func (h *Handler) hasPermissionToChannel(userID, channelID string) (*model.Chann
 // Export handles /api/v1/export, exporting the requested channel.
 func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 	channelID := r.URL.Query().Get("channel_id")
-	if len(channelID) == 0 {
+	if channelID == "" {
 		handleError(w, http.StatusBadRequest, "missing channel_id parameter")
 		return
 	}
 
 	format := r.URL.Query().Get("format")
-	if len(format) == 0 {
+	if format == "" {
 		handleError(w, http.StatusBadRequest, "missing format parameter")
 		return
 	}

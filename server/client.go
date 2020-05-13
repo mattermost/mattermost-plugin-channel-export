@@ -69,7 +69,7 @@ func (c *Client) doGet(u string) (*http.Response, error) {
 		return nil, errors.Wrap(err, "failed to create request")
 	}
 
-	if len(c.AuthToken) > 0 {
+	if c.AuthToken != "" {
 		r.Header.Set(model.HEADER_AUTH, c.AuthType+" "+c.AuthToken)
 	}
 
