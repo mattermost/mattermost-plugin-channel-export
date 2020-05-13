@@ -1,0 +1,113 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strings"
+
+	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/pkg/errors"
+)
+
+// FormatCSV requests the export to be in CSV format.
+const FormatCSV = "csv"
+
+// Client is the programmatic interface to the channel export plugin.
+type Client struct {
+	Address    string
+	AuthToken  string
+	AuthType   string
+	httpClient *http.Client
+}
+
+// NewClient creates a client to the channel export plugin at the given address.
+func NewClient(address string) *Client {
+	return &Client{
+		Address:    address,
+		httpClient: &http.Client{},
+	}
+}
+
+// NewMattermostServerClient creates a client to the channel export plugin at the given Mattermost server address.
+func NewMattermostServerClient(mattermostServerAddress string) *Client {
+	if !strings.HasSuffix(mattermostServerAddress, "/") {
+		mattermostServerAddress += "/"
+	}
+	mattermostServerAddress += manifest.Id + "/"
+
+	return NewClient(mattermostServerAddress)
+}
+
+// closeBody ensures the Body of an http.Response is properly closed.
+func closeBody(r *http.Response) {
+	if r.Body != nil {
+		_, _ = ioutil.ReadAll(r.Body)
+		_ = r.Body.Close()
+	}
+}
+
+// SetToken configures the authentication token required to identify the Mattermost user.
+func (c *Client) SetToken(token string) {
+	c.AuthToken = token
+	c.AuthType = model.HEADER_BEARER
+}
+
+func (c *Client) buildURL(urlPath string, args ...interface{}) string {
+	return fmt.Sprintf("%s/%s", strings.TrimRight(c.Address, "/"), strings.TrimLeft(fmt.Sprintf(urlPath, args...), "/"))
+}
+
+func (c *Client) doGet(u string) (*http.Response, error) {
+	r, err := http.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create request")
+	}
+
+	if c.AuthToken != "" {
+		r.Header.Set(model.HEADER_AUTH, c.AuthType+" "+c.AuthToken)
+	}
+
+	return c.httpClient.Do(r)
+}
+
+// ExportChannel exports the given channel in the given format to the given writer.
+func (c *Client) ExportChannel(w io.Writer, channelID string, format string) error {
+	u, err := url.Parse(c.buildURL("/api/v1/export"))
+	if err != nil {
+		return err
+	}
+
+	q := u.Query()
+	q.Add("channel_id", channelID)
+	q.Add("format", format)
+	u.RawQuery = q.Encode()
+
+	resp, err := c.doGet(u.String())
+	if err != nil {
+		return err
+	}
+	defer closeBody(resp)
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		_, err := io.Copy(w, resp.Body)
+		if err != nil {
+			return errors.Wrap(err, "failed to copy response")
+		}
+		return nil
+
+	default:
+		decoder := json.NewDecoder(resp.Body)
+
+		var apiError APIError
+		err := decoder.Decode(&apiError)
+		if err != nil || apiError.StatusCode != resp.StatusCode {
+			return errors.Errorf("failed with status code %d", resp.StatusCode)
+		}
+
+		return &apiError
+	}
+}
