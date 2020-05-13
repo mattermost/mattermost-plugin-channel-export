@@ -39,10 +39,7 @@ func NewMattermostServerClient(mattermostServerAddress string) *Client {
 	}
 	mattermostServerAddress += manifest.Id + "/"
 
-	return &Client{
-		Address:    mattermostServerAddress,
-		httpClient: &http.Client{},
-	}
+	return NewClient(mattermostServerAddress)
 }
 
 // closeBody ensures the Body of an http.Response is properly closed.
