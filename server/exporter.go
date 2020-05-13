@@ -15,8 +15,11 @@ type PostIterator func() ([]*ExportedPost, error)
 
 // Exporter processes a list of posts and writes them to a writer
 type Exporter interface {
-	// FileName returns the name of the exported file, given the core name passed
+	// FileName returns the name of the exported file, given the core name passed.
 	FileName(name string) string
+
+	// ContentType returns the content type of the file format being exported.
+	ContentType() string
 
 	// Export processes the posts returned by nextPosts and exports them to writer
 	Export(nextPosts PostIterator, writer io.Writer) error
@@ -97,7 +100,7 @@ func toExportedPost(client *pluginapi.Wrapper, post *model.Post, usersCache map[
 	}
 
 	return &ExportedPost{
-		CreateAt:     utils.TimeFromMillis(post.CreateAt),
+		CreateAt:     utils.TimeFromMillis(post.CreateAt).UTC(),
 		UserID:       post.UserId,
 		UserEmail:    user.Email,
 		UserType:     userType,

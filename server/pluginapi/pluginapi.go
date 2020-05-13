@@ -5,7 +5,6 @@ import (
 
 	pluginapi "github.com/mattermost/mattermost-plugin-api"
 	"github.com/mattermost/mattermost-server/v5/model"
-	"github.com/mattermost/mattermost-server/v5/plugin"
 )
 
 // Channel is an interface declaring only the functions from
@@ -44,6 +43,13 @@ type SlashCommand interface {
 // mattermost-plugin-api UserService that are used in this plugin
 type User interface {
 	Get(userID string) (*model.User, error)
+	HasPermissionToChannel(userID, channelID string, permission *model.Permission) bool
+}
+
+// System is an interface declaring only the functions from
+// mattermost-plugin-api SystemService that are used in this plugin
+type System interface {
+	GetLicense() *model.License
 }
 
 // Wrapper is a wrapper over the mattermost-plugin-api layer, defining
@@ -55,6 +61,7 @@ type Wrapper struct {
 	Post         Post
 	SlashCommand SlashCommand
 	User         User
+	System       System
 }
 
 // CustomWrapper builds a Wrapper with the implementations of the different
@@ -66,6 +73,7 @@ func CustomWrapper(
 	post Post,
 	slashCommand SlashCommand,
 	user User,
+	system System,
 ) *Wrapper {
 	return &Wrapper{
 		Channel:      channel,
@@ -74,20 +82,20 @@ func CustomWrapper(
 		Post:         post,
 		SlashCommand: slashCommand,
 		User:         user,
+		System:       system,
 	}
 }
 
 // Wrap wraps a plugin.API with the mattermost-plugin-api layer, interfaced by
 // this package
-func Wrap(api plugin.API) *Wrapper {
-	underlyingWrapper := pluginapi.NewClient(api)
-
+func Wrap(client *pluginapi.Client) *Wrapper {
 	return CustomWrapper(
-		&underlyingWrapper.Channel,
-		&underlyingWrapper.File,
-		&underlyingWrapper.Log,
-		&underlyingWrapper.Post,
-		&underlyingWrapper.SlashCommand,
-		&underlyingWrapper.User,
+		&client.Channel,
+		&client.File,
+		&client.Log,
+		&client.Post,
+		&client.SlashCommand,
+		&client.User,
+		&client.System,
 	)
 }
