@@ -87,6 +87,12 @@ func (h *Handler) hasPermissionToChannel(userID, channelID string) (*model.Chann
 
 // Export handles /api/v1/export, exporting the requested channel.
 func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
+	license := h.client.System.GetLicense()
+	if !isLicensed(license) {
+		handleError(w, http.StatusBadRequest, "the channel export plugin requires a valid E20 license.")
+		return
+	}
+
 	channelID := r.URL.Query().Get("channel_id")
 	if channelID == "" {
 		handleError(w, http.StatusBadRequest, "missing channel_id parameter")
@@ -107,12 +113,6 @@ func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 	channel, ok := h.hasPermissionToChannel(userID, channelID)
 	if !ok {
 		handleError(w, http.StatusNotFound, "channel '%s' not found or user does not have permission", channelID)
-		return
-	}
-
-	license := h.client.System.GetLicense()
-	if !isLicensed(license) {
-		handleError(w, http.StatusBadRequest, "the channel export plugin requires a valid E20 license.")
 		return
 	}
 

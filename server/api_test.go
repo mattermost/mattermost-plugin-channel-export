@@ -59,6 +59,8 @@ func setupAPI(t *testing.T, mockAPI *pluginapi.Wrapper, now time.Time, userID, c
 }
 
 func TestHandler(t *testing.T) {
+	trueValue := true
+
 	t.Run("unauthorized", func(t *testing.T) {
 		address := setupAPI(t, nil, time.Now(), "", "channel_id")
 		client := NewClient(address)
@@ -67,28 +69,99 @@ func TestHandler(t *testing.T) {
 		require.EqualError(t, err, "failed with status code 401")
 	})
 
-	t.Run("missing channel_id", func(t *testing.T) {
-		address := setupAPI(t, nil, time.Now(), "user_id", "channel_id")
+	t.Run("missing e20 license", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+
+		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
+		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+
+		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
 		client := NewClient(address)
 		client.SetToken("token")
+
+		mockSystem.EXPECT().GetLicense().Return(nil)
+
+		err := client.ExportChannel(ioutil.Discard, "channel_id", FormatCSV)
+		require.EqualError(t, err, "the channel export plugin requires a valid E20 license.")
+	})
+
+	t.Run("missing channel_id", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+
+		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
+		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+
+		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
+		client := NewClient(address)
+		client.SetToken("token")
+
+		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
+			FutureFeatures: &trueValue,
+		}})
 
 		err := client.ExportChannel(ioutil.Discard, "", FormatCSV)
 		require.EqualError(t, err, "missing channel_id parameter")
 	})
 
 	t.Run("missing format", func(t *testing.T) {
-		address := setupAPI(t, nil, time.Now(), "user_id", "channel_id")
+		mockCtrl := gomock.NewController(t)
+
+		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
+		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+
+		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
 		client := NewClient(address)
 		client.SetToken("token")
+
+		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
+			FutureFeatures: &trueValue,
+		}})
 
 		err := client.ExportChannel(ioutil.Discard, "channel_id", "")
 		require.EqualError(t, err, "missing format parameter")
 	})
 
 	t.Run("unsupported format", func(t *testing.T) {
-		address := setupAPI(t, nil, time.Now(), "user_id", "channel_id")
+		mockCtrl := gomock.NewController(t)
+
+		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
+		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+
+		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
 		client := NewClient(address)
 		client.SetToken("token")
+
+		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
+			FutureFeatures: &trueValue,
+		}})
 
 		err := client.ExportChannel(ioutil.Discard, "channel_id", "pdf2")
 		require.EqualError(t, err, "unsupported format parameter 'pdf2'")
@@ -112,6 +185,9 @@ func TestHandler(t *testing.T) {
 		client := NewClient(address)
 		client.SetToken("token")
 
+		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
+			FutureFeatures: &trueValue,
+		}})
 		mockChannel.EXPECT().Get(channelID).Return(nil, &model.AppError{StatusCode: http.StatusNotFound}).Times(1)
 
 		err := client.ExportChannel(ioutil.Discard, channelID, FormatCSV)
@@ -136,6 +212,9 @@ func TestHandler(t *testing.T) {
 		client := NewClient(address)
 		client.SetToken("token")
 
+		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
+			FutureFeatures: &trueValue,
+		}})
 		mockChannel.EXPECT().Get(channelID).Return(nil, &model.AppError{StatusCode: http.StatusInternalServerError}).Times(1)
 
 		err := client.ExportChannel(ioutil.Discard, channelID, FormatCSV)
@@ -161,6 +240,9 @@ func TestHandler(t *testing.T) {
 		client := NewClient(address)
 		client.SetToken("token")
 
+		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
+			FutureFeatures: &trueValue,
+		}})
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
 		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL).Return(false).Times(1)
 
@@ -168,7 +250,7 @@ func TestHandler(t *testing.T) {
 		require.EqualError(t, err, "channel 'channel_id' not found or user does not have permission")
 	})
 
-	t.Run("missing e20 license", func(t *testing.T) {
+	t.Run("export with channel read permission", func(t *testing.T) {
 		mockCtrl := gomock.NewController(t)
 
 		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
@@ -188,40 +270,11 @@ func TestHandler(t *testing.T) {
 		client := NewClient(address)
 		client.SetToken("token")
 
-		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
-		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL).Return(true).Times(1)
-		mockSystem.EXPECT().GetLicense().Return(nil)
-
-		err := client.ExportChannel(ioutil.Discard, channelID, FormatCSV)
-		require.EqualError(t, err, "the channel export plugin requires a valid E20 license.")
-	})
-
-	t.Run("export with channel read permission and license", func(t *testing.T) {
-		mockCtrl := gomock.NewController(t)
-
-		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
-		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
-		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
-		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
-		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
-		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
-		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
-
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
-
-		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
-		userID := "user_id"
-		channelID := "channel_id"
-		address := setupAPI(t, mockAPI, now, userID, channelID)
-		client := NewClient(address)
-		client.SetToken("token")
-
-		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
-		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL).Return(true).Times(1)
-		trueValue := true
 		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
 			FutureFeatures: &trueValue,
 		}})
+		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
+		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL).Return(true).Times(1)
 
 		var buffer bytes.Buffer
 		err := client.ExportChannel(&buffer, channelID, FormatCSV)
