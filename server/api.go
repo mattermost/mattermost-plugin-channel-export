@@ -50,7 +50,10 @@ func handleError(w http.ResponseWriter, statusCode int, message string, a ...int
 		StatusText: http.StatusText(statusCode),
 		Message:    message,
 	})
-	_, _ = w.Write(b)
+	_, err := w.Write(b)
+	if err != nil {
+		logrus.WithError(err).Warnf("failed to handle error")
+	}
 }
 
 // mattermostAuthorizationRequired requires a Mattermost user to have authenticated.
