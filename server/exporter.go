@@ -104,7 +104,7 @@ func toExportedPost(client *pluginapi.Wrapper, post *model.Post, usersCache map[
 		UserID:       post.UserId,
 		UserEmail:    user.Email,
 		UserType:     userType,
-		UserName:     user.Nickname,
+		UserName:     user.Username,
 		ID:           post.Id,
 		ParentPostID: post.ParentId,
 		Message:      post.Message,
