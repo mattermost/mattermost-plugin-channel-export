@@ -15,7 +15,7 @@ const manifestStr = `
   "id": "com.mattermost.plugin-channel-export",
   "name": "Channel Export",
   "description": "This plugin allows channel export into a human readable format.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "min_server_version": "5.12.0",
   "server": {
     "executables": {
