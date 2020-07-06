@@ -17,31 +17,8 @@ import (
 )
 
 func setupAPI(t *testing.T, mockAPI *pluginapi.Wrapper, now time.Time, userID, channelID string) string {
-	exportedPosts := []*ExportedPost{
-		&ExportedPost{
-			CreateAt:     now.Round(time.Millisecond).UTC(),
-			UserID:       "post_user_id",
-			UserEmail:    "post_user_email",
-			UserType:     "user",
-			UserName:     "post_user_nickname",
-			ID:           "post_id",
-			ParentPostID: "post_parent_id",
-			Message:      "post_message",
-			Type:         "message",
-		},
-	}
-
 	router := mux.NewRouter()
-	registerAPI(router, mockAPI, func(channel *model.Channel) PostIterator {
-		return func() ([]*ExportedPost, error) {
-			retExportedPosts := exportedPosts
-
-			// Once consumed, mark it as nil so the iterator ends.
-			exportedPosts = nil
-
-			return retExportedPosts, nil
-		}
-	})
+	registerAPI(router, mockAPI, makeTestPostsIterator(t, now))
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Simulate what the Mattermost server would normally do after validating a token.
@@ -79,8 +56,9 @@ func TestHandler(t *testing.T) {
 		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
 
 		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
 		client := NewClient(address)
@@ -102,8 +80,9 @@ func TestHandler(t *testing.T) {
 		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
 
 		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
 		client := NewClient(address)
@@ -127,8 +106,9 @@ func TestHandler(t *testing.T) {
 		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
 
 		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
 		client := NewClient(address)
@@ -152,8 +132,9 @@ func TestHandler(t *testing.T) {
 		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
 
 		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
 		client := NewClient(address)
@@ -177,8 +158,9 @@ func TestHandler(t *testing.T) {
 		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
 
 		channelID := "channel_id"
 		address := setupAPI(t, mockAPI, time.Now(), "user_id", channelID)
@@ -204,8 +186,9 @@ func TestHandler(t *testing.T) {
 		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
 
 		channelID := "channel_id"
 		address := setupAPI(t, mockAPI, time.Now(), "user_id", channelID)
@@ -231,8 +214,9 @@ func TestHandler(t *testing.T) {
 		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
 
 		userID := "user_id"
 		channelID := "channel_id"
@@ -250,7 +234,7 @@ func TestHandler(t *testing.T) {
 		require.EqualError(t, err, "channel 'channel_id' not found or user does not have permission")
 	})
 
-	t.Run("export with channel read permission", func(t *testing.T) {
+	t.Run("export with channel read permission, without access to email", func(t *testing.T) {
 		mockCtrl := gomock.NewController(t)
 
 		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
@@ -260,8 +244,9 @@ func TestHandler(t *testing.T) {
 		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
 
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		userID := "user_id"
@@ -275,6 +260,52 @@ func TestHandler(t *testing.T) {
 		}})
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
 		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL).Return(true).Times(1)
+		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
+
+		var buffer bytes.Buffer
+		err := client.ExportChannel(&buffer, channelID, FormatCSV)
+		require.NoError(t, err)
+
+		expected := `Post Creation Time,User Id,User Email,User Type,User Name,Post Id,Parent Post Id,Post Message,Post Type
+2009-11-11 07:00:00 +0000 UTC,post_user_id,,user,post_user_nickname,post_id,post_parent_id,post_message,message
+`
+
+		require.Equal(t, expected, string(buffer.Bytes()))
+	})
+
+	t.Run("export with channel read permission, with access to email", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+
+		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
+		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+
+		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
+		userID := "user_id"
+		channelID := "channel_id"
+		address := setupAPI(t, mockAPI, now, userID, channelID)
+		client := NewClient(address)
+		client.SetToken("token")
+
+		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
+			FutureFeatures: &trueValue,
+		}})
+		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
+		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL).Return(true).Times(1)
+		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
+			PrivacySettings: model.PrivacySettings{
+				ShowEmailAddress: &trueValue,
+			},
+		})
 
 		var buffer bytes.Buffer
 		err := client.ExportChannel(&buffer, channelID, FormatCSV)
