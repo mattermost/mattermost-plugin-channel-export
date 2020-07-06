@@ -32,9 +32,6 @@ type Plugin struct {
 	// router is the plugin's root HTTP handler
 	router *mux.Router
 
-	// apiHandler is the plugin's API HTTP handler
-	apiHandler *Handler
-
 	// makeChannelPostsIterator is a factory function for iterating over posts
 	makeChannelPostsIterator func(*model.Channel, bool) PostIterator
 }

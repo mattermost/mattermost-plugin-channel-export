@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
@@ -77,17 +78,27 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 
 	exportError := errors.New("failed to export channel")
 
+	logger := logrus.WithFields(logrus.Fields{
+		"user_id":    args.UserId,
+		"channel_id": channelToExport.Id,
+	})
+
 	exportedFileReader, exportedFileWriter := io.Pipe()
 	go func() {
 		err := exporter.Export(p.makeChannelPostsIterator(channelToExport, showEmailAddress(p.client, args.UserId)), exportedFileWriter)
 		if err != nil {
-			exportedFileWriter.CloseWithError(errors.Wrap(exportError, err.Error()))
+			logger.WithError(err).Warn("failed to export channel")
 
-			p.client.Post.CreatePost(&model.Post{
+			_ = exportedFileWriter.CloseWithError(errors.Wrap(exportError, err.Error()))
+
+			err = p.client.Post.CreatePost(&model.Post{
 				UserId:    p.botID,
 				ChannelId: channelDM.Id,
 				Message:   fmt.Sprintf("An error occurred exporting channel ~%s.", channelToExport.Name),
 			})
+			if err != nil {
+				logger.WithError(err).Warn("failed to post message about failure to export channel")
+			}
 
 			return
 		}
@@ -98,24 +109,32 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	go func() {
 		file, err := p.uploadFileTo(fileName, exportedFileReader, channelDM.Id)
 		if err != nil {
+			logger.WithError(err).Warn("failed to upload exported channel")
+
 			// Post the upload error only if the exporter did not do it before
 			if !errors.Is(err, exportError) {
-				p.client.Post.CreatePost(&model.Post{
+				err = p.client.Post.CreatePost(&model.Post{
 					UserId:    p.botID,
 					ChannelId: channelDM.Id,
 					Message:   fmt.Sprintf("An error occurred uploading the exported channel ~%s.", channelToExport.Name),
 				})
+				if err != nil {
+					logger.WithError(err).Warn("failed to post message about failure to upload exported channel")
+				}
 			}
 
 			return
 		}
 
-		p.client.Post.CreatePost(&model.Post{
+		err = p.client.Post.CreatePost(&model.Post{
 			UserId:    p.botID,
 			ChannelId: channelDM.Id,
 			Message:   fmt.Sprintf("Channel ~%s exported:", channelToExport.Name),
 			FileIds:   []string{file.Id},
 		})
+		if err != nil {
+			logger.WithError(err).Warn("failed to post message about exported channel")
+		}
 	}()
 
 	return &model.CommandResponse{

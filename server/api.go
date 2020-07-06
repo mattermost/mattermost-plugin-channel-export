@@ -123,5 +123,8 @@ func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
 	w.Header().Set("Content-Type", exporter.ContentType())
-	exporter.Export(postIterator, w)
+	err := exporter.Export(postIterator, w)
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, "internal server error")
+	}
 }
