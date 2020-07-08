@@ -11,8 +11,8 @@ import (
 )
 
 func TestShowEmailAddress(t *testing.T) {
-	var pTrue = true
-	var pFalse = false
+	var trueValue = true
+	var falseValue = false
 
 	t.Run("system administrator", func(t *testing.T) {
 		mockCtrl := gomock.NewController(t)
@@ -53,7 +53,7 @@ func TestShowEmailAddress(t *testing.T) {
 		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			PrivacySettings: model.PrivacySettings{
-				ShowEmailAddress: &pTrue,
+				ShowEmailAddress: &trueValue,
 			},
 		})
 		assert.True(t, showEmailAddress(mockAPI, userID))
@@ -78,7 +78,7 @@ func TestShowEmailAddress(t *testing.T) {
 		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			PrivacySettings: model.PrivacySettings{
-				ShowEmailAddress: &pFalse,
+				ShowEmailAddress: &falseValue,
 			},
 		})
 		assert.False(t, showEmailAddress(mockAPI, userID))

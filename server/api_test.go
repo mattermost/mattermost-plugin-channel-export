@@ -37,6 +37,7 @@ func setupAPI(t *testing.T, mockAPI *pluginapi.Wrapper, now time.Time, userID, c
 
 func TestHandler(t *testing.T) {
 	trueValue := true
+	falseValue := false
 
 	t.Run("unauthorized", func(t *testing.T) {
 		address := setupAPI(t, nil, time.Now(), "", "channel_id")
@@ -261,7 +262,11 @@ func TestHandler(t *testing.T) {
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
 		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL).Return(true).Times(1)
 		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
-		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
+			PrivacySettings: model.PrivacySettings{
+				ShowEmailAddress: &falseValue,
+			},
+		}).Times(1)
 
 		var buffer bytes.Buffer
 		err := client.ExportChannel(&buffer, channelID, FormatCSV)
