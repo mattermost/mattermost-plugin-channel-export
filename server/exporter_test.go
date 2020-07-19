@@ -24,8 +24,9 @@ func TestChannelPostsIterator(t *testing.T) {
 	mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
 	mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 	mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+	mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
 
-	mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+	mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
 
 	channel := &model.Channel{
 		Id: "jx2289hnvko3dypmc3thfcafpb",
@@ -58,7 +59,7 @@ func TestChannelPostsIterator(t *testing.T) {
 	}
 
 	t.Run("One post iterator", func(t *testing.T) {
-		postIterator := channelPostsIterator(mockAPI, channel)
+		postIterator := channelPostsIterator(mockAPI, channel, false)
 
 		mockPost.EXPECT().GetPostsForChannel(channel.Id, 0, 1000).Return(&postList, nil).Times(1)
 		mockUser.EXPECT().Get(post.UserId).Return(&user, nil).Times(1)
@@ -69,7 +70,7 @@ func TestChannelPostsIterator(t *testing.T) {
 	})
 
 	t.Run("Paging is correct", func(t *testing.T) {
-		postIterator := channelPostsIterator(mockAPI, channel)
+		postIterator := channelPostsIterator(mockAPI, channel, false)
 
 		length := 1000
 		posts := make(map[string]*model.Post, length)
@@ -119,7 +120,7 @@ func TestChannelPostsIterator(t *testing.T) {
 		post.ShallowCopy(&editedPost)
 		editedPost.OriginalId = "original_id"
 
-		postIterator := channelPostsIterator(mockAPI, channel)
+		postIterator := channelPostsIterator(mockAPI, channel, false)
 
 		editedPostList := model.PostList{
 			Posts: map[string]*model.Post{
@@ -136,7 +137,7 @@ func TestChannelPostsIterator(t *testing.T) {
 	})
 
 	t.Run("Error when retreiving posts is moved up to the caller", func(t *testing.T) {
-		postIterator := channelPostsIterator(mockAPI, channel)
+		postIterator := channelPostsIterator(mockAPI, channel, false)
 
 		expectedError := errors.New("error retreiving posts")
 		mockPost.EXPECT().GetPostsForChannel(channel.Id, 0, 1000).Return(nil, expectedError).Times(1)
@@ -147,7 +148,7 @@ func TestChannelPostsIterator(t *testing.T) {
 	})
 
 	t.Run("Error when exporting a post is moved up to the caller", func(t *testing.T) {
-		postIterator := channelPostsIterator(mockAPI, channel)
+		postIterator := channelPostsIterator(mockAPI, channel, false)
 
 		expectedError := fmt.Errorf("new error")
 		mockUser.EXPECT().Get(post.UserId).Return(nil, expectedError).Times(1)
@@ -157,7 +158,6 @@ func TestChannelPostsIterator(t *testing.T) {
 		require.Nil(t, posts)
 		require.True(t, errors.Is(err, expectedError))
 	})
-
 }
 
 func TestToExportedPost(t *testing.T) {
@@ -170,8 +170,9 @@ func TestToExportedPost(t *testing.T) {
 	mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
 	mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 	mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+	mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
 
-	mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem)
+	mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
 
 	now := time.Now().Round(time.Millisecond)
 	userID := "h6itnszvtit5k2jhi2c1o3p7ox"
@@ -193,25 +194,45 @@ func TestToExportedPost(t *testing.T) {
 		IsBot:    false,
 	}
 
-	exportedPost := ExportedPost{
-		CreateAt:     now.UTC(),
-		UserID:       post.UserId,
-		UserEmail:    user.Email,
-		UserType:     "user",
-		UserName:     user.Username,
-		ID:           post.Id,
-		ParentPostID: post.ParentId,
-		Message:      post.Message,
-		Type:         "message",
-	}
-
-	t.Run("Normal message", func(t *testing.T) {
+	t.Run("Normal message, don't show email address", func(t *testing.T) {
 		mockUser.EXPECT().Get(post.UserId).Return(&user, nil).Times(1)
 
 		usersCache := make(map[string]*model.User)
-		actualExportedPost, err := toExportedPost(mockAPI, &post, usersCache)
+		actualExportedPost, err := toExportedPost(mockAPI, &post, false, usersCache)
 		require.NoError(t, err)
 
+		exportedPost := ExportedPost{
+			CreateAt:     now.UTC(),
+			UserID:       post.UserId,
+			UserEmail:    "",
+			UserType:     "user",
+			UserName:     user.Username,
+			ID:           post.Id,
+			ParentPostID: post.ParentId,
+			Message:      post.Message,
+			Type:         "message",
+		}
+		require.Equal(t, &exportedPost, actualExportedPost)
+	})
+
+	t.Run("Normal message, show email address", func(t *testing.T) {
+		mockUser.EXPECT().Get(post.UserId).Return(&user, nil).Times(1)
+
+		usersCache := make(map[string]*model.User)
+		actualExportedPost, err := toExportedPost(mockAPI, &post, true, usersCache)
+		require.NoError(t, err)
+
+		exportedPost := ExportedPost{
+			CreateAt:     now.UTC(),
+			UserID:       post.UserId,
+			UserEmail:    user.Email,
+			UserType:     "user",
+			UserName:     user.Username,
+			ID:           post.Id,
+			ParentPostID: post.ParentId,
+			Message:      post.Message,
+			Type:         "message",
+		}
 		require.Equal(t, &exportedPost, actualExportedPost)
 	})
 
@@ -224,7 +245,7 @@ func TestToExportedPost(t *testing.T) {
 		mockUser.EXPECT().Get(postWithoutUserID.UserId).Return(nil, error).Times(1)
 
 		usersCache := make(map[string]*model.User)
-		actualExportedPost, err := toExportedPost(mockAPI, &postWithoutUserID, usersCache)
+		actualExportedPost, err := toExportedPost(mockAPI, &postWithoutUserID, false, usersCache)
 		require.Error(t, err)
 		require.Nil(t, actualExportedPost)
 	})
@@ -236,12 +257,20 @@ func TestToExportedPost(t *testing.T) {
 		mockUser.EXPECT().Get(post.UserId).Return(&bot, nil).Times(1)
 
 		usersCache := make(map[string]*model.User)
-		actualExportedPost, err := toExportedPost(mockAPI, &post, usersCache)
+		actualExportedPost, err := toExportedPost(mockAPI, &post, false, usersCache)
 		require.NoError(t, err)
 
-		expectedPost := exportedPost
-		expectedPost.UserType = "bot"
-
+		expectedPost := ExportedPost{
+			CreateAt:     now.UTC(),
+			UserID:       post.UserId,
+			UserEmail:    "",
+			UserType:     "bot",
+			UserName:     user.Username,
+			ID:           post.Id,
+			ParentPostID: post.ParentId,
+			Message:      post.Message,
+			Type:         "message",
+		}
 		require.Equal(t, &expectedPost, actualExportedPost)
 	})
 
@@ -253,12 +282,20 @@ func TestToExportedPost(t *testing.T) {
 		mockUser.EXPECT().Get(systemPost.UserId).Return(&user, nil).Times(1)
 
 		usersCache := make(map[string]*model.User)
-		actualExportedPost, err := toExportedPost(mockAPI, &systemPost, usersCache)
+		actualExportedPost, err := toExportedPost(mockAPI, &systemPost, false, usersCache)
 		require.NoError(t, err)
 
-		expectedPost := exportedPost
-		expectedPost.UserType = "system"
-		expectedPost.Type = systemPost.Type
+		expectedPost := ExportedPost{
+			CreateAt:     now.UTC(),
+			UserID:       post.UserId,
+			UserEmail:    "",
+			UserType:     "system",
+			UserName:     user.Username,
+			ID:           post.Id,
+			ParentPostID: post.ParentId,
+			Message:      post.Message,
+			Type:         systemPost.Type,
+		}
 
 		require.Equal(t, &expectedPost, actualExportedPost)
 	})

@@ -5,10 +5,11 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	pluginapi "github.com/mattermost/mattermost-plugin-api"
 	pluginAPIWrapper "github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	pluginapi "github.com/mattermost/mattermost-plugin-api"
 
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
@@ -33,6 +34,9 @@ type Plugin struct {
 
 	// apiHandler is the plugin's API HTTP handler
 	apiHandler *Handler
+
+	// makeChannelPostsIterator is a factory function for iterating over posts
+	makeChannelPostsIterator func(*model.Channel, bool) PostIterator
 }
 
 const (
@@ -63,9 +67,10 @@ func (p *Plugin) OnActivate() error {
 	}
 
 	p.router = mux.NewRouter()
-	registerAPI(p.router, p.client, func(channel *model.Channel) PostIterator {
-		return channelPostsIterator(p.client, channel)
-	})
+	p.makeChannelPostsIterator = func(channel *model.Channel, showEmailAddress bool) PostIterator {
+		return channelPostsIterator(p.client, channel, showEmailAddress)
+	}
+	registerAPI(p.router, p.client, p.makeChannelPostsIterator)
 
 	return nil
 }
