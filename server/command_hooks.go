@@ -46,7 +46,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	if !isLicensed(license) {
 		return &model.CommandResponse{
 			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
-			Text:         fmt.Sprintf("The channel export plugin requires a valid E20 license."),
+			Text:         "The channel export plugin requires a valid E20 license.",
 		}
 	}
 
@@ -79,7 +79,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 
 	exportedFileReader, exportedFileWriter := io.Pipe()
 	go func() {
-		err := exporter.Export(channelPostsIterator(p.client, channelToExport), exportedFileWriter)
+		err := exporter.Export(p.makeChannelPostsIterator(channelToExport, showEmailAddress(p.client, args.UserId)), exportedFileWriter)
 		if err != nil {
 			exportedFileWriter.CloseWithError(errors.Wrap(exportError, err.Error()))
 

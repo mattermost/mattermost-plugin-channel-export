@@ -14,11 +14,11 @@ import (
 // Handler encapsulates the context necessary for the channel export API.
 type Handler struct {
 	client            *pluginapi.Wrapper
-	makePostsIterator func(*model.Channel) PostIterator
+	makePostsIterator func(*model.Channel, bool) PostIterator
 }
 
 // registerAPI registers the API against the given router.
-func registerAPI(router *mux.Router, client *pluginapi.Wrapper, makePostsIterator func(channel *model.Channel) PostIterator) {
+func registerAPI(router *mux.Router, client *pluginapi.Wrapper, makePostsIterator func(*model.Channel, bool) PostIterator) {
 	handler := &Handler{
 		client:            client,
 		makePostsIterator: makePostsIterator,
@@ -116,7 +116,7 @@ func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postIterator := h.makePostsIterator(channel)
+	postIterator := h.makePostsIterator(channel, showEmailAddress(h.client, userID))
 
 	exporter := CSV{}
 	fileName := exporter.FileName(channel.Name)

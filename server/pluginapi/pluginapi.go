@@ -3,8 +3,9 @@ package pluginapi
 import (
 	"io"
 
-	pluginapi "github.com/mattermost/mattermost-plugin-api"
 	"github.com/mattermost/mattermost-server/v5/model"
+
+	pluginapi "github.com/mattermost/mattermost-plugin-api"
 )
 
 // Channel is an interface declaring only the functions from
@@ -43,6 +44,7 @@ type SlashCommand interface {
 // mattermost-plugin-api UserService that are used in this plugin
 type User interface {
 	Get(userID string) (*model.User, error)
+	HasPermissionTo(userID string, permission *model.Permission) bool
 	HasPermissionToChannel(userID, channelID string, permission *model.Permission) bool
 }
 
@@ -52,16 +54,23 @@ type System interface {
 	GetLicense() *model.License
 }
 
+// Configuration is an interface declaring only the functions from
+// mattermost-plugin-api ConfigurationService that are used in this plugin
+type Configuration interface {
+	GetConfig() *model.Config
+}
+
 // Wrapper is a wrapper over the mattermost-plugin-api layer, defining
 // interfaces implemented by that package, that are also mockable
 type Wrapper struct {
-	Channel      Channel
-	File         File
-	Log          Log
-	Post         Post
-	SlashCommand SlashCommand
-	User         User
-	System       System
+	Channel       Channel
+	File          File
+	Log           Log
+	Post          Post
+	SlashCommand  SlashCommand
+	User          User
+	System        System
+	Configuration Configuration
 }
 
 // CustomWrapper builds a Wrapper with the implementations of the different
@@ -74,15 +83,17 @@ func CustomWrapper(
 	slashCommand SlashCommand,
 	user User,
 	system System,
+	configuration Configuration,
 ) *Wrapper {
 	return &Wrapper{
-		Channel:      channel,
-		File:         file,
-		Log:          log,
-		Post:         post,
-		SlashCommand: slashCommand,
-		User:         user,
-		System:       system,
+		Channel:       channel,
+		File:          file,
+		Log:           log,
+		Post:          post,
+		SlashCommand:  slashCommand,
+		User:          user,
+		System:        system,
+		Configuration: configuration,
 	}
 }
 
@@ -97,5 +108,6 @@ func Wrap(client *pluginapi.Client) *Wrapper {
 		&client.SlashCommand,
 		&client.User,
 		&client.System,
+		&client.Configuration,
 	)
 }

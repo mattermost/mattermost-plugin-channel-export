@@ -40,9 +40,9 @@ type ExportedPost struct {
 }
 
 // channelPostsIterator returns a function that returns, every time it is
-// called, a new batch of posts from the channel, chronollogically ordered
+// called, a new batch of posts from the channel, chronologically ordered
 // (most recent first), until all posts have been consumed.
-func channelPostsIterator(client *pluginapi.Wrapper, channel *model.Channel) PostIterator {
+func channelPostsIterator(client *pluginapi.Wrapper, channel *model.Channel, showEmailAddress bool) PostIterator {
 	usersCache := make(map[string]*model.User)
 	page := 0
 	perPage := 1000
@@ -61,7 +61,7 @@ func channelPostsIterator(client *pluginapi.Wrapper, channel *model.Channel) Pos
 				continue
 			}
 
-			exportedPost, err := toExportedPost(client, post, usersCache)
+			exportedPost, err := toExportedPost(client, post, showEmailAddress, usersCache)
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to export post")
 			}
@@ -76,7 +76,7 @@ func channelPostsIterator(client *pluginapi.Wrapper, channel *model.Channel) Pos
 
 // toExportedPost resolves all the data from post that is needed in
 // ExportedPost, as the user information and the type of message
-func toExportedPost(client *pluginapi.Wrapper, post *model.Post, usersCache map[string]*model.User) (*ExportedPost, error) {
+func toExportedPost(client *pluginapi.Wrapper, post *model.Post, showEmailAddress bool, usersCache map[string]*model.User) (*ExportedPost, error) {
 	user, ok := usersCache[post.UserId]
 	if !ok {
 		newUser, err := client.User.Get(post.UserId)
@@ -99,15 +99,21 @@ func toExportedPost(client *pluginapi.Wrapper, post *model.Post, usersCache map[
 		userType = "system"
 	}
 
-	return &ExportedPost{
+	exportedPost := &ExportedPost{
 		CreateAt:     utils.TimeFromMillis(post.CreateAt).UTC(),
 		UserID:       post.UserId,
-		UserEmail:    user.Email,
+		UserEmail:    "",
 		UserType:     userType,
 		UserName:     user.Username,
 		ID:           post.Id,
 		ParentPostID: post.ParentId,
 		Message:      post.Message,
 		Type:         postType,
-	}, nil
+	}
+
+	if showEmailAddress {
+		exportedPost.UserEmail = user.Email
+	}
+
+	return exportedPost, nil
 }
