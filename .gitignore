@@ -8,3 +8,10 @@ dist/
 
 # Jetbrains
 .idea/
+.vscode
+
+# End to end tests
+tests-e2e/node_modules
+tests-e2e/cypress/screenshots
+tests-e2e/cypress/videos
+.eslintcache
