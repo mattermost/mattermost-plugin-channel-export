@@ -125,6 +125,6 @@ func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", exporter.ContentType())
 	err := exporter.Export(postIterator, w)
 	if err != nil {
-		handleError(w, http.StatusInternalServerError, "internal server error")
+		handleError(w, http.StatusInternalServerError, "failed to create the exported data")
 	}
 }
