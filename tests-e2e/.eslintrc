@@ -2,7 +2,9 @@
   "extends": [
     "plugin:mattermost/react",
     "plugin:cypress/recommended",
-    "plugin:react/recommended"
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
   "plugins": ["mattermost", "import", "cypress"],
   "globals": {

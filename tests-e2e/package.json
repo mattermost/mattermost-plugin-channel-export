@@ -1,5 +1,7 @@
 {
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^3.7.0",
+    "@typescript-eslint/parser": "^3.7.0",
     "babel-eslint": "^10.1.0",
     "cypress": "^4.10.0",
     "cypress-wait-until": "^1.7.1",
@@ -11,11 +13,12 @@
     "eslint-plugin-react": "^7.20.3"
   },
   "dependencies": {
-    "@testing-library/cypress": "^6.0.0"
+    "@testing-library/cypress": "^6.0.0",
+    "typescript": "^3.9.7"
   },
   "scripts": {
-    "check": "eslint --ext .js . --quiet --cache",
-    "fix": "eslint --ext .js . --quiet --fix --cache",
+    "check": "eslint --ext .js --ext .ts . --quiet --cache",
+    "fix": "eslint --ext .js --ext .ts . --quiet --fix --cache",
     "cypress:open": "cypress open",
     "test": "cypress run"
   }
