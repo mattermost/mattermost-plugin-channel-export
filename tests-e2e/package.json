@@ -14,7 +14,9 @@
     "eslint-plugin-react": "^7.20.5",
     "typescript": "^3.9.7"
   },
-  "dependencies": {},
+  "dependencies": {
+    "mattermost-redux": "^5.25.0"
+  },
   "scripts": {
     "check": "eslint --ext .js --ext .ts . --quiet --cache",
     "fix": "eslint --ext .js --ext .ts . --quiet --fix --cache",
