@@ -79,7 +79,7 @@ func TestChannelPostsIterator(t *testing.T) {
 		for i := 0; i < length; i++ {
 			id := strconv.Itoa(i)
 			var newPost model.Post
-			post.ShallowCopy(&newPost)
+			require.NoError(t, post.ShallowCopy(&newPost))
 			newPost.Id = id
 
 			order[i] = id
@@ -117,7 +117,7 @@ func TestChannelPostsIterator(t *testing.T) {
 
 	t.Run("Old posts with a new version are skipped", func(t *testing.T) {
 		var editedPost model.Post
-		post.ShallowCopy(&editedPost)
+		require.NoError(t, post.ShallowCopy(&editedPost))
 		editedPost.OriginalId = "original_id"
 
 		postIterator := channelPostsIterator(mockAPI, channel, false)
@@ -238,7 +238,7 @@ func TestToExportedPost(t *testing.T) {
 
 	t.Run("User not found", func(t *testing.T) {
 		var postWithoutUserID model.Post
-		post.ShallowCopy(&postWithoutUserID)
+		require.NoError(t, post.ShallowCopy(&postWithoutUserID))
 		postWithoutUserID.UserId = "unknown_user_id"
 
 		error := fmt.Errorf("new error")
@@ -276,7 +276,7 @@ func TestToExportedPost(t *testing.T) {
 
 	t.Run("System message", func(t *testing.T) {
 		var systemPost model.Post
-		post.ShallowCopy(&systemPost)
+		require.NoError(t, post.ShallowCopy(&systemPost))
 		systemPost.Type = "system_join_channel"
 
 		mockUser.EXPECT().Get(systemPost.UserId).Return(&user, nil).Times(1)

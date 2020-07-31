@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"time"
 
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
@@ -10,20 +9,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	userTypeRegular = "user"
+	userTypeBot     = "bot"
+	userTypeSystem  = "system"
+)
+
 // PostIterator returns the next batch of posts when called
 type PostIterator func() ([]*ExportedPost, error)
-
-// Exporter processes a list of posts and writes them to a writer
-type Exporter interface {
-	// FileName returns the name of the exported file, given the core name passed.
-	FileName(name string) string
-
-	// ContentType returns the content type of the file format being exported.
-	ContentType() string
-
-	// Export processes the posts returned by nextPosts and exports them to writer
-	Export(nextPosts PostIterator, writer io.Writer) error
-}
 
 // ExportedPost contains all the information from a post needed in
 // an export, with all the relevant information already resolved
@@ -88,15 +81,15 @@ func toExportedPost(client *pluginapi.Wrapper, post *model.Post, showEmailAddres
 		user = newUser
 	}
 
-	userType := "user"
+	userType := userTypeRegular
 	if user.IsBot {
-		userType = "bot"
+		userType = userTypeBot
 	}
 
 	postType := "message"
 	if post.Type != "" {
 		postType = post.Type
-		userType = "system"
+		userType = userTypeSystem
 	}
 
 	exportedPost := &ExportedPost{

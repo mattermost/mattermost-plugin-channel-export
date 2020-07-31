@@ -4,12 +4,10 @@ This plugin allows channel export into a human readable format.
 
 ## Getting Started
 
-Clone the repository to a directory outside of `$GOPATH`
+Clone the repository:
 ```
 git clone https://github.com/mattermost/mattermost-plugin-channel-export.git
 ```
-
-Note that this project uses [Go modules](https://github.com/golang/go/wiki/Modules). Be sure to locate the project outside of `$GOPATH`, or allow the use of Go modules within your `$GOPATH` with an `export GO111MODULE=on`.
 
 Build the plugin:
 ```
@@ -22,7 +20,43 @@ This will produce a single plugin file (with support for multiple architectures)
 dist/com.mattermost.plugin-channel-export.tar.gz
 ```
 
-There is a build target to automate deploying and enabling the plugin to your server, but it requires login credentials:
+## Development
+
+To avoid having to manually install your plugin, build and deploy your plugin using one of the following options.
+
+### Deploying with Local Mode
+
+If your Mattermost server is running locally, you can enable [local mode](https://docs.mattermost.com/administration/mmctl-cli-tool.html#local-mode) to streamline deploying your plugin. Edit your server configuration as follows:
+
+```json
+{
+    "ServiceSettings": {
+        ...
+        "EnableLocalMode": true,
+        "LocalModeSocketLocation": "/var/tmp/mattermost_local.socket"
+    }
+}
+```
+
+and then deploy your plugin:
+```
+make deploy
+```
+
+You may also customize the Unix socket path:
+```
+export MM_LOCALSOCKETPATH=/var/tmp/alternate_local.socket
+make deploy
+```
+
+If developing a plugin with a webapp, watch for changes and deploy those automatically:
+```
+make watch
+```
+
+### Deploying with credentials
+
+Alternatively, you can authenticate with the server's API with credentials:
 ```
 export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
 export MM_ADMIN_USERNAME=admin
@@ -30,13 +64,9 @@ export MM_ADMIN_PASSWORD=password
 make deploy
 ```
 
-or configuration of a [personal access token](https://docs.mattermost.com/developer/personal-access-tokens.html):
+or with a [personal access token](https://docs.mattermost.com/developer/personal-access-tokens.html):
 ```
 export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
 export MM_ADMIN_TOKEN=j44acwd8obn78cdcx7koid4jkr
 make deploy
 ```
-
-Alternatively, if you are running your `mattermost-server` out of a sibling directory by the same name, use the `deploy` target alone to  unpack the files into the right directory. You will need to restart your server and manually enable your plugin.
-
-In production, deploy and upload your plugin via the [System Console](https://about.mattermost.com/default-plugin-uploads).
