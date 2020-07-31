@@ -49,7 +49,7 @@ func (e *CSV) Export(nextPosts PostIterator, writer io.Writer) error {
 		}
 
 		for _, post := range posts {
-			csvWriter.Write([]string{
+			err = csvWriter.Write([]string{
 				post.CreateAt.String(),
 				post.UserID,
 				post.UserEmail,
@@ -60,17 +60,19 @@ func (e *CSV) Export(nextPosts PostIterator, writer io.Writer) error {
 				post.Message,
 				post.Type,
 			})
+			if err != nil {
+				return errors.Wrap(err, "unable to write csv")
+			}
 		}
 
 		if len(posts) == 0 {
 			break
 		}
-
 	}
 
 	csvWriter.Flush()
 	if err := csvWriter.Error(); err != nil {
-		logrus.WithError(err).Warnf("failed to flush CSV file")
+		logrus.WithError(err).Warn("failed to flush CSV file")
 	}
 
 	return nil

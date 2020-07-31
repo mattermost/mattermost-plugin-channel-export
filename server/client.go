@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -33,6 +32,7 @@ func NewClient(address string) *Client {
 }
 
 // NewMattermostServerClient creates a client to the channel export plugin at the given Mattermost server address.
+//nolint:deadcode,unused
 func NewMattermostServerClient(mattermostServerAddress string) *Client {
 	if !strings.HasSuffix(mattermostServerAddress, "/") {
 		mattermostServerAddress += "/"
@@ -40,14 +40,6 @@ func NewMattermostServerClient(mattermostServerAddress string) *Client {
 	mattermostServerAddress += manifest.Id + "/"
 
 	return NewClient(mattermostServerAddress)
-}
-
-// closeBody ensures the Body of an http.Response is properly closed.
-func closeBody(r *http.Response) {
-	if r.Body != nil {
-		_, _ = ioutil.ReadAll(r.Body)
-		_ = r.Body.Close()
-	}
 }
 
 // SetToken configures the authentication token required to identify the Mattermost user.
@@ -89,7 +81,7 @@ func (c *Client) ExportChannel(w io.Writer, channelID string, format string) err
 	if err != nil {
 		return err
 	}
-	defer closeBody(resp)
+	defer resp.Body.Close()
 
 	switch resp.StatusCode {
 	case http.StatusOK:

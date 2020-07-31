@@ -9,7 +9,7 @@ import (
 
 func makeTestPostsIterator(t *testing.T, now time.Time) func(channel *model.Channel, showEmailAddress bool) PostIterator {
 	exportedPosts := []*ExportedPost{
-		&ExportedPost{
+		{
 			CreateAt:     now.Round(time.Millisecond).UTC(),
 			UserID:       "post_user_id",
 			UserEmail:    "post_user_email",

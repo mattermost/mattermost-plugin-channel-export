@@ -10,10 +10,11 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
-	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
-	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
 )
 
 func setupAPI(t *testing.T, mockAPI *pluginapi.Wrapper, now time.Time, userID, channelID string) string {
@@ -276,7 +277,7 @@ func TestHandler(t *testing.T) {
 2009-11-11 07:00:00 +0000 UTC,post_user_id,,user,post_user_nickname,post_id,post_parent_id,post_message,message
 `
 
-		require.Equal(t, expected, string(buffer.Bytes()))
+		require.Equal(t, expected, buffer.String())
 	})
 
 	t.Run("export with channel read permission, with access to email", func(t *testing.T) {
@@ -320,6 +321,6 @@ func TestHandler(t *testing.T) {
 2009-11-11 07:00:00 +0000 UTC,post_user_id,post_user_email,user,post_user_nickname,post_id,post_parent_id,post_message,message
 `
 
-		require.Equal(t, expected, string(buffer.Bytes()))
+		require.Equal(t, expected, buffer.String())
 	})
 }
