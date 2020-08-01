@@ -17,7 +17,6 @@ describe('Testing playground', () => {
         // cy.visitNewPublicChannel();
         // cy.verifyExportSystemMessage();
 
-
         // STILL TO BE TESTED
         //
         // apiExportChannel();

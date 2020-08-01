@@ -1,20 +1,30 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-
 import {Team} from 'mattermost-redux/types/teams';
 import {Channel} from 'mattermost-redux/types/channels';
 
-Cypress.Commands.add('postMessage', (message: string) => {
+function waitUntilPermanentPost() {
+    cy.get('#postListContent').should('be.visible');
+    cy.waitUntil(() =>
+        cy.findAllByTestId('postView').
+            last().
+            then((el) => !(el[0].id.includes(':')))
+    );
+}
+
+function postMessage(message: string): void {
     cy.findByTestId('post_textbox').clear().type(message).type('{enter}');
     cy.findByTestId('post_textbox').should('have.text', '');
-});
+}
+Cypress.Commands.add('postMessage', postMessage);
 
-Cypress.Commands.add('exportSlashCommand', () => {
+function exportSlashCommand() : void {
     cy.postMessage('/export');
-});
+}
+Cypress.Commands.add('exportSlashCommand', exportSlashCommand);
 
-Cypress.Commands.add('visitNewPublicChannel', () => {
+function visitNewPublicChannel() : void {
     const id = Date.now().toString();
     const name = `channelexport_${id}`;
     const displayName = `Channel Export - ${id}`;
@@ -25,22 +35,20 @@ Cypress.Commands.add('visitNewPublicChannel', () => {
         cy.visit(`/ad-1/channels/${name}`);
         return cy.wrap(response);
     });
-});
-
-function waitUntilPermanentPost() {
-    cy.get('#postListContent').should('be.visible');
-    cy.waitUntil(() => cy.findAllByTestId('postView').last().then((el) => !(el[0].id.includes(':'))));
 }
+Cypress.Commands.add('visitNewPublicChannel', visitNewPublicChannel);
 
-Cypress.Commands.add('getLastPostId', () => {
+function getLastPostId() : Cypress.Chainable<string> {
     waitUntilPermanentPost();
 
-    cy.findAllByTestId('postView').last().should('have.attr', 'id').and('not.include', ':').
+    return cy.findAllByTestId('postView').last().should('have.attr', 'id').and('not.include', ':').
         invoke('replace', 'post_', '');
-});
+}
+Cypress.Commands.add('getLastPostId', getLastPostId);
 
-Cypress.Commands.add('verifyExportSystemMessage', (channelName : string) => {
+function verifyExportSystemMessage(channelName : string) : void {
     cy.getLastPostId().then((lastPostId: string) => {
         cy.get(`#post_${lastPostId}`).should('contain.text', `Exporting ~${channelName}. @channelexport will send you a direct message when the export is ready.`);
     });
-});
+}
+Cypress.Commands.add('verifyExportSystemMessage', verifyExportSystemMessage);

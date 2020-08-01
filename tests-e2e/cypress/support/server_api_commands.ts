@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Team} from 'mattermost-redux/types/teams';
+import {Channel} from 'mattermost-redux/types/channels';
+
 import users from '../fixtures/users';
 
 // *****************************************************************************
@@ -11,8 +14,8 @@ import users from '../fixtures/users';
 const httpStatusOk = 200;
 const httpStatusCreated = 201;
 
-Cypress.Commands.add('apiLogin', (username = 'user-1', password : string | null = null) => {
-    cy.request({
+function apiLogin(username = 'user-1', password : string | null = null) : Cypress.Chainable<Cypress.Response> {
+    return cy.request({
         headers: {'X-Requested-With': 'XMLHttpRequest'},
         url: '/api/v4/users/login',
         method: 'POST',
@@ -24,10 +27,11 @@ Cypress.Commands.add('apiLogin', (username = 'user-1', password : string | null 
         expect(response.status).to.equal(httpStatusOk);
         return cy.wrap(response);
     });
-});
+}
+Cypress.Commands.add('apiLogin', apiLogin);
 
-Cypress.Commands.add('apiCreatePublicChannel', (teamId: string, name: string, displayName: string) => {
-    cy.request({
+function apiCreatePublicChannel(teamId: string, name: string, displayName: string): Cypress.Chainable<Channel> {
+    return cy.request({
         headers: {'X-Requested-With': 'XMLHttpRequest'},
         url: '/api/v4/channels',
         method: 'POST',
@@ -39,21 +43,27 @@ Cypress.Commands.add('apiCreatePublicChannel', (teamId: string, name: string, di
         },
     }).then((response: Cypress.Response) => {
         expect(response.status).to.equal(httpStatusCreated);
-        return cy.wrap(response.body);
-    });
-});
 
-Cypress.Commands.add('apiGetTeamByName', (name: string) => {
-    cy.request({
+        const channel = response.body as Channel;
+        return cy.wrap(channel);
+    });
+}
+Cypress.Commands.add('apiCreatePublicChannel', apiCreatePublicChannel);
+
+function apiGetTeamByName(name: string) : Cypress.Chainable<Team> {
+    return cy.request({
         headers: {'X-Requested-With': 'XMLHttpRequest'},
         url: `/api/v4/teams/name/${name}`,
         method: 'GET',
         body: {},
     }).then((response: Cypress.Response) => {
         expect(response.status).to.equal(httpStatusOk);
-        return cy.wrap(response);
+
+        const team = response.body as Team;
+        return cy.wrap(team);
     });
-});
+}
+Cypress.Commands.add('apiGetTeamByName', apiGetTeamByName);
 
 // // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // // See LICENSE.txt for license information.

@@ -1,6 +1,6 @@
-// // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// // See LICENSE.txt for license information.
-// /// <reference path="../support/index.d.ts" />
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+/// <reference path="../support/index.d.ts" />
 
 // import '@testing-library/cypress/add-commands';
 
