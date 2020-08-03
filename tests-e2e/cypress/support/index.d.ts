@@ -58,7 +58,8 @@ declare namespace Cypress {
         // verifyExportCommandIsAvailable(): Chainable<Element>;
         verifyExportSystemMessage(channelName: string): Chainable<Element>;
 
-        // verifyFileCanBeDownloaded(): Chainable<Element>;
+        verifyFileCanBeDownloaded(channelName : string, userName? : string, botName? :string): Chainable<void>;
+
         // verifyFileExtension(): Chainable<Element>;
         // verifyFileName(): Chainable<Element>;
         // verifyNoExport(): Chainable<Element>;

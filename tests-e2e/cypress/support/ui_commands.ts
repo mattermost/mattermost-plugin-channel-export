@@ -54,7 +54,7 @@ function verifyExportSystemMessage(channelName : string) : void {
 }
 Cypress.Commands.add('verifyExportSystemMessage', verifyExportSystemMessage);
 
-function verifyExportBotMessage(channelName : string, userName = 'user-1', botName = 'channelexport') : void {
+function visitDMWithBot(userName: string, botName: string) : void {
     interface DM {
         user: UserProfile;
         bot: UserProfile;
@@ -66,10 +66,31 @@ function verifyExportBotMessage(channelName : string, userName = 'user-1', botNa
         });
     }).then((dm: DM) => {
         cy.get(`#sidebarItem_${dm.user.id}__${dm.bot.id}`).click();
-        cy.getLastPostId().then((lastPostId: string) => {
-            cy.get(`#post_${lastPostId}`).
-                should('contain.text', `Channel ~${channelName} exported:`);
-        });
+    });
+}
+
+function verifyExportBotMessage(channelName : string, userName = 'user-1', botName = 'channelexport') : void {
+    visitDMWithBot(userName, botName);
+
+    cy.getLastPostId().then((lastPostId: string) => {
+        cy.get(`#post_${lastPostId}`).
+            should('contain.text', `Channel ~${channelName} exported:`);
     });
 }
 Cypress.Commands.add('verifyExportBotMessage', verifyExportBotMessage);
+
+function verifyFileCanBeDownloaded(channelName : string, userName = 'user-1', botName = 'channelexport') : void {
+    visitDMWithBot(userName, botName);
+
+    cy.getLastPostId().then((lastPostId: string) => {
+        cy.get(`#post_${lastPostId}`).
+            should('contain.text', `Channel ~${channelName} exported:`).
+            within(() => {
+                cy.findByTestId('fileAttachmentList');
+                cy.get('a[download]').
+                    should('have.attr', 'href').
+                    should('match', /http:\/\/localhost:8065\/api\/v4\/files\/.*\?download=1/);
+            });
+    });
+}
+Cypress.Commands.add('verifyFileCanBeDownloaded', verifyFileCanBeDownloaded);

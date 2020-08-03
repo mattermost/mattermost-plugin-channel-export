@@ -28,11 +28,12 @@ describe('Test Area - Export', () => {
         });
     });
 
-    // it('ID 21 - The exported file can be downloaded locally', () => {
-    //     cy.visitNewPublicChannel();
-    //     cy.exportSlashCommand();
-    //     cy.verifyFileCanBeDownloaded();
-    // });
+    it('ID 21 - The exported file can be downloaded locally', () => {
+        cy.visitNewPublicChannel().then((channel: Channel) => {
+            cy.exportSlashCommand();
+            cy.verifyFileCanBeDownloaded(channel.display_name);
+        });
+    });
 
     // // it('ID 22 - Channel is exported in CSV file format', () => {
     // //     cy.visitNewPublicChannel();
