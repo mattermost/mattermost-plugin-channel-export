@@ -21,11 +21,12 @@ describe('Test Area - Export', () => {
         });
     });
 
-    // it('ID 20 - A bot message notifies of a successful export', () => {
-    //     cy.visitNewPublicChannel();
-    //     cy.exportSlashCommand();
-    //     cy.verifyExportBotMessage();
-    // });
+    it('ID 20 - A bot message notifies of a successful export', () => {
+        cy.visitNewPublicChannel().then((channel: Channel) => {
+            cy.exportSlashCommand();
+            cy.verifyExportBotMessage(channel.display_name);
+        });
+    });
 
     // it('ID 21 - The exported file can be downloaded locally', () => {
     //     cy.visitNewPublicChannel();

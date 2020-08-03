@@ -3,6 +3,7 @@
 
 import {Team} from 'mattermost-redux/types/teams';
 import {Channel} from 'mattermost-redux/types/channels';
+import {UserProfile} from 'mattermost-redux/types/users';
 
 function waitUntilPermanentPost() {
     cy.get('#postListContent').should('be.visible');
@@ -52,3 +53,23 @@ function verifyExportSystemMessage(channelName : string) : void {
     });
 }
 Cypress.Commands.add('verifyExportSystemMessage', verifyExportSystemMessage);
+
+function verifyExportBotMessage(channelName : string, userName = 'user-1', botName = 'channelexport') : void {
+    interface DM {
+        user: UserProfile;
+        bot: UserProfile;
+    }
+
+    cy.apiGetUserByUsername(userName).then((user: UserProfile) => {
+        return cy.apiGetUserByUsername(botName).then((bot: UserProfile) => {
+            return cy.wrap({user, bot});
+        });
+    }).then((dm: DM) => {
+        cy.get(`#sidebarItem_${dm.user.id}__${dm.bot.id}`).click();
+        cy.getLastPostId().then((lastPostId: string) => {
+            cy.get(`#post_${lastPostId}`).
+                should('contain.text', `Channel ~${channelName} exported:`);
+        });
+    });
+}
+Cypress.Commands.add('verifyExportBotMessage', verifyExportBotMessage);

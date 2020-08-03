@@ -3,6 +3,7 @@
 
 import {Team} from 'mattermost-redux/types/teams';
 import {Channel} from 'mattermost-redux/types/channels';
+import {UserProfile} from 'mattermost-redux/types/users';
 
 import users from '../fixtures/users';
 
@@ -64,6 +65,24 @@ function apiGetTeamByName(name: string) : Cypress.Chainable<Team> {
     });
 }
 Cypress.Commands.add('apiGetTeamByName', apiGetTeamByName);
+
+/**
+ * Get user by username directly via API
+ * This API assume that the user is logged in and has permission to access
+ * @param {String} name
+ * All parameter required
+ */
+Cypress.Commands.add('apiGetUserByUsername', (name: string) => {
+    return cy.request({
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        url: '/api/v4/users/username/' + name,
+    }).then((response) => {
+        expect(response.status).to.equal(200);
+
+        const user = response.body as UserProfile;
+        cy.wrap(user);
+    });
+});
 
 // // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // // See LICENSE.txt for license information.

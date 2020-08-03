@@ -9,6 +9,7 @@ declare namespace Cypress {
     // See https://stackoverflow.com/a/51114250/3248221 for more information
     type Channel = import('mattermost-redux/types/channels').Channel;
     type Team = import('mattermost-redux/types/teams').Team;
+    type UserProfile = import('mattermost-redux/types/users').UserProfile;
 
     interface Chainable<Subject> {
 
@@ -21,6 +22,7 @@ declare namespace Cypress {
         apiLogin(username?: string, password?: string | null): Chainable<Response>;
         apiCreatePublicChannel(teamId: string, name: string, displayName: string): Chainable<Channel>;
         apiGetTeamByName(name: string): Chainable<Team>;
+        apiGetUserByUsername(username: string): Chainable<UserProfile>;
 
         /**
          * Post a message in the current channel
@@ -51,7 +53,8 @@ declare namespace Cypress {
         // postMessages(): Chainable<Element>;
 
         // verifyChannelDoesNotExist(): Chainable<Element>;
-        // verifyExportBotMessage(): Chainable<Element>;
+        verifyExportBotMessage(channelName: string, userName?: string, botName?: string): Chainable<void>;
+
         // verifyExportCommandIsAvailable(): Chainable<Element>;
         verifyExportSystemMessage(channelName: string): Chainable<Element>;
 
