@@ -39,11 +39,11 @@ describe('Test Area - Export', () => {
         });
     });
 
-    // // it('ID 22 - Channel is exported in CSV file format', () => {
-    // //     cy.visitNewPublicChannel();
-    // //     cy.exportSlashCommand();
-    // //     cy.verifyFileExtension('csv');
-    // // });
+    // it('ID 22 - Channel is exported in CSV file format', () => {
+    //     cy.visitNewPublicChannel();
+    //     cy.exportSlashCommand();
+    //     cy.verifyFileExtension('csv');
+    // });
 
     it('ID 23 - Exported CSV filename has [channel-name].csv format', () => {
         cy.visitNewPublicChannel().then((channel: Channel) => {
@@ -53,25 +53,25 @@ describe('Test Area - Export', () => {
         });
     });
 
-    // // it('ID 24 - A bot message notifies of an unsuccessful export', () => {
-    // //     cy.visitNewPublicChannel();
-    // // });
+    // it('ID 24 - A bot message notifies of an unsuccessful export', () => {
+    //     cy.visitNewPublicChannel();
+    // });
 
-    // // it('ID 25 - Exported CSV has messages of a channel in chronological order', () => {
-    // //     cy.visitNewPublicChannel();
-    // // });
+    // it('ID 25 - Exported CSV has messages of a channel in chronological order', () => {
+    //     cy.visitNewPublicChannel();
+    // });
 
-    // // it('ID 26 - Exported CSV has date', () => {
-    // //     cy.visitNewPublicChannel();
-    // // });
+    // it('ID 26 - Exported CSV has date', () => {
+    //     cy.visitNewPublicChannel();
+    // });
 
-    // // it('ID 27 - Exported CSV has timestamp', () => {
-    // //     cy.visitNewPublicChannel();
-    // // });
+    // it('ID 27 - Exported CSV has timestamp', () => {
+    //     cy.visitNewPublicChannel();
+    // });
 
-    // // it('ID 28 - Exported CSV has message senders username', () => {
-    // //     cy.visitNewPublicChannel();
-    // // });
+    // it('ID 28 - Exported CSV has message senders username', () => {
+    //     cy.visitNewPublicChannel();
+    // });
 
     it('ID 29 - A channel with no messages can be exported successfully', () => {
         cy.visitNewPublicChannel().then((channel: Channel) => {
@@ -93,7 +93,7 @@ describe('Test Area - Export', () => {
         });
     });
 
-    // // it('ID 31 - A channel with media files can be exported successfully', () => {
-    // //     cy.visitNewPublicChannel();
-    // // });
+    // it('ID 31 - A channel with media files can be exported successfully', () => {
+    //     cy.visitNewPublicChannel();
+    // });
 });

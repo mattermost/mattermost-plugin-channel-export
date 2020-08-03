@@ -45,7 +45,7 @@ declare namespace Cypress {
 
         getLastPostId(): Chainable<string>;
 
-        // apiCreateReadOnlyChannel(): Chainable<Element>;
+        apiMakeChannelReadOnly(channelId: string): Chainable<Response>;
         apiExportChannel(channelId: string, expectedStatus?: number): Chainable<string>;
 
         archiveCurrentChannel(): Chainable<void>;
@@ -60,7 +60,6 @@ declare namespace Cypress {
         apiCreateMultiplePosts(channelId: string, numMessages: number): Chainable<void>;
         apiGetChannelByName(teamName: string, channelName: string) : Chainable<Channel>;
 
-        // verifyChannelDoesNotExist(): Chainable<Element>;
         verifyExportBotMessage(channelDisplayName: string): Chainable<void>;
 
         verifyExportCommandIsAvailable(): Chainable<void>;
@@ -70,20 +69,14 @@ declare namespace Cypress {
 
         verifyFileName(fileFormat: FileFormat, channelDisplayName: string, channelName: string): Chainable<void>;
 
-        // verifyNoExport(): Chainable<Element>;
         verifyNoPosts(channelDisplayName: string): Chainable<Channel>;
         verifyAtLeastPosts(channelDisplayName: string, numPosts: number): Chainable<Channel>;
-
-        // verifySuccessfulExport(): Chainable<Element>;
 
         visitNewDirectMessage(creatorName: string, otherName: string): Chainable<Channel>;
         visitNewGroupMessage(userNames: string[]): Chainable<Channel>;
 
-        // visitNewPrivateChannel(): Chainable<Element>;
         visitNewPublicChannel(): Chainable<Channel>;
         visitNewPrivateChannel(): Chainable<Channel>;
         visitDMWithBot(userName: string, botName?: string): Chainable<Channel>;
-
-        // visitSelfDM(): Chainable<Element>;
     }
 }

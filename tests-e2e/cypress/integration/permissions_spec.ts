@@ -133,11 +133,18 @@ describe('Test Area - Permissions', () => {
         });
     });
 
-    // it('ID 18 - User can export a read-only channel', () => {
-    //     cy.apiCreateReadOnlyChannel().then((channel) => {
-    //         ay.apiExportChannel(channel);
-    //         cy.verifySuccessfulExport();
-    //     });
+    it('ID 18 - User can export a read-only channel', () => {
+        cy.visitNewPublicChannel().then((channel: Channel) => {
+            cy.apiLogin('sysadmin').then(() => {
+                cy.apiMakeChannelReadOnly(channel.id);
+            });
 
-    // });
+            cy.apiLogin('user-1').then(() => {
+                cy.visit(`/ad-1/channels/${channel.name}`);
+                cy.apiExportChannel(channel.id).then((fileContents: string) => {
+                    expect(fileContents).to.contain(fileHeader);
+                });
+            });
+        });
+    });
 });
