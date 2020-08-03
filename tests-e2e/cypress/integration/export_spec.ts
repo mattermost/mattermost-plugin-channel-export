@@ -5,6 +5,8 @@
 import '@testing-library/cypress/add-commands';
 import {Channel} from 'mattermost-redux/types/channels';
 
+import {FileFormat} from '../support/ui_commands';
+
 describe('Test Area - Export', () => {
     beforeEach(() => {
         // # Login as non-admin user
@@ -17,21 +19,23 @@ describe('Test Area - Export', () => {
     it('ID 19 - A system message notifies of successful export command execution on the channel where export is initiated', () => {
         cy.visitNewPublicChannel().then((channel: Channel) => {
             cy.exportSlashCommand();
-            cy.verifyExportSystemMessage(channel.display_name);
+            cy.verifyExportSystemMessage(channel);
         });
     });
 
     it('ID 20 - A bot message notifies of a successful export', () => {
         cy.visitNewPublicChannel().then((channel: Channel) => {
             cy.exportSlashCommand();
-            cy.verifyExportBotMessage(channel.display_name);
+            cy.visitDMWithBot('user-1');
+            cy.verifyExportBotMessage(channel);
         });
     });
 
     it('ID 21 - The exported file can be downloaded locally', () => {
         cy.visitNewPublicChannel().then((channel: Channel) => {
             cy.exportSlashCommand();
-            cy.verifyFileCanBeDownloaded(channel.display_name);
+            cy.visitDMWithBot('user-1');
+            cy.verifyFileCanBeDownloaded(channel);
         });
     });
 
@@ -41,12 +45,13 @@ describe('Test Area - Export', () => {
     // //     cy.verifyFileExtension('csv');
     // // });
 
-    // it('ID 23 - Exported CSV filename has [channel-name].csv format', () => {
-    //     cy.visitNewPublicChannel().then((channel) => {
-    //         cy.exportSlashCommand();
-    //         cy.verifyFileName(channel, 'csv');
-    //     });
-    // });
+    it('ID 23 - Exported CSV filename has [channel-name].csv format', () => {
+        cy.visitNewPublicChannel().then((channel) => {
+            cy.exportSlashCommand();
+            cy.visitDMWithBot('user-1');
+            cy.verifyFileName(FileFormat.CSV, channel);
+        });
+    });
 
     // // it('ID 24 - A bot message notifies of an unsuccessful export', () => {
     // //     cy.visitNewPublicChannel();

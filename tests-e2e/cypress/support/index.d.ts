@@ -10,6 +10,7 @@ declare namespace Cypress {
     type Channel = import('mattermost-redux/types/channels').Channel;
     type Team = import('mattermost-redux/types/teams').Team;
     type UserProfile = import('mattermost-redux/types/users').UserProfile;
+    type FileFormat = import('./ui_commands').FileFormat;
 
     interface Chainable<Subject> {
 
@@ -53,15 +54,15 @@ declare namespace Cypress {
         // postMessages(): Chainable<Element>;
 
         // verifyChannelDoesNotExist(): Chainable<Element>;
-        verifyExportBotMessage(channelName: string, userName?: string, botName?: string): Chainable<void>;
+        verifyExportBotMessage(channel: Channel): Chainable<void>;
 
         // verifyExportCommandIsAvailable(): Chainable<Element>;
-        verifyExportSystemMessage(channelName: string): Chainable<Element>;
+        verifyExportSystemMessage(channel: Channel): Chainable<void>;
 
-        verifyFileCanBeDownloaded(channelName : string, userName? : string, botName? :string): Chainable<void>;
+        verifyFileCanBeDownloaded(channel: Channel): Chainable<void>;
 
-        // verifyFileExtension(): Chainable<Element>;
-        // verifyFileName(): Chainable<Element>;
+        verifyFileName(fileFormat: FileFormat, channel: Channel): Chainable<void>;
+
         // verifyNoExport(): Chainable<Element>;
         // verifyNoPosts(): Chainable<Element>;
         // verifySuccessfulExport(): Chainable<Element>;
@@ -70,6 +71,7 @@ declare namespace Cypress {
         // visitNewGroupMessage(): Chainable<Element>;
         // visitNewPrivateChannel(): Chainable<Element>;
         visitNewPublicChannel(): Chainable<Channel>;
+        visitDMWithBot(userName: string, botName?: string): Chainable<Channel>;
 
         // visitSelfDM(): Chainable<Element>;
     }
