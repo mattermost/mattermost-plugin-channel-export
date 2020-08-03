@@ -107,26 +107,31 @@ describe('Test Area - Permissions', () => {
         });
     });
 
-    // it('ID 17 - User cannot export a channel once they are ‘kicked’ from the channel', () => {
-    //     cy.apiLogin('user-2');
-    //     cy.visitNewPublicChannel().then((channel) => {
-    //         cy.inviteUser('user-1');
+    it('ID 17 - User cannot export a channel once they are ‘kicked’ from the channel', () => {
+        let channel: Channel;
 
-    //         cy.apiLogin('user-1');
-    //         cy.visit(channel);
-    //         cy.verifyExportCommandIsAvailable();
+        cy.apiLogin('sysadmin').then(() => {
+            cy.visitNewPublicChannel().then((newChannel) => {
+                channel = newChannel;
+                cy.inviteUser('user-1');
+            });
+        });
 
-    //         cy.apiLogin('user-2');
-    //         cy.kickUser('user-1');
+        cy.apiLogin('user-1').then(() => {
+            cy.visit(`/ad-1/channels/${channel.name}`);
+            cy.verifyExportCommandIsAvailable();
+        });
 
-    //         cy.apiLogin('user-1');
-    //         cy.visit(channel);
-    //         cy.verifyChannelDoesNotExist(channel);
+        cy.apiLogin('sysadmin').then(() => {
+            cy.visit(`/ad-1/channels/${channel.name}`);
+            cy.kickUser('user-1');
+        });
 
-    //         cy.apiExportChannel(channel);
-    //         cy.verifyNoExport();
-    //     });
-    // });
+        cy.apiLogin('user-1').then(() => {
+            cy.visit('/ad-1/channels/town-square');
+            cy.apiExportChannel(channel.id, httpStatusNotFound);
+        });
+    });
 
     // it('ID 18 - User can export a read-only channel', () => {
     //     cy.apiCreateReadOnlyChannel().then((channel) => {

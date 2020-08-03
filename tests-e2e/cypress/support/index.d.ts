@@ -53,8 +53,8 @@ declare namespace Cypress {
 
         leaveCurrentChannel(): Chainable<void>;
 
-        // inviteUser(): Chainable<Element>;
-        // kickUser(): Chainable<Element>;
+        inviteUser(userName: string): Chainable<void>;
+        kickUser(userName: string): Chainable<void>;
 
         apiCreatePost(channelId: string, message: string, fileIds?: string[]): Chainable<void>;
         apiCreateMultiplePosts(channelId: string, numMessages: number): Chainable<void>;
@@ -63,7 +63,7 @@ declare namespace Cypress {
         // verifyChannelDoesNotExist(): Chainable<Element>;
         verifyExportBotMessage(channelDisplayName: string): Chainable<void>;
 
-        // verifyExportCommandIsAvailable(): Chainable<Element>;
+        verifyExportCommandIsAvailable(): Chainable<void>;
         verifyExportSystemMessage(channelDisplayName: string): Chainable<void>;
 
         verifyFileCanBeDownloaded(channelDisplayName: string): Chainable<void>;

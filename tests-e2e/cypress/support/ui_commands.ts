@@ -179,3 +179,39 @@ function leaveCurrentChannel() : void {
     cy.get('#channelLeaveChannel').click();
 }
 Cypress.Commands.add('leaveCurrentChannel', leaveCurrentChannel);
+
+function inviteUser(userName: string): void {
+    cy.get('#channelHeaderDropdownIcon').click();
+    cy.get('#channelAddMembers').click();
+    cy.get('#selectItems').type(userName);
+
+    cy.get('#multiSelectList').within(() => {
+        cy.findByText(`@${userName}`).click({force: true});
+    });
+
+    cy.get('#saveItems').click();
+
+    cy.getLastPostId().then((lastPostId: string) => {
+        cy.get(`#post_${lastPostId}`).
+            should('contain.text', `@${userName} added to the channel by you.`);
+    });
+}
+Cypress.Commands.add('inviteUser', inviteUser);
+
+function verifyExportCommandIsAvailable() : void {
+    cy.findByTestId('post_textbox').clear().type('/export');
+    cy.get('#suggestionList').within(() => {
+        cy.get('div.slash-command__desc').should('contain', 'Export the current channel');
+    });
+}
+Cypress.Commands.add('verifyExportCommandIsAvailable', verifyExportCommandIsAvailable);
+
+function kickUser(userName: string): void {
+    cy.postMessage(`/kick @${userName} {enter}`);
+
+    cy.getLastPostId().then((lastPostId: string) => {
+        cy.get(`#post_${lastPostId}`).
+            should('contain.text', `@${userName} was removed from the channel.`);
+    });
+}
+Cypress.Commands.add('kickUser', kickUser);
