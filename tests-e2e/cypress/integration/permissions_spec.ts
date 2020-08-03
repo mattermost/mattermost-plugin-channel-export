@@ -6,6 +6,8 @@ import '@testing-library/cypress/add-commands';
 import {Channel} from 'mattermost-redux/types/channels';
 import {UserProfile} from 'mattermost-redux/types/users';
 
+import {httpStatusNotFound} from '../support/constants';
+
 describe('Test Area - Permissions', () => {
     const fileHeader =
     'Post Creation Time,User Id,User Email,User Type,User Name,Post Id,Parent Post Id,Post Message,Post Type';
@@ -98,13 +100,12 @@ describe('Test Area - Permissions', () => {
         });
     });
 
-    // it('ID 15 (2nd one) - User cannot export a channel they are not added to', () => {
-    //     cy.visitNewPublicChannel().then((channel) => {
-    //         cy.leaveChannel();
-    //         cy.apiExportChannel(channel);
-    //         cy.verifyNoExport();
-    //     });
-    // });
+    it('ID 15 (2nd one) - User cannot export a channel they are not added to', () => {
+        cy.visitNewPublicChannel().then((channel) => {
+            cy.leaveCurrentChannel();
+            cy.apiExportChannel(channel.id, 404);
+        });
+    });
 
     // it('ID 17 - User cannot export a channel once they are ‘kicked’ from the channel', () => {
     //     cy.apiLogin('user-2');

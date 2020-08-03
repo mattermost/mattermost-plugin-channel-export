@@ -46,12 +46,12 @@ declare namespace Cypress {
         getLastPostId(): Chainable<string>;
 
         // apiCreateReadOnlyChannel(): Chainable<Element>;
-        apiExportChannel(channelId: string): Chainable<string>;
+        apiExportChannel(channelId: string, expectedStatus?: number): Chainable<string>;
 
         archiveCurrentChannel(): Chainable<void>;
         unarchiveCurrentChannel(): Chainable<void>;
 
-        // leaveChannel(): Chainable<Element>;
+        leaveCurrentChannel(): Chainable<void>;
 
         // inviteUser(): Chainable<Element>;
         // kickUser(): Chainable<Element>;

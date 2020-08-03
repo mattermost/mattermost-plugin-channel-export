@@ -173,3 +173,9 @@ function unarchiveCurrentChannel() : void {
     cy.get('#unarchiveChannelModalDeleteButton').click();
 }
 Cypress.Commands.add('unarchiveCurrentChannel', unarchiveCurrentChannel);
+
+function leaveCurrentChannel() : void {
+    cy.get('#channelHeaderDropdownIcon').click();
+    cy.get('#channelLeaveChannel').click();
+}
+Cypress.Commands.add('leaveCurrentChannel', leaveCurrentChannel);

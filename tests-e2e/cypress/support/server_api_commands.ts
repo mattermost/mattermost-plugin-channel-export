@@ -7,14 +7,12 @@ import {UserProfile} from 'mattermost-redux/types/users';
 import {Post} from 'mattermost-redux/types/posts';
 
 import users from '../fixtures/users';
+import {httpStatusOk, httpStatusCreated} from '../support/constants';
 
 // *****************************************************************************
 // Authentication
 // https://api.mattermost.com/#tag/authentication
 // *****************************************************************************
-
-const httpStatusOk = 200;
-const httpStatusCreated = 201;
 
 function apiLogin(username = 'user-1', password : string | null = null) : Cypress.Chainable<Cypress.Response> {
     return cy.request({
@@ -125,7 +123,7 @@ function apiGetChannelByName(teamName: string, channelName: string) : Cypress.Ch
 }
 Cypress.Commands.add('apiGetChannelByName', apiGetChannelByName);
 
-function apiExportChannel(channelId: string) : Cypress.Chainable<string> {
+function apiExportChannel(channelId: string, expectedStatus: number = httpStatusOk) : Cypress.Chainable<string> {
     const endpoint = '/plugins/com.mattermost.plugin-channel-export/api/v1/export';
     const queryString = `?format=csv&channel_id=${channelId}`;
 
@@ -133,8 +131,9 @@ function apiExportChannel(channelId: string) : Cypress.Chainable<string> {
         headers: {'X-Requested-With': 'XMLHttpRequest'},
         url: endpoint + queryString,
         method: 'GET',
+        failOnStatusCode: false,
     }).then((response: Cypress.Response) => {
-        expect(response.status).to.equal(httpStatusOk);
+        expect(response.status).to.equal(expectedStatus);
 
         const file = response.body as string;
         return cy.wrap(file);
