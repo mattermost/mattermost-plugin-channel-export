@@ -166,3 +166,10 @@ function archiveCurrentChannel() : void {
     cy.get('#deleteChannelModalDeleteButton').click();
 }
 Cypress.Commands.add('archiveCurrentChannel', archiveCurrentChannel);
+
+function unarchiveCurrentChannel() : void {
+    cy.get('#channelHeaderDropdownIcon').click();
+    cy.get('#channelUnarchiveChannel').click();
+    cy.get('#unarchiveChannelModalDeleteButton').click();
+}
+Cypress.Commands.add('unarchiveCurrentChannel', unarchiveCurrentChannel);

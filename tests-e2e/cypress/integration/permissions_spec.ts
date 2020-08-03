@@ -80,14 +80,23 @@ describe('Test Area - Permissions', () => {
         });
     });
 
-    // it('ID 16 - User can export an unarchived channel', () => {
-    //     cy.visitNewPublicChannel().then((channel) => {
-    //         cy.archiveChannel(channel);
-    //         cy.unarchiveChannel(channel);
-    //     });
-    //     cy.exportSlashCommand();
-    //     cy.verifySuccessfulExport();
-    // });
+    it('ID 16 - User can export an unarchived channel', () => {
+        cy.visitNewPublicChannel().then((channel: Channel) => {
+            cy.archiveCurrentChannel();
+
+            cy.apiLogin('sysadmin').then(() => {
+                cy.visit(`/ad-1/channels/${channel.name}`);
+                cy.unarchiveCurrentChannel();
+            });
+
+            cy.apiLogin('user-1').then(() => {
+                cy.visit(`/ad-1/channels/${channel.name}`);
+                cy.exportSlashCommand();
+                cy.visitDMWithBot('user-1');
+                cy.verifyFileCanBeDownloaded(channel.display_name);
+            });
+        });
+    });
 
     // it('ID 15 (2nd one) - User cannot export a channel they are not added to', () => {
     //     cy.visitNewPublicChannel().then((channel) => {
