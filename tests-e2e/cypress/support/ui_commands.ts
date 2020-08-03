@@ -159,3 +159,10 @@ function verifyAtLeastPosts(channelName: string, numPosts: number) : Cypress.Cha
     });
 }
 Cypress.Commands.add('verifyAtLeastPosts', verifyAtLeastPosts);
+
+function archiveCurrentChannel() : void {
+    cy.get('#channelHeaderDropdownIcon').click();
+    cy.get('#channelArchiveChannel').click();
+    cy.get('#deleteChannelModalDeleteButton').click();
+}
+Cypress.Commands.add('archiveCurrentChannel', archiveCurrentChannel);

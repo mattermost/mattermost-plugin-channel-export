@@ -125,6 +125,23 @@ function apiGetChannelByName(teamName: string, channelName: string) : Cypress.Ch
 }
 Cypress.Commands.add('apiGetChannelByName', apiGetChannelByName);
 
+function apiExportChannel(channelId: string) : Cypress.Chainable<string> {
+    const endpoint = '/plugins/com.mattermost.plugin-channel-export/api/v1/export';
+    const queryString = `?format=csv&channel_id=${channelId}`;
+
+    return cy.request({
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        url: endpoint + queryString,
+        method: 'GET',
+    }).then((response: Cypress.Response) => {
+        expect(response.status).to.equal(httpStatusOk);
+
+        const file = response.body as string;
+        return cy.wrap(file);
+    });
+}
+Cypress.Commands.add('apiExportChannel', apiExportChannel);
+
 // // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // // See LICENSE.txt for license information.
 

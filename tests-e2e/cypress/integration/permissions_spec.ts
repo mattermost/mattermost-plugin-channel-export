@@ -7,6 +7,9 @@ import {Channel} from 'mattermost-redux/types/channels';
 import {UserProfile} from 'mattermost-redux/types/users';
 
 describe('Test Area - Permissions', () => {
+    const fileHeader =
+    'Post Creation Time,User Id,User Email,User Type,User Name,Post Id,Parent Post Id,Post Message,Post Type';
+
     beforeEach(() => {
         // # Login as non-admin user
         cy.apiLogin('user-1');
@@ -68,13 +71,14 @@ describe('Test Area - Permissions', () => {
         });
     });
 
-    // it('ID 15 - User can export archived channel', () => {
-    //     cy.visitNewPublicChannel().then((channel) => {
-    //         cy.archiveChannel(channel);
-    //         cy.apiExportChannel(channel);
-    //         cy.verifySuccessfulExport();
-    //     });
-    // });
+    it('ID 15 - User can export archived channel', () => {
+        cy.visitNewPublicChannel().then((channel: Channel) => {
+            cy.archiveCurrentChannel();
+            cy.apiExportChannel(channel.id).then((fileContents: string) => {
+                expect(fileContents).to.contain(fileHeader);
+            });
+        });
+    });
 
     // it('ID 16 - User can export an unarchived channel', () => {
     //     cy.visitNewPublicChannel().then((channel) => {
