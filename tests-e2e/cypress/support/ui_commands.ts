@@ -112,3 +112,9 @@ function verifyFileName(fileFormat: FileFormat, channel : Channel) : void {
     });
 }
 Cypress.Commands.add('verifyFileName', verifyFileName);
+
+function verifyNoPosts() : void {
+    // There is always one post: the system announcing the user joined
+    cy.findByTestId('postView').should('have.length', 1);
+}
+Cypress.Commands.add('verifyNoPosts', verifyNoPosts);

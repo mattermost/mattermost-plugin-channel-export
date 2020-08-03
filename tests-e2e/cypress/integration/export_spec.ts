@@ -73,12 +73,14 @@ describe('Test Area - Export', () => {
     // //     cy.visitNewPublicChannel();
     // // });
 
-    // it('ID 29 - A channel with no messages can be exported successfully', () => {
-    //     cy.visitNewPublicChannel();
-    //     cy.verifyNoPosts();
-    //     cy.exportSlashCommand();
-    //     cy.verifySuccessfulExport();
-    // });
+    it('ID 29 - A channel with no messages can be exported successfully', () => {
+        cy.visitNewPublicChannel().then((channel) => {
+            cy.verifyNoPosts();
+            cy.exportSlashCommand();
+            cy.visitDMWithBot('user-1');
+            cy.verifyFileCanBeDownloaded(channel);
+        });
+    });
 
     // it('ID 30 - A channel with more than 100 messages can be exported successfully', () => {
     //     cy.visitNewPublicChannel();

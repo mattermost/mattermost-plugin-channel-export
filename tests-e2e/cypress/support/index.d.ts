@@ -64,7 +64,8 @@ declare namespace Cypress {
         verifyFileName(fileFormat: FileFormat, channel: Channel): Chainable<void>;
 
         // verifyNoExport(): Chainable<Element>;
-        // verifyNoPosts(): Chainable<Element>;
+        verifyNoPosts(): Chainable<void>;
+
         // verifySuccessfulExport(): Chainable<Element>;
 
         // visitNewDirectMessage(): Chainable<Element>;
