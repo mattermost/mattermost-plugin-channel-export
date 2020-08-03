@@ -4,6 +4,7 @@
 
 import '@testing-library/cypress/add-commands';
 import {Channel} from 'mattermost-redux/types/channels';
+import {UserProfile} from 'mattermost-redux/types/users';
 
 describe('Test Area - Permissions', () => {
     beforeEach(() => {
@@ -47,11 +48,14 @@ describe('Test Area - Permissions', () => {
         });
     });
 
-    // it('ID 13 - User can export a direct message channel with sefl', () => {
-    //     cy.visitSelfDM();
-    //     cy.exportSlashCommand();
-    //     cy.verifySuccessfulExport();
-    // });
+    it('ID 13 - User can export a direct message channel with self', () => {
+        cy.apiGetUserByUsername('user-1').then((user: UserProfile) => {
+            cy.visit('/ad-1/messages/@user-1');
+            cy.exportSlashCommand();
+            cy.visitDMWithBot('user-1');
+            cy.verifyFileCanBeDownloaded(`${user.id}__${user.id}`);
+        });
+    });
 
     // it('ID 14 - User can export a bot message channel', () => {
     //     cy.visitNewGroupMessage();
