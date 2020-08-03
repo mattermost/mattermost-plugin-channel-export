@@ -113,8 +113,17 @@ function verifyFileName(fileFormat: FileFormat, channel : Channel) : void {
 }
 Cypress.Commands.add('verifyFileName', verifyFileName);
 
-function verifyNoPosts() : void {
-    // There is always one post: the system announcing the user joined
-    cy.findByTestId('postView').should('have.length', 1);
+function verifyNoPosts(channelName: string) : Cypress.Chainable<Channel> {
+    return cy.apiGetChannelByName('ad-1', channelName).then((channel: Channel) => {
+        // There is always one post: the system announcing the user joined
+        expect(channel.total_msg_count).at.most(1);
+    });
 }
 Cypress.Commands.add('verifyNoPosts', verifyNoPosts);
+
+function verifyAtLeastPosts(channelName: string, numPosts: number) : Cypress.Chainable<Channel> {
+    return cy.apiGetChannelByName('ad-1', channelName).then((channel: Channel) => {
+        expect(channel.total_msg_count).at.least(numPosts);
+    });
+}
+Cypress.Commands.add('verifyAtLeastPosts', verifyAtLeastPosts);

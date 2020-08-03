@@ -46,7 +46,7 @@ describe('Test Area - Export', () => {
     // // });
 
     it('ID 23 - Exported CSV filename has [channel-name].csv format', () => {
-        cy.visitNewPublicChannel().then((channel) => {
+        cy.visitNewPublicChannel().then((channel: Channel) => {
             cy.exportSlashCommand();
             cy.visitDMWithBot('user-1');
             cy.verifyFileName(FileFormat.CSV, channel);
@@ -74,22 +74,24 @@ describe('Test Area - Export', () => {
     // // });
 
     it('ID 29 - A channel with no messages can be exported successfully', () => {
-        cy.visitNewPublicChannel().then((channel) => {
-            cy.verifyNoPosts();
+        cy.visitNewPublicChannel().then((channel: Channel) => {
+            cy.verifyNoPosts(channel.name);
             cy.exportSlashCommand();
             cy.visitDMWithBot('user-1');
             cy.verifyFileCanBeDownloaded(channel);
         });
     });
 
-    // it('ID 30 - A channel with more than 100 messages can be exported successfully', () => {
-    //     cy.visitNewPublicChannel();
+    it('ID 30 - A channel with more than 100 messages can be exported successfully', () => {
+        const minPosts = 100;
+        cy.verifyAtLeastPosts('minima-3', minPosts).then((channel: Channel) => {
+            cy.visit('/ad-1/channels/minima-3');
 
-    //     const numMessages = 150;
-    //     cy.postMessages(numMessages);
-    //     cy.exportSlashCommand();
-    //     cy.verifySuccessfulExport();
-    // });
+            cy.exportSlashCommand();
+            cy.visitDMWithBot('user-1');
+            cy.verifyFileCanBeDownloaded(channel);
+        });
+    });
 
     // // it('ID 31 - A channel with media files can be exported successfully', () => {
     // //     cy.visitNewPublicChannel();

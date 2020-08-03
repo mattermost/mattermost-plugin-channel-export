@@ -4,6 +4,7 @@
 import {Team} from 'mattermost-redux/types/teams';
 import {Channel} from 'mattermost-redux/types/channels';
 import {UserProfile} from 'mattermost-redux/types/users';
+import {Post} from 'mattermost-redux/types/posts';
 
 import users from '../fixtures/users';
 
@@ -66,23 +67,60 @@ function apiGetTeamByName(name: string) : Cypress.Chainable<Team> {
 }
 Cypress.Commands.add('apiGetTeamByName', apiGetTeamByName);
 
-/**
- * Get user by username directly via API
- * This API assume that the user is logged in and has permission to access
- * @param {String} name
- * All parameter required
- */
-Cypress.Commands.add('apiGetUserByUsername', (name: string) => {
+function apiGetUserByUsername(name: string) : Cypress.Chainable<UserProfile> {
     return cy.request({
         headers: {'X-Requested-With': 'XMLHttpRequest'},
         url: '/api/v4/users/username/' + name,
-    }).then((response) => {
-        expect(response.status).to.equal(200);
+        method: 'GET',
+    }).then((response: Cypress.Response) => {
+        expect(response.status).to.equal(httpStatusOk);
 
         const user = response.body as UserProfile;
-        cy.wrap(user);
+        return cy.wrap(user);
     });
-});
+}
+Cypress.Commands.add('apiGetUserByUsername', apiGetUserByUsername);
+
+function apiCreatePost(channelId: string, message: string, fileIds: string[] = []) : Cypress.Chainable<Post> {
+    return cy.request({
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        url: '/api/v4/posts',
+        method: 'POST',
+        body: {
+            channel_id: channelId,
+            message,
+            file_ids: fileIds,
+        },
+    }).then((response: Cypress.Response) => {
+        expect(response.status).to.equal(httpStatusCreated);
+
+        const post = response.body as Post;
+        return cy.wrap(post);
+    });
+}
+Cypress.Commands.add('apiCreatePost', apiCreatePost);
+
+function apiCreateMultiplePosts(channelId: string, numMessages: number) : void {
+    for (let i = 0; i < numMessages; i++) {
+        cy.apiCreatePost(channelId, 'lorem ipsum ' + i);
+    }
+}
+Cypress.Commands.add('apiCreateMultiplePosts', apiCreateMultiplePosts);
+
+function apiGetChannelByName(teamName: string, channelName: string) : Cypress.Chainable<Channel> {
+    return cy.request({
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        url: `/api/v4/teams/name/ad-1/channels/name/${channelName}`,
+        method: 'GET',
+        body: {},
+    }).then((response: Cypress.Response) => {
+        expect(response.status).to.equal(httpStatusOk);
+
+        const channel = response.body as Channel;
+        return cy.wrap(channel);
+    });
+}
+Cypress.Commands.add('apiGetChannelByName', apiGetChannelByName);
 
 // // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // // See LICENSE.txt for license information.
