@@ -57,11 +57,16 @@ describe('Test Area - Permissions', () => {
         });
     });
 
-    // it('ID 14 - User can export a bot message channel', () => {
-    //     cy.visitNewGroupMessage();
-    //     cy.exportSlashCommand();
-    //     cy.verifySuccessfulExport();
-    // });
+    it('ID 14 - User can export a bot message channel', () => {
+        cy.visitDMWithBot('user-1');
+        cy.exportSlashCommand();
+
+        cy.apiGetUserByUsername('user-1').then((user: UserProfile) => {
+            cy.apiGetUserByUsername('channelexport').then((bot: UserProfile) => {
+                cy.verifyFileCanBeDownloaded(`${user.id}__${bot.id}`);
+            });
+        });
+    });
 
     // it('ID 15 - User can export archived channel', () => {
     //     cy.visitNewPublicChannel().then((channel) => {
