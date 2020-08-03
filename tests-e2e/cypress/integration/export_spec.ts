@@ -19,7 +19,7 @@ describe('Test Area - Export', () => {
     it('ID 19 - A system message notifies of successful export command execution on the channel where export is initiated', () => {
         cy.visitNewPublicChannel().then((channel: Channel) => {
             cy.exportSlashCommand();
-            cy.verifyExportSystemMessage(channel);
+            cy.verifyExportSystemMessage(channel.display_name);
         });
     });
 
@@ -27,7 +27,7 @@ describe('Test Area - Export', () => {
         cy.visitNewPublicChannel().then((channel: Channel) => {
             cy.exportSlashCommand();
             cy.visitDMWithBot('user-1');
-            cy.verifyExportBotMessage(channel);
+            cy.verifyExportBotMessage(channel.display_name);
         });
     });
 
@@ -35,7 +35,7 @@ describe('Test Area - Export', () => {
         cy.visitNewPublicChannel().then((channel: Channel) => {
             cy.exportSlashCommand();
             cy.visitDMWithBot('user-1');
-            cy.verifyFileCanBeDownloaded(channel);
+            cy.verifyFileCanBeDownloaded(channel.display_name);
         });
     });
 
@@ -49,7 +49,7 @@ describe('Test Area - Export', () => {
         cy.visitNewPublicChannel().then((channel: Channel) => {
             cy.exportSlashCommand();
             cy.visitDMWithBot('user-1');
-            cy.verifyFileName(FileFormat.CSV, channel);
+            cy.verifyFileName(FileFormat.CSV, channel.display_name, channel.name);
         });
     });
 
@@ -78,7 +78,7 @@ describe('Test Area - Export', () => {
             cy.verifyNoPosts(channel.name);
             cy.exportSlashCommand();
             cy.visitDMWithBot('user-1');
-            cy.verifyFileCanBeDownloaded(channel);
+            cy.verifyFileCanBeDownloaded(channel.display_name);
         });
     });
 
@@ -89,7 +89,7 @@ describe('Test Area - Export', () => {
 
             cy.exportSlashCommand();
             cy.visitDMWithBot('user-1');
-            cy.verifyFileCanBeDownloaded(channel);
+            cy.verifyFileCanBeDownloaded(channel.display_name);
         });
     });
 

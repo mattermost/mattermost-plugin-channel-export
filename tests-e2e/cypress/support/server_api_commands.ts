@@ -259,23 +259,26 @@ Cypress.Commands.add('apiGetChannelByName', apiGetChannelByName);
 //     });
 // });
 
-// /**
-//  * Creates a group channel directly via API
-//  * This API assume that the user is logged in and has cookie to access
-//  * @param {String} userIds - IDs of users as member of the group
-//  * All parameters required except purpose and header
-//  */
-// Cypress.Commands.add('apiCreateGroup', (userIds = []) => {
-//     return cy.request({
-//         headers: {'X-Requested-With': 'XMLHttpRequest'},
-//         url: '/api/v4/channels/group',
-//         method: 'POST',
-//         body: userIds,
-//     }).then((response) => {
-//         expect(response.status).to.equal(201);
-//         return cy.wrap(response);
-//     });
-// });
+/**
+ * Creates a group channel directly via API
+ * This API assume that the user is logged in and has cookie to access
+ * @param {String} userIds - IDs of users as member of the group
+ * All parameters required except purpose and header
+ */
+function apiCreateGroupMessage(userIds : string[]) : Cypress.Chainable<Channel> {
+    return cy.request({
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        url: '/api/v4/channels/group',
+        method: 'POST',
+        body: userIds,
+    }).then((response: Cypress.Response) => {
+        expect(response.status).to.equal(httpStatusCreated);
+
+        const channel = response.body as Channel;
+        return cy.wrap(channel);
+    });
+}
+Cypress.Commands.add('apiCreateGroupMessage', apiCreateGroupMessage);
 
 // /**
 //  * Gets current user's teams
@@ -292,20 +295,22 @@ Cypress.Commands.add('apiGetChannelByName', apiGetChannelByName);
 //     });
 // });
 
-// /**
-// * Gets users
-// */
-// Cypress.Commands.add('apiGetUsers', (usernames : string[] = []) => {
-//     return cy.request({
-//         headers: {'X-Requested-With': 'XMLHttpRequest'},
-//         url: '/api/v4/users/usernames',
-//         method: 'POST',
-//         body: usernames,
-//     }).then((response: Cypress.Response) => {
-//         expect(response.status).to.equal(httpStatusOk);
-//         return cy.wrap(response);
-//     });
-// });
+/**
+* Gets users
+*/
+Cypress.Commands.add('apiGetUsers', (usernames : string[] = []) => {
+    return cy.request({
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        url: '/api/v4/users/usernames',
+        method: 'POST',
+        body: usernames,
+    }).then((response: Cypress.Response) => {
+        expect(response.status).to.equal(httpStatusOk);
+
+        const userList = response.body as UserProfile[];
+        return cy.wrap(userList);
+    });
+});
 
 // Cypress.Commands.add('apiCreateGroupChannel', (userList = [], teamName) => {
 //     cy.apiGetUsers(userList).then((res) => {

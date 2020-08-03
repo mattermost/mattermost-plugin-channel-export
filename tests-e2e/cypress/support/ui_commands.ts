@@ -47,6 +47,18 @@ function visitNewChannel(channelType: ChannelType) : (() => Cypress.Chainable<Ch
 Cypress.Commands.add('visitNewPublicChannel', visitNewChannel('O'));
 Cypress.Commands.add('visitNewPrivateChannel', visitNewChannel('P'));
 
+function visitNewGroupMessage(userNames: string[]) : Cypress.Chainable<Channel> {
+    return cy.apiGetUsers(userNames).then((users : UserProfile[]) => {
+        const userIds = users.map((u) => u.id);
+
+        return cy.apiCreateGroupMessage(userIds).then((channel: Channel) => {
+            cy.visit(`/ad-1/messages/${channel.name}`);
+            return cy.wrap(channel);
+        });
+    });
+}
+Cypress.Commands.add('visitNewGroupMessage', visitNewGroupMessage);
+
 function getLastPostId() : Cypress.Chainable<string> {
     waitUntilPermanentPost();
 
@@ -55,11 +67,11 @@ function getLastPostId() : Cypress.Chainable<string> {
 }
 Cypress.Commands.add('getLastPostId', getLastPostId);
 
-function verifyExportSystemMessage(channel : Channel) : void {
+function verifyExportSystemMessage(channelDisplayName : string) : void {
     cy.getLastPostId().then((lastPostId: string) => {
         cy.get(`#post_${lastPostId}`).
             should('contain.text',
-                `Exporting ~${channel.display_name}. @channelexport will send you a direct message when the export is ready.`);
+                `Exporting ~${channelDisplayName}. @channelexport will send you a direct message when the export is ready.`);
     });
 }
 Cypress.Commands.add('verifyExportSystemMessage', verifyExportSystemMessage);
@@ -80,18 +92,18 @@ function visitDMWithBot(userName: string, botName = 'channelexport') : void {
 }
 Cypress.Commands.add('visitDMWithBot', visitDMWithBot);
 
-function verifyExportBotMessage(channel : Channel) : void {
+function verifyExportBotMessage(channelDisplayName : string) : void {
     cy.getLastPostId().then((lastPostId: string) => {
         cy.get(`#post_${lastPostId}`).
-            should('contain.text', `Channel ~${channel.display_name} exported:`);
+            should('contain.text', `Channel ~${channelDisplayName} exported:`);
     });
 }
 Cypress.Commands.add('verifyExportBotMessage', verifyExportBotMessage);
 
-function verifyFileCanBeDownloaded(channel : Channel) : void {
+function verifyFileCanBeDownloaded(channelDisplayName : string) : void {
     cy.getLastPostId().then((lastPostId: string) => {
         cy.get(`#post_${lastPostId}`).
-            should('contain.text', `Channel ~${channel.display_name} exported:`).
+            should('contain.text', `Channel ~${channelDisplayName} exported:`).
             within(() => {
                 cy.findByTestId('fileAttachmentList').within(() => {
                     cy.get('a[download]').
@@ -107,14 +119,14 @@ export enum FileFormat {
     CSV,
 }
 
-function verifyFileName(fileFormat: FileFormat, channel : Channel) : void {
+function verifyFileName(fileFormat: FileFormat, channelDisplayName : string, channelName: string) : void {
     cy.getLastPostId().then((lastPostId: string) => {
         cy.get(`#post_${lastPostId}`).
-            should('contain.text', `Channel ~${channel.display_name} exported:`).
+            should('contain.text', `Channel ~${channelDisplayName} exported:`).
             within(() => {
                 cy.findByTestId('fileAttachmentList').within(() => {
                     cy.get('a[download]').
-                        should('have.attr', 'download', `${channel.name}.csv`);
+                        should('have.attr', 'download', `${channelName}.csv`);
                 });
             });
     });

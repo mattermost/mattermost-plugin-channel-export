@@ -18,7 +18,7 @@ describe('Test Area - Permissions', () => {
         cy.visitNewPublicChannel().then((channel: Channel) => {
             cy.exportSlashCommand();
             cy.visitDMWithBot('user-1');
-            cy.verifyFileCanBeDownloaded(channel);
+            cy.verifyFileCanBeDownloaded(channel.display_name);
         });
     });
 
@@ -26,15 +26,18 @@ describe('Test Area - Permissions', () => {
         cy.visitNewPrivateChannel().then((channel: Channel) => {
             cy.exportSlashCommand();
             cy.visitDMWithBot('user-1');
-            cy.verifyFileCanBeDownloaded(channel);
+            cy.verifyFileCanBeDownloaded(channel.display_name);
         });
     });
 
-    // it('ID 11 - User can export a group message channel', () => {
-    //     cy.visitNewGroupMessage();
-    //     cy.exportSlashCommand();
-    //     cy.verifySuccessfulExport();
-    // });
+    it('ID 11 - User can export a group message channel', () => {
+        const userNames = ['user-1', 'aaron.medina', 'aaron.peterson'];
+        cy.visitNewGroupMessage(userNames).then((channel: Channel) => {
+            cy.exportSlashCommand();
+            cy.visitDMWithBot('user-1');
+            cy.verifyFileCanBeDownloaded(channel.name);
+        });
+    });
 
     // it('ID 12 - User can export a direct message channel', () => {
     //     cy.visitNewDirectMessage();

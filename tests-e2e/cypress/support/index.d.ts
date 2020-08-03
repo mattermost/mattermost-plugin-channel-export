@@ -23,8 +23,10 @@ declare namespace Cypress {
         apiLogin(username?: string, password?: string | null): Chainable<Response>;
         apiCreatePublicChannel(teamId: string, name: string, displayName: string): Chainable<Channel>;
         apiCreatePrivateChannel(teamId: string, name: string, displayName: string): Chainable<Channel>;
+        apiCreateGroupMessage(userIds: string[]): Chainable<Channel>;
         apiGetTeamByName(name: string): Chainable<Team>;
         apiGetUserByUsername(username: string): Chainable<UserProfile>;
+        apiGetUsers(usernames: string[]): Chainable<UserProfile[]>;
 
         /**
          * Post a message in the current channel
@@ -57,23 +59,24 @@ declare namespace Cypress {
         apiGetChannelByName(teamName: string, channelName: string) : Chainable<Channel>;
 
         // verifyChannelDoesNotExist(): Chainable<Element>;
-        verifyExportBotMessage(channel: Channel): Chainable<void>;
+        verifyExportBotMessage(channelDisplayName: string): Chainable<void>;
 
         // verifyExportCommandIsAvailable(): Chainable<Element>;
-        verifyExportSystemMessage(channel: Channel): Chainable<void>;
+        verifyExportSystemMessage(channelDisplayName: string): Chainable<void>;
 
-        verifyFileCanBeDownloaded(channel: Channel): Chainable<void>;
+        verifyFileCanBeDownloaded(channelDisplayName: string): Chainable<void>;
 
-        verifyFileName(fileFormat: FileFormat, channel: Channel): Chainable<void>;
+        verifyFileName(fileFormat: FileFormat, channelDisplayName: string, channelName: string): Chainable<void>;
 
         // verifyNoExport(): Chainable<Element>;
-        verifyNoPosts(channelName: string): Chainable<Channel>;
-        verifyAtLeastPosts(channelName: string, numPosts: number): Chainable<Channel>;
+        verifyNoPosts(channelDisplayName: string): Chainable<Channel>;
+        verifyAtLeastPosts(channelDisplayName: string, numPosts: number): Chainable<Channel>;
 
         // verifySuccessfulExport(): Chainable<Element>;
 
         // visitNewDirectMessage(): Chainable<Element>;
-        // visitNewGroupMessage(): Chainable<Element>;
+        visitNewGroupMessage(userNames: string[]): Chainable<Channel>;
+
         // visitNewPrivateChannel(): Chainable<Element>;
         visitNewPublicChannel(): Chainable<Channel>;
         visitNewPrivateChannel(): Chainable<Channel>;
