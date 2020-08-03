@@ -280,6 +280,21 @@ function apiCreateGroupMessage(userIds : string[]) : Cypress.Chainable<Channel> 
 }
 Cypress.Commands.add('apiCreateGroupMessage', apiCreateGroupMessage);
 
+function apiCreateDirectMessage(userIds : string[]) : Cypress.Chainable<Channel> {
+    return cy.request({
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        url: '/api/v4/channels/direct',
+        method: 'POST',
+        body: userIds,
+    }).then((response: Cypress.Response) => {
+        expect(response.status).to.equal(httpStatusCreated);
+
+        const channel = response.body as Channel;
+        return cy.wrap(channel);
+    });
+}
+Cypress.Commands.add('apiCreateDirectMessage', apiCreateDirectMessage);
+
 // /**
 //  * Gets current user's teams
 //  */

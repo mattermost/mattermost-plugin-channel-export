@@ -39,11 +39,13 @@ describe('Test Area - Permissions', () => {
         });
     });
 
-    // it('ID 12 - User can export a direct message channel', () => {
-    //     cy.visitNewDirectMessage();
-    //     cy.exportSlashCommand();
-    //     cy.verifySuccessfulExport();
-    // });
+    it('ID 12 - User can export a direct message channel', () => {
+        cy.visitNewDirectMessage('user-1', 'anne.stone').then((channel: Channel) => {
+            cy.exportSlashCommand();
+            cy.visitDMWithBot('user-1');
+            cy.verifyFileCanBeDownloaded(channel.name);
+        });
+    });
 
     // it('ID 13 - User can export a direct message channel with sefl', () => {
     //     cy.visitSelfDM();

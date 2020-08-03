@@ -24,6 +24,7 @@ declare namespace Cypress {
         apiCreatePublicChannel(teamId: string, name: string, displayName: string): Chainable<Channel>;
         apiCreatePrivateChannel(teamId: string, name: string, displayName: string): Chainable<Channel>;
         apiCreateGroupMessage(userIds: string[]): Chainable<Channel>;
+        apiCreateDirectMessage(userIds: string[]): Chainable<Channel>;
         apiGetTeamByName(name: string): Chainable<Team>;
         apiGetUserByUsername(username: string): Chainable<UserProfile>;
         apiGetUsers(usernames: string[]): Chainable<UserProfile[]>;
@@ -74,7 +75,7 @@ declare namespace Cypress {
 
         // verifySuccessfulExport(): Chainable<Element>;
 
-        // visitNewDirectMessage(): Chainable<Element>;
+        visitNewDirectMessage(creatorName: string, otherName: string): Chainable<Channel>;
         visitNewGroupMessage(userNames: string[]): Chainable<Channel>;
 
         // visitNewPrivateChannel(): Chainable<Element>;

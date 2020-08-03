@@ -59,6 +59,18 @@ function visitNewGroupMessage(userNames: string[]) : Cypress.Chainable<Channel> 
 }
 Cypress.Commands.add('visitNewGroupMessage', visitNewGroupMessage);
 
+function visitNewDirectMessage(creatorName: string, otherName: string) : Cypress.Chainable<Channel> {
+    return cy.apiGetUsers([creatorName, otherName]).then((users : UserProfile[]) => {
+        const userIds = users.map((u) => u.id);
+
+        return cy.apiCreateDirectMessage(userIds).then((channel: Channel) => {
+            cy.visit(`/ad-1/messages/@${otherName}`);
+            return cy.wrap(channel);
+        });
+    });
+}
+Cypress.Commands.add('visitNewDirectMessage', visitNewDirectMessage);
+
 function getLastPostId() : Cypress.Chainable<string> {
     waitUntilPermanentPost();
 
