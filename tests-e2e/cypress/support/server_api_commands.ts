@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Team} from 'mattermost-redux/types/teams';
-import {Channel} from 'mattermost-redux/types/channels';
+import {Channel, ChannelType} from 'mattermost-redux/types/channels';
 import {UserProfile} from 'mattermost-redux/types/users';
 import {Post} from 'mattermost-redux/types/posts';
 
@@ -32,25 +32,28 @@ function apiLogin(username = 'user-1', password : string | null = null) : Cypres
 }
 Cypress.Commands.add('apiLogin', apiLogin);
 
-function apiCreatePublicChannel(teamId: string, name: string, displayName: string): Cypress.Chainable<Channel> {
-    return cy.request({
-        headers: {'X-Requested-With': 'XMLHttpRequest'},
-        url: '/api/v4/channels',
-        method: 'POST',
-        body: {
-            team_id: teamId,
-            name,
-            display_name: displayName,
-            type: 'O',
-        },
-    }).then((response: Cypress.Response) => {
-        expect(response.status).to.equal(httpStatusCreated);
+function apiCreateChannel(channelType: ChannelType) : ((teamId: string, name: string, displayName: string) => Cypress.Chainable<Channel>) {
+    return (teamId: string, name: string, displayName: string): Cypress.Chainable<Channel> => {
+        return cy.request({
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
+            url: '/api/v4/channels',
+            method: 'POST',
+            body: {
+                team_id: teamId,
+                name,
+                display_name: displayName,
+                type: channelType,
+            },
+        }).then((response: Cypress.Response) => {
+            expect(response.status).to.equal(httpStatusCreated);
 
-        const channel = response.body as Channel;
-        return cy.wrap(channel);
-    });
+            const channel = response.body as Channel;
+            return cy.wrap(channel);
+        });
+    };
 }
-Cypress.Commands.add('apiCreatePublicChannel', apiCreatePublicChannel);
+Cypress.Commands.add('apiCreatePublicChannel', apiCreateChannel('O'));
+Cypress.Commands.add('apiCreatePrivateChannel', apiCreateChannel('P'));
 
 function apiGetTeamByName(name: string) : Cypress.Chainable<Team> {
     return cy.request({

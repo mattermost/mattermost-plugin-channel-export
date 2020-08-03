@@ -22,6 +22,7 @@ declare namespace Cypress {
         */
         apiLogin(username?: string, password?: string | null): Chainable<Response>;
         apiCreatePublicChannel(teamId: string, name: string, displayName: string): Chainable<Channel>;
+        apiCreatePrivateChannel(teamId: string, name: string, displayName: string): Chainable<Channel>;
         apiGetTeamByName(name: string): Chainable<Team>;
         apiGetUserByUsername(username: string): Chainable<UserProfile>;
 
@@ -75,6 +76,7 @@ declare namespace Cypress {
         // visitNewGroupMessage(): Chainable<Element>;
         // visitNewPrivateChannel(): Chainable<Element>;
         visitNewPublicChannel(): Chainable<Channel>;
+        visitNewPrivateChannel(): Chainable<Channel>;
         visitDMWithBot(userName: string, botName?: string): Chainable<Channel>;
 
         // visitSelfDM(): Chainable<Element>;

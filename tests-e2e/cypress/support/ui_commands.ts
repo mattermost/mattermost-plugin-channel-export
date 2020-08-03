@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Team} from 'mattermost-redux/types/teams';
-import {Channel} from 'mattermost-redux/types/channels';
+import {Channel, ChannelType} from 'mattermost-redux/types/channels';
 import {UserProfile} from 'mattermost-redux/types/users';
 
 function waitUntilPermanentPost() {
@@ -25,19 +25,27 @@ function exportSlashCommand() : void {
 }
 Cypress.Commands.add('exportSlashCommand', exportSlashCommand);
 
-function visitNewPublicChannel() : void {
-    const id = Date.now().toString();
-    const name = `channelexport_${id}`;
-    const displayName = `Channel Export - ${id}`;
+function visitNewChannel(channelType: ChannelType) : (() => Cypress.Chainable<Channel>) {
+    let apiCreateChannel = cy.apiCreatePrivateChannel;
+    if (channelType === 'O') {
+        apiCreateChannel = cy.apiCreatePublicChannel;
+    }
 
-    cy.apiGetTeamByName('ad-1').then((team: Team) => {
-        return cy.apiCreatePublicChannel(team.id, name, displayName);
-    }).then((response: Channel) => {
-        cy.visit(`/ad-1/channels/${name}`);
-        return cy.wrap(response);
-    });
+    return () => {
+        const id = Date.now().toString();
+        const name = `channelexport_${id}`;
+        const displayName = `Channel Export - ${id}`;
+
+        return cy.apiGetTeamByName('ad-1').then((team: Team) => {
+            return apiCreateChannel(team.id, name, displayName);
+        }).then((response: Channel) => {
+            cy.visit(`/ad-1/channels/${name}`);
+            return cy.wrap(response);
+        });
+    };
 }
-Cypress.Commands.add('visitNewPublicChannel', visitNewPublicChannel);
+Cypress.Commands.add('visitNewPublicChannel', visitNewChannel('O'));
+Cypress.Commands.add('visitNewPrivateChannel', visitNewChannel('P'));
 
 function getLastPostId() : Cypress.Chainable<string> {
     waitUntilPermanentPost();

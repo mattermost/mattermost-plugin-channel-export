@@ -22,11 +22,13 @@ describe('Test Area - Permissions', () => {
         });
     });
 
-    // it('ID 10 - User can export a private channel', () => {
-    //     cy.visitNewPrivateChannel();
-    //     cy.exportSlashCommand();
-    //     cy.verifySuccessfulExport();
-    // });
+    it('ID 10 - User can export a private channel', () => {
+        cy.visitNewPrivateChannel().then((channel: Channel) => {
+            cy.exportSlashCommand();
+            cy.visitDMWithBot('user-1');
+            cy.verifyFileCanBeDownloaded(channel);
+        });
+    });
 
     // it('ID 11 - User can export a group message channel', () => {
     //     cy.visitNewGroupMessage();
