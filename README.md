@@ -4,7 +4,7 @@ This plugin allows channel export into a human readable format.
 
 ## License
 
-This repository is licensed under the [Mattermost Source Available License](link to this FAQ) and requires a valid Enterprise E20 license.
+This repository is licensed under the [Mattermost Source Available License](https://docs.mattermost.com/overview/faq.html#mattermost-source-available-license) and requires a valid Enterprise E20 license. 
 
 ## Getting Started
 
