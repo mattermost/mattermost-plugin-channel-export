@@ -1,217 +1,112 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Team} from 'mattermost-redux/types/teams';
-import {Channel, ChannelType} from 'mattermost-redux/types/channels';
-import {UserProfile} from 'mattermost-redux/types/users';
-
-function waitUntilPermanentPost() {
+function getLastPostId() : Cypress.Chainable<string> {
+    // # Wait until permanent post.
     cy.get('#postListContent').should('be.visible');
     cy.waitUntil(() =>
         cy.findAllByTestId('postView').
             last().
             then((el) => !(el[0].id.includes(':')))
     );
-}
 
-function postMessage(message: string): void {
-    cy.findByTestId('post_textbox').clear().type(message).type('{enter}');
-    cy.findByTestId('post_textbox').should('have.text', '');
-}
-Cypress.Commands.add('postMessage', postMessage);
-
-function exportSlashCommand() : void {
-    cy.postMessage('/export {enter}');
-}
-Cypress.Commands.add('exportSlashCommand', exportSlashCommand);
-
-function visitNewChannel(channelType: ChannelType) : (() => Cypress.Chainable<Channel>) {
-    let apiCreateChannel = cy.apiCreatePrivateChannel;
-    if (channelType === 'O') {
-        apiCreateChannel = cy.apiCreatePublicChannel;
-    }
-
-    return () => {
-        const id = Date.now().toString();
-        const name = `channelexport_${id}`;
-        const displayName = `Channel Export - ${id}`;
-
-        return cy.apiGetTeamByName('ad-1').then((team: Team) => {
-            return apiCreateChannel(team.id, name, displayName);
-        }).then((response: Channel) => {
-            cy.visit(`/ad-1/channels/${name}`);
-            return cy.wrap(response);
-        });
-    };
-}
-Cypress.Commands.add('visitNewPublicChannel', visitNewChannel('O'));
-Cypress.Commands.add('visitNewPrivateChannel', visitNewChannel('P'));
-
-function visitNewGroupMessage(userNames: string[]) : Cypress.Chainable<Channel> {
-    return cy.apiGetUsers(userNames).then((users : UserProfile[]) => {
-        const userIds = users.map((u) => u.id);
-
-        return cy.apiCreateGroupMessage(userIds).then((channel: Channel) => {
-            cy.visit(`/ad-1/messages/${channel.name}`);
-            return cy.wrap(channel);
-        });
-    });
-}
-Cypress.Commands.add('visitNewGroupMessage', visitNewGroupMessage);
-
-function visitNewDirectMessage(creatorName: string, otherName: string) : Cypress.Chainable<Channel> {
-    return cy.apiGetUsers([creatorName, otherName]).then((users : UserProfile[]) => {
-        const userIds = users.map((u) => u.id);
-
-        return cy.apiCreateDirectMessage(userIds).then((channel: Channel) => {
-            cy.visit(`/ad-1/messages/@${otherName}`);
-            return cy.wrap(channel);
-        });
-    });
-}
-Cypress.Commands.add('visitNewDirectMessage', visitNewDirectMessage);
-
-function getLastPostId() : Cypress.Chainable<string> {
-    waitUntilPermanentPost();
-
+    // # Get the last post and return its ID.
     return cy.findAllByTestId('postView').last().should('have.attr', 'id').and('not.include', ':').
         invoke('replace', 'post_', '');
 }
 Cypress.Commands.add('getLastPostId', getLastPostId);
 
-function verifyExportSystemMessage(channelDisplayName : string) : void {
-    cy.getLastPostId().then((lastPostId: string) => {
-        cy.get(`#post_${lastPostId}`).
-            should('contain.text',
-                `Exporting ~${channelDisplayName}. @channelexport will send you a direct message when the export is ready.`);
-    });
-}
-Cypress.Commands.add('verifyExportSystemMessage', verifyExportSystemMessage);
+function postInCurrentChannel(message: string): void {
+    // # Type the message in the textbox and type Enter.
+    cy.findByTestId('post_textbox').clear().type(message).type('{enter}');
 
-function visitDMWithBot(userName: string, botName = 'channelexport') : void {
-    interface DM {
-        user: UserProfile;
-        bot: UserProfile;
-    }
-
-    cy.apiGetUserByUsername(userName).then((user: UserProfile) => {
-        return cy.apiGetUserByUsername(botName).then((bot: UserProfile) => {
-            return cy.wrap({user, bot});
-        });
-    }).then((dm: DM) => {
-        cy.get(`#sidebarItem_${dm.user.id}__${dm.bot.id}`).click();
-    });
+    // * Verify that the textbox is empty after sending the message.
+    cy.findByTestId('post_textbox').should('have.text', '');
 }
-Cypress.Commands.add('visitDMWithBot', visitDMWithBot);
+Cypress.Commands.add('postInCurrentChannel', postInCurrentChannel);
 
-function verifyExportBotMessage(channelDisplayName : string) : void {
-    cy.getLastPostId().then((lastPostId: string) => {
-        cy.get(`#post_${lastPostId}`).
-            should('contain.text', `Channel ~${channelDisplayName} exported:`);
-    });
+function exportSlashCommand() : void {
+    // # Post /export (with Esc to make sure that the autocompletion is gone)
+    // in the channel.
+    cy.postInCurrentChannel('/export {esc}');
 }
-Cypress.Commands.add('verifyExportBotMessage', verifyExportBotMessage);
-
-function verifyFileCanBeDownloaded(channelDisplayName : string) : void {
-    cy.getLastPostId().then((lastPostId: string) => {
-        cy.get(`#post_${lastPostId}`).
-            should('contain.text', `Channel ~${channelDisplayName} exported:`).
-            within(() => {
-                cy.findByTestId('fileAttachmentList').within(() => {
-                    cy.get('a[download]').
-                        should('have.attr', 'href').
-                        should('match', /http:\/\/localhost:8065\/api\/v4\/files\/.*\?download=1/);
-                });
-            });
-    });
-}
-Cypress.Commands.add('verifyFileCanBeDownloaded', verifyFileCanBeDownloaded);
-
-export enum FileFormat {
-    CSV,
-}
-
-function verifyFileName(fileFormat: FileFormat, channelDisplayName : string, channelName: string) : void {
-    cy.getLastPostId().then((lastPostId: string) => {
-        cy.get(`#post_${lastPostId}`).
-            should('contain.text', `Channel ~${channelDisplayName} exported:`).
-            within(() => {
-                cy.findByTestId('fileAttachmentList').within(() => {
-                    cy.get('a[download]').
-                        should('have.attr', 'download', `${channelName}.csv`);
-                });
-            });
-    });
-}
-Cypress.Commands.add('verifyFileName', verifyFileName);
-
-function verifyNoPosts(channelName: string) : Cypress.Chainable<Channel> {
-    return cy.apiGetChannelByName('ad-1', channelName).then((channel: Channel) => {
-        // There is always one post: the system announcing the user joined
-        expect(channel.total_msg_count).at.most(1);
-    });
-}
-Cypress.Commands.add('verifyNoPosts', verifyNoPosts);
-
-function verifyAtLeastPosts(channelName: string, numPosts: number) : Cypress.Chainable<Channel> {
-    return cy.apiGetChannelByName('ad-1', channelName).then((channel: Channel) => {
-        expect(channel.total_msg_count).at.least(numPosts);
-    });
-}
-Cypress.Commands.add('verifyAtLeastPosts', verifyAtLeastPosts);
+Cypress.Commands.add('exportSlashCommand', exportSlashCommand);
 
 function archiveCurrentChannel() : void {
+    // # Click on the header dropdown arrow.
     cy.get('#channelHeaderDropdownIcon').click();
+
+    // # Select the Archive Channel item in the menu.
     cy.get('#channelArchiveChannel').click();
+
+    // # Confirm the archival of the channel clicking on the Archive button.
     cy.get('#deleteChannelModalDeleteButton').click();
 }
 Cypress.Commands.add('archiveCurrentChannel', archiveCurrentChannel);
 
 function unarchiveCurrentChannel() : void {
+    // # Click on the header dropdown arrow.
     cy.get('#channelHeaderDropdownIcon').click();
+
+    // # Select the Unarchive Channel item in the menu.
     cy.get('#channelUnarchiveChannel').click();
+
+    // # Confirm the unarchival of the channel clicking on the Unarchive button.
     cy.get('#unarchiveChannelModalDeleteButton').click();
 }
 Cypress.Commands.add('unarchiveCurrentChannel', unarchiveCurrentChannel);
 
 function leaveCurrentChannel() : void {
+    // # Click on the header dropdown arrow.
     cy.get('#channelHeaderDropdownIcon').click();
+
+    // # Select the Leave Channel item in the menu.
     cy.get('#channelLeaveChannel').click();
 }
 Cypress.Commands.add('leaveCurrentChannel', leaveCurrentChannel);
 
 function inviteUser(userName: string): void {
+    // # Click on the header dropdown arrow.
     cy.get('#channelHeaderDropdownIcon').click();
+
+    // # Select the Add Members item in the menu.
     cy.get('#channelAddMembers').click();
+
+    // # Type the username in the search box.
     cy.get('#selectItems').type(userName);
 
+    // # Click on the row containing the user.
     cy.get('#multiSelectList').within(() => {
         cy.findByText(`@${userName}`).click({force: true});
     });
 
+    // # Click the Add button.
     cy.get('#saveItems').click();
+    cy.get('#addUsersToChannelModal').should('not.exist');
 
-    cy.getLastPostId().then((lastPostId: string) => {
+    // * Make sure that the Add Members modal is gone.
+    cy.get('#addUsersToChannelModal').should('not.exist');
+
+    // * Verify that there is a system message informing that the user was added
+    // to the channel.
+    getLastPostId().then((lastPostId: string) => {
         cy.get(`#post_${lastPostId}`).
             should('contain.text', `@${userName} added to the channel by you.`);
     });
 }
 Cypress.Commands.add('inviteUser', inviteUser);
 
-function verifyExportCommandIsAvailable() : void {
-    cy.findByTestId('post_textbox').clear().type('/export');
-    cy.get('#suggestionList').within(() => {
-        cy.get('div.slash-command__desc').should('contain', 'Export the current channel');
-    });
-}
-Cypress.Commands.add('verifyExportCommandIsAvailable', verifyExportCommandIsAvailable);
-
 function kickUser(userName: string): void {
-    cy.postMessage(`/kick @${userName} {enter}`);
+    // # Post /kick @{userName} (with Esc to make sure that the autocompletion
+    // is gone) in the channel.
+    cy.postInCurrentChannel(`/kick @${userName} {esc}`);
 
-    cy.getLastPostId().then((lastPostId: string) => {
+    // * Verify that there is a system message informing that the user was
+    // kicked from the channel.
+    getLastPostId().then((lastPostId: string) => {
         cy.get(`#post_${lastPostId}`).
             should('contain.text', `@${userName} was removed from the channel.`);
     });
 }
 Cypress.Commands.add('kickUser', kickUser);
+
