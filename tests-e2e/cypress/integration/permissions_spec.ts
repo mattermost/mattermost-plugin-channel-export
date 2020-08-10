@@ -27,7 +27,7 @@ describe('Test Area - Permissions', () => {
             cy.exportSlashCommand();
 
             // # Open the DM with the @channelexport bot.
-            cy.visitDMWithBot('user-1');
+            cy.visitDMWithBot();
 
             // * Verify that there is a file to be downloaded in the bot's
             // message.
@@ -42,7 +42,7 @@ describe('Test Area - Permissions', () => {
             cy.exportSlashCommand();
 
             // # Open the DM with the @channelexport bot.
-            cy.visitDMWithBot('user-1');
+            cy.visitDMWithBot();
 
             // * Verify that there is a file to be downloaded in the bot's
             // message.
@@ -59,7 +59,7 @@ describe('Test Area - Permissions', () => {
             cy.exportSlashCommand();
 
             // # Open the DM with the @channelexport bot.
-            cy.visitDMWithBot('user-1');
+            cy.visitDMWithBot();
 
             // * Verify that there is a file to be downloaded in the bot's
             // message.
@@ -74,7 +74,7 @@ describe('Test Area - Permissions', () => {
             cy.exportSlashCommand();
 
             // # Open the DM with the @channelexport bot.
-            cy.visitDMWithBot('user-1');
+            cy.visitDMWithBot();
 
             // * Verify that there is a file to be downloaded in the bot's
             // message.
@@ -92,7 +92,7 @@ describe('Test Area - Permissions', () => {
             cy.exportSlashCommand();
 
             // # Open the DM with the @channelexport bot.
-            cy.visitDMWithBot('user-1');
+            cy.visitDMWithBot();
 
             // * Verify that there is a file to be downloaded in the bot's
             // message.
@@ -102,7 +102,7 @@ describe('Test Area - Permissions', () => {
 
     it('ID 14 - User can export a bot message channel', () => {
         // # Open the DM with the @channelexport bot.
-        cy.visitDMWithBot('user-1');
+        cy.visitDMWithBot();
 
         // # Run the /export slash command.
         cy.exportSlashCommand();
@@ -151,7 +151,7 @@ describe('Test Area - Permissions', () => {
                 cy.exportSlashCommand();
 
                 // # Open the DM with the @channelexport bot.
-                cy.visitDMWithBot('user-1');
+                cy.visitDMWithBot();
 
                 // * Verify that there is a file to be downloaded in the bot's
                 // message.

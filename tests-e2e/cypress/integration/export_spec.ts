@@ -39,7 +39,7 @@ describe('Test Area - Export', () => {
             cy.exportSlashCommand();
 
             // # Open the DM with the @channelexport bot.
-            cy.visitDMWithBot('user-1');
+            cy.visitDMWithBot();
 
             // * Verify that the bot sent a message informing about the export
             // of the specified channel.
@@ -54,7 +54,7 @@ describe('Test Area - Export', () => {
             cy.exportSlashCommand();
 
             // # Open the DM with the @channelexport bot.
-            cy.visitDMWithBot('user-1');
+            cy.visitDMWithBot();
 
             // * Verify that there is a file to be downloaded in the bot's
             // message.
@@ -69,7 +69,7 @@ describe('Test Area - Export', () => {
             cy.exportSlashCommand();
 
             // # Open the DM with the @channelexport bot.
-            cy.visitDMWithBot('user-1');
+            cy.visitDMWithBot();
 
             // * Verify that the file sent by the bot has the name
             // channelName.csv.
@@ -87,7 +87,7 @@ describe('Test Area - Export', () => {
             cy.exportSlashCommand();
 
             // # Open the DM with the @channelexport bot.
-            cy.visitDMWithBot('user-1');
+            cy.visitDMWithBot();
 
             // * Verify that there is a file to be downloaded in the bot's
             // message.
@@ -107,7 +107,7 @@ describe('Test Area - Export', () => {
             cy.exportSlashCommand();
 
             // # Open the DM with the @channelexport bot.
-            cy.visitDMWithBot('user-1');
+            cy.visitDMWithBot();
 
             // * Verify that there is a file to be downloaded in the bot's
             // message.

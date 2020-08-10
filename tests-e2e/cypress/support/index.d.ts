@@ -120,6 +120,12 @@ declare namespace Cypress {
         */
         apiExportChannel(channelId: string, expectedStatus?: number): Chainable<string>;
 
+        /**
+         * Retrieve the information of the logged in user.
+         * @return The retrieved user.
+        */
+        apiGetMe(): Chainable<UserProfile>;
+
         // *****************************************************************************
         //
         // UI Commands
@@ -281,13 +287,18 @@ declare namespace Cypress {
         visitNewDirectMessage(creatorName: string, otherName: string): Chainable<Channel>;
 
         /**
-         * Visit the direct message (DM) channel with the channel export bot.
-         * @param userName {string} - the username of the user in the DM with
-         * the bot.
-         * @param botName {string} - the optional username of the bot in the DM;
-         * it defaults to 'channelexport'.
+         * Visit the direct message (DM) channel between the logged in user and
+         * the provided user.
+         * @param userName {string} - the username of the other user in the DM.
          * @return Nothing.
         */
-        visitDMWithBot(userName: string, botName?: string): Chainable<void>;
+        visitDMWith(userName: string): Chainable<void>;
+
+        /**
+         * Visit the direct message (DM) channel with the channel export bot
+         * the provided user.
+         * @return Nothing.
+        */
+        visitDMWithBot(): Chainable<void>;
     }
 }

@@ -188,3 +188,17 @@ function apiExportChannel(channelId: string, expectedStatus: number = httpStatus
     });
 }
 Cypress.Commands.add('apiExportChannel', apiExportChannel);
+
+function apiGetMe() : Cypress.Chainable<UserProfile> {
+    return cy.request({
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        url: 'api/v4/users/me',
+        method: 'GET',
+    }).then((response) => {
+        expect(response.status).to.equal(httpStatusOk);
+
+        const user = response.body as UserProfile;
+        return cy.wrap(user);
+    });
+}
+Cypress.Commands.add('apiGetMe', apiGetMe);

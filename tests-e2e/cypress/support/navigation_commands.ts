@@ -66,21 +66,25 @@ function visitNewDirectMessage(creatorName: string, otherName: string) : Cypress
 }
 Cypress.Commands.add('visitNewDirectMessage', visitNewDirectMessage);
 
-function visitDMWithBot(userName: string, botName = 'channelexport') : void {
+function visitDMWith(userName: string) : void {
     interface DM {
+        me: UserProfile;
         user: UserProfile;
-        bot: UserProfile;
     }
 
-    // # Get the user and bot to retrieve their IDs.
-    cy.apiGetUserByUsername(userName).then((user: UserProfile) => {
-        return cy.apiGetUserByUsername(botName).then((bot: UserProfile) => {
-            return cy.wrap({user, bot});
+    // # Get me and the user to retrieve their IDs.
+    cy.apiGetMe().then((me: UserProfile) => {
+        return cy.apiGetUserByUsername(userName).then((user: UserProfile) => {
+            return cy.wrap({me, user});
         });
     }).then((dm: DM) => {
         // # Click on the sidebar item corresponding to the DM with the bot.
-        cy.get(`#sidebarItem_${dm.user.id}__${dm.bot.id}`).click();
+        cy.get(`#sidebarItem_${dm.me.id}__${dm.user.id}`).click();
     });
 }
-Cypress.Commands.add('visitDMWithBot', visitDMWithBot);
+Cypress.Commands.add('visitDMWith', visitDMWith);
 
+function visitDMWithBot() : void {
+    cy.visitDMWith('channelexport');
+}
+Cypress.Commands.add('visitDMWithBot', visitDMWithBot);
