@@ -37,6 +37,8 @@ function verifyExportSystemMessage(channelDisplayName : string) : void {
 Cypress.Commands.add('verifyExportSystemMessage', verifyExportSystemMessage);
 
 function verifyFileCanBeDownloaded(channelDisplayName : string) : void {
+    const fileRegexp = new RegExp(Cypress.config('baseUrl') + '/api/v4/files/.*?download=1');
+
     // # Find the last post in the current channel.
     cy.getLastPostId().then((lastPostId: string) => {
         // * Verify that the post contains a message about the export.
@@ -49,7 +51,7 @@ function verifyFileCanBeDownloaded(channelDisplayName : string) : void {
                     // to a file in the system.
                     cy.get('a[download]').
                         should('have.attr', 'href').
-                        should('match', /http:\/\/localhost:8065\/api\/v4\/files\/.*\?download=1/);
+                        should('match', fileRegexp);
                 });
             });
     });
