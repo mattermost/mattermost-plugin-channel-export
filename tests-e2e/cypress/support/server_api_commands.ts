@@ -5,6 +5,7 @@ import {Team} from 'mattermost-redux/types/teams';
 import {Channel, ChannelType} from 'mattermost-redux/types/channels';
 import {UserProfile} from 'mattermost-redux/types/users';
 import {Post} from 'mattermost-redux/types/posts';
+import Constants from 'mattermost-redux/constants/general';
 
 import users from '../fixtures/users';
 import {httpStatusOk, httpStatusCreated} from '../support/constants';
@@ -47,8 +48,8 @@ function apiCreateChannel(channelType: ChannelType) : ((teamId: string, name: st
         });
     };
 }
-Cypress.Commands.add('apiCreatePublicChannel', apiCreateChannel('O'));
-Cypress.Commands.add('apiCreatePrivateChannel', apiCreateChannel('P'));
+Cypress.Commands.add('apiCreatePublicChannel', apiCreateChannel(Constants.OPEN_CHANNEL as ChannelType));
+Cypress.Commands.add('apiCreatePrivateChannel', apiCreateChannel(Constants.PRIVATE_CHANNEL as ChannelType));
 
 function apiCreateGroupMessage(userIds : string[]) : Cypress.Chainable<Channel> {
     return cy.request({

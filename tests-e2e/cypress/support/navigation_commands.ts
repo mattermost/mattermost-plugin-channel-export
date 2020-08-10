@@ -4,13 +4,14 @@
 import {Team} from 'mattermost-redux/types/teams';
 import {Channel, ChannelType} from 'mattermost-redux/types/channels';
 import {UserProfile} from 'mattermost-redux/types/users';
+import Constants from 'mattermost-redux/constants/general';
 
 // Create a public or private channel depending on the channelType parameter
 // and visit it.
 function visitNewChannel(channelType: ChannelType) : (() => Cypress.Chainable<Channel>) {
     // Select the correct function to create a channel (private or public).
     let apiCreateChannel = cy.apiCreatePrivateChannel;
-    if (channelType === 'O') {
+    if (channelType === Constants.OPEN_CHANNEL) {
         apiCreateChannel = cy.apiCreatePublicChannel;
     }
 
@@ -32,8 +33,8 @@ function visitNewChannel(channelType: ChannelType) : (() => Cypress.Chainable<Ch
         });
     };
 }
-Cypress.Commands.add('visitNewPublicChannel', visitNewChannel('O'));
-Cypress.Commands.add('visitNewPrivateChannel', visitNewChannel('P'));
+Cypress.Commands.add('visitNewPublicChannel', visitNewChannel(Constants.OPEN_CHANNEL as ChannelType));
+Cypress.Commands.add('visitNewPrivateChannel', visitNewChannel(Constants.PRIVATE_CHANNEL as ChannelType));
 
 function visitNewGroupMessage(userNames: string[]) : Cypress.Chainable<Channel> {
     // # Get the users in the group to retrieve their IDs.
