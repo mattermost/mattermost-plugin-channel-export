@@ -239,34 +239,55 @@ function apiUpdateConfig(newConfig: PartialAdminConfig) : Cypress.Chainable<Admi
 }
 Cypress.Commands.add('apiUpdateConfig', apiUpdateConfig);
 
+function apiSaveUserPreference(preference: PreferenceType): Cypress.Chainable<PreferenceType[]> {
+    return cy.request({
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        url: '/api/v4/users/me/preferences',
+        method: 'PUT',
+        body: [preference],
+    }).then((response: Cypress.Response) => {
+        expect(response.status).to.equal(httpStatusOk);
+
+        const preferences = response.body as PreferenceType[];
+        return cy.wrap(preferences);
+    });
+}
+Cypress.Commands.add('apiSaveUserPreference', apiSaveUserPreference);
+
 export type MessageDisplay = 'compact' | 'clean';
 
 function apiSaveMessageDisplayPreference(value: MessageDisplay) : Cypress.Chainable<PreferenceType[]> {
     return cy.getCookie('MMUSERID').then((cookie: Cypress.Cookie | null) => {
         const messageDisplayPreference = {
-            user_id: cookie?.value,
+            user_id: cookie?.value || '',
             category: 'display_settings',
             name: 'message_display',
             value,
         };
 
-        return cy.request({
-            headers: {'X-Requested-With': 'XMLHttpRequest'},
-            url: '/api/v4/users/me/preferences',
-            method: 'PUT',
-            body: [messageDisplayPreference],
-        }).then((response: Cypress.Response) => {
-            expect(response.status).to.equal(httpStatusOk);
-
-            const preferences = response.body as PreferenceType[];
-            return cy.wrap(preferences);
-        });
+        return cy.apiSaveUserPreference(messageDisplayPreference);
     });
 }
 Cypress.Commands.add('apiSaveMessageDisplayPreference', apiSaveMessageDisplayPreference);
 
+export type TeammateNameFormat = 'username' | 'nickname_full_name' | 'full_name';
+
+function apiSaveTeammateNameDisplayPreference(value: TeammateNameFormat) : Cypress.Chainable<PreferenceType[]> {
+    return cy.getCookie('MMUSERID').then((cookie: Cypress.Cookie | null) => {
+        const nameFormatPreference = {
+            user_id: cookie?.value || '',
+            category: 'display_settings',
+            name: 'name_format',
+            value,
+        };
+
+        return cy.apiSaveUserPreference(nameFormatPreference);
+    });
+}
+Cypress.Commands.add('apiSaveTeammateNameDisplayPreference', apiSaveTeammateNameDisplayPreference);
+
 function apiRequireLicense() : void {
-    cy.request('/api/v4/license/client?format=old').then((response) => {
+    cy.request('/api/v4/license/client?format=old').then((response: Cypress.Response) => {
         expect(response.status).to.equal(httpStatusOk);
 
         const license = response.body;

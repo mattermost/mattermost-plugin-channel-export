@@ -22,8 +22,11 @@ describe('Test Area - Export', () => {
         // # Visit the default channel.
         cy.visit('/');
 
-        // # Set the Message Display to Standard
+        // # Set the expected user preferences:
+        //   - Message Display to Standard
+        //   - Teammate Name Format to username
         cy.apiSaveMessageDisplayPreference('clean');
+        cy.apiSaveTeammateNameDisplayPreference('username');
     });
 
     beforeEach(() => {

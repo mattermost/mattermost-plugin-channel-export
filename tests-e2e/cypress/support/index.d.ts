@@ -15,6 +15,7 @@ declare namespace Cypress {
 
     type PartialAdminConfig = import('./server_api_commands').PartialAdminConfig;
     type MessageDisplay = import('./server_api_commands').MessageDisplay;
+    type TeammateNameFormat = import('./server_api_commands').TeammateNameFormat;
 
     interface Chainable<Subject> {
 
@@ -132,21 +133,39 @@ declare namespace Cypress {
         apiGetMe(): Chainable<UserProfile>;
 
         /**
-         * Update the admin configuration with the passed settings
-         * @param {PartialAdminConfig} newConfig - the partial configuration that needs to be updated
+         * Update the admin configuration with the passed settings.
+         * @param {PartialAdminConfig} newConfig - the partial configuration
+         * that needs to be updated.
         */
         apiUpdateConfig(newConfig: PartialAdminConfig): Chainable<AdminConfig>;
 
         /**
-         * Save message display preference of a user directly via API
-         * This API assume that the user is logged in and has cookie to access
-         * @param {MessageDisplay} value - Either "clean" (default) or "compact"
-         * @return The array of preferences of the user
+         * Save a preference of a user directly via API.
+         * This API assume that the user is logged in and has cookie to access.
+         * @param {PreferenceType} preference - The user's preference to set.
+         * @return The array of preferences of the user.
+        */
+        apiSaveUserPreference(preference: PreferenceType): Cypress.Chainable<PreferenceType[]>;
+
+        /**
+         * Save message display preference of a user directly via API.
+         * This API assume that the user is logged in and has cookie to access.
+         * @param {MessageDisplay} value - Either 'clean' or 'compact'.
+         * @return The array of preferences of the user.
         */
         apiSaveMessageDisplayPreference(value: MessageDisplay) : Cypress.Chainable<PreferenceType[]>;
 
         /**
-         * Verify that the server has a license
+         * Save team mate name display preference of a user directly via API.
+         * This API assume that the user is logged in and has cookie to access.
+         * @param {TeammateNameFormat} value - Either 'username',
+         * 'nickname_full_name' or 'full_name';
+         * @return The array of preferences of the user.
+        */
+        apiSaveTeammateNameDisplayPreference(value: TeammateNameFormat) : Cypress.Chainable<PreferenceType[]>;
+
+        /**
+         * Verify that the server has a license.
          * @return Nothing.
         */
         apiRequireLicense() : Cypress.Chainable<void>;
