@@ -12,6 +12,17 @@ describe('Test Area - Permissions', () => {
     const fileHeader =
     'Post Creation Time,User Id,User Email,User Type,User Name,Post Id,Parent Post Id,Post Message,Post Type';
 
+    before(() => {
+        // # Login as non-admin user.
+        cy.apiLogin('user-1');
+
+        // # Visit the default channel
+        cy.visit('/');
+
+        // # Set the Message Display to Standard
+        cy.setMessageDisplayToStandard();
+    });
+
     beforeEach(() => {
         // # Login as non-admin user
         cy.apiLogin('user-1');

@@ -185,6 +185,13 @@ declare namespace Cypress {
         */
         kickUser(userName: string): Chainable<void>;
 
+        /**
+         * Set the Message Display setting to Standard, though Account Settings
+         * > Display > Message Display.
+         * @return Nothing.
+        */
+        setMessageDisplayToStandard(): Chainable<void>;
+
         // *****************************************************************************
         //
         // Verification Commands

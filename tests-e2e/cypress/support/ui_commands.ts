@@ -110,3 +110,19 @@ function kickUser(userName: string): void {
 }
 Cypress.Commands.add('kickUser', kickUser);
 
+function setMessageDisplayToStandard(): void {
+    cy.get('#headerInfo').should('be.visible').within(() => {
+        cy.get('button[aria-label="main menu"]').click();
+    });
+
+    cy.get('#accountSettings').click();
+    cy.get('#displayButton').click();
+    cy.get('#message_displayTitle').click();
+    cy.get('#message_displayFormatA').click();
+    cy.get('#saveSetting').click();
+    cy.get('#accountSettingsHeader').within(() => {
+        cy.get('button[class="close"]').click();
+    });
+    cy.get('#accountSettingsModal').should('not.exist');
+}
+Cypress.Commands.add('setMessageDisplayToStandard', setMessageDisplayToStandard);

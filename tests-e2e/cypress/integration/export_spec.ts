@@ -12,6 +12,17 @@ import '@testing-library/cypress/add-commands';
 import {Channel} from 'mattermost-redux/types/channels';
 
 describe('Test Area - Export', () => {
+    before(() => {
+        // # Login as non-admin user.
+        cy.apiLogin('user-1');
+
+        // # Visit the default channel.
+        cy.visit('/');
+
+        // # Set the Message Display to Standard
+        cy.setMessageDisplayToStandard();
+    });
+
     beforeEach(() => {
         // # Login as non-admin user.
         cy.apiLogin('user-1');
