@@ -113,7 +113,7 @@ describe('Test Area - Permissions', () => {
             cy.apiGetUserByUsername('channelexport').then((bot: UserProfile) => {
                 // * Verify that there is a file to be downloaded in the bot's
                 // message.
-                cy.verifyFileCanBeDownloaded(`${user.id}__${bot.id}`);
+                cy.verifyFileCanBeDownloaded(`${bot.id}__${user.id}`);
             });
         });
     });
