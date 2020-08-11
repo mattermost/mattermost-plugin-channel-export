@@ -9,11 +9,13 @@ This repository is licensed under the [Mattermost Source Available License](LICE
 ## Getting Started
 
 Clone the repository:
+
 ```
 git clone https://github.com/mattermost/mattermost-plugin-channel-export.git
 ```
 
 Build the plugin:
+
 ```
 make
 ```
@@ -43,17 +45,20 @@ If your Mattermost server is running locally, you can enable [local mode](https:
 ```
 
 and then deploy your plugin:
+
 ```
 make deploy
 ```
 
 You may also customize the Unix socket path:
+
 ```
 export MM_LOCALSOCKETPATH=/var/tmp/alternate_local.socket
 make deploy
 ```
 
 If developing a plugin with a webapp, watch for changes and deploy those automatically:
+
 ```
 make watch
 ```
@@ -61,6 +66,7 @@ make watch
 ### Deploying with credentials
 
 Alternatively, you can authenticate with the server's API with credentials:
+
 ```
 export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
 export MM_ADMIN_USERNAME=admin
@@ -69,6 +75,7 @@ make deploy
 ```
 
 or with a [personal access token](https://docs.mattermost.com/developer/personal-access-tokens.html):
+
 ```
 export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
 export MM_ADMIN_TOKEN=j44acwd8obn78cdcx7koid4jkr
