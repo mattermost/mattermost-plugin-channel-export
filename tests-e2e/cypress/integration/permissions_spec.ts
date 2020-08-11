@@ -16,13 +16,17 @@ describe('Test Area - Permissions', () => {
         // * Verify that the server is licensed, needed for all plugin features
         cy.apiRequireLicense();
 
-        // # Enable ExperimentalViewArchivedChannels config as a sysadmin
+        // # Login as sysadmin
         cy.apiLogin('sysadmin').then(() => {
+            // # Enable ExperimentalViewArchivedChannels config as a sysadmin
             cy.apiUpdateConfig({
                 TeamSettings: {
                     ExperimentalViewArchivedChannels: true,
                 },
             });
+
+            // # Set the teammate name format to username
+            cy.apiSaveTeammateNameDisplayPreference('username');
         });
 
         // # Login as non-admin user.
