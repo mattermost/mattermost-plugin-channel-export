@@ -46,7 +46,7 @@ function verifyFileCanBeDownloaded(channelDisplayName : string) : void {
             should('contain.text', `Channel ~${channelDisplayName} exported:`).
             within(() => {
                 // # Find the list of files attached to the post.
-                cy.findByTestId('fileAttachmentList').within(() => {
+                cy.findByTestId('fileAttachmentList').should('be.visible').within(() => {
                     // * Verify that the file has a download link with an href
                     // to a file in the system.
                     cy.get('a[download]').
@@ -96,4 +96,3 @@ function verifyAtLeastPosts(channelName: string, numPosts: number) : Cypress.Cha
     });
 }
 Cypress.Commands.add('verifyAtLeastPosts', verifyAtLeastPosts);
-
