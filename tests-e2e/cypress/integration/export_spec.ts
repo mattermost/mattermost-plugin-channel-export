@@ -13,6 +13,9 @@ import {Channel} from 'mattermost-redux/types/channels';
 
 describe('Test Area - Export', () => {
     before(() => {
+        // * Verify that the server is licensed, needed for all plugin features
+        cy.apiRequireLicense();
+
         // # Login as non-admin user.
         cy.apiLogin('user-1');
 

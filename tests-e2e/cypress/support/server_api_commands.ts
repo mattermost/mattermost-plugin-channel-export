@@ -264,3 +264,13 @@ function apiSaveMessageDisplayPreference(value: MessageDisplay) : Cypress.Chaina
     });
 }
 Cypress.Commands.add('apiSaveMessageDisplayPreference', apiSaveMessageDisplayPreference);
+
+function apiRequireLicense() : void {
+    cy.request('/api/v4/license/client?format=old').then((response) => {
+        expect(response.status).to.equal(httpStatusOk);
+
+        const license = response.body;
+        expect(license.IsLicensed, 'Server has no Enterprise license.').to.equal('true');
+    });
+}
+Cypress.Commands.add('apiRequireLicense', apiRequireLicense);

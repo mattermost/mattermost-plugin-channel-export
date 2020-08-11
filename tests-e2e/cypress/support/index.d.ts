@@ -145,6 +145,12 @@ declare namespace Cypress {
         */
         apiSaveMessageDisplayPreference(value: MessageDisplay) : Cypress.Chainable<PreferenceType[]>;
 
+        /**
+         * Verify that the server has a license
+         * @return Nothing.
+        */
+        apiRequireLicense() : Cypress.Chainable<void>;
+
         // *****************************************************************************
         //
         // UI Commands
