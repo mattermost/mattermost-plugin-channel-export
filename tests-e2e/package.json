@@ -16,7 +16,7 @@
     "typescript": "3.9.7"
   },
   "dependencies": {
-    "mattermost-redux": "5.25.0"
+    "mattermost-redux": "github:mattermost/mattermost-redux#9de41da87ccf66b8f7a634c81e012d433f7af304"
   },
   "scripts": {
     "check": "eslint --ext .js --ext .ts . --quiet --cache",
