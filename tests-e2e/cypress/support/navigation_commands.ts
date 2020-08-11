@@ -80,7 +80,7 @@ function visitDMWith(userName: string) : void {
         });
     }).then((dm: DM) => {
         // # Click on the sidebar item corresponding to the DM with the bot.
-        cy.get(`#sidebarItem_${dm.me.id}__${dm.user.id}`).click();
+        cy.get(`#sidebarItem_${dm.user.id}__${dm.me.id}`).click();
     });
 }
 Cypress.Commands.add('visitDMWith', visitDMWith);
