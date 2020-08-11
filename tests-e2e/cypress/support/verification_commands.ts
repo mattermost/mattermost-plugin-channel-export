@@ -66,7 +66,7 @@ function verifyFileName(channelDisplayName : string, channelName: string) : void
             should('contain.text', `Channel ~${channelDisplayName} exported:`).
             within(() => {
                 // # Find the list of files attached to the post.
-                cy.findByTestId('fileAttachmentList').should('be.visible').within(() 
+                cy.findByTestId('fileAttachmentList').should('be.visible').within(() => {
                     // * Verify that the file to download has the name
                     // ${channelName}.csv
                     cy.get('a[download]').
