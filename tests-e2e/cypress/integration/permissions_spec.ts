@@ -13,6 +13,15 @@ describe('Test Area - Permissions', () => {
     'Post Creation Time,User Id,User Email,User Type,User Name,Post Id,Parent Post Id,Post Message,Post Type';
 
     before(() => {
+        // # Enable ExperimentalViewArchivedChannels config as a sysadmin
+        cy.apiLogin('sysadmin').then(() => {
+            cy.apiUpdateConfig({
+                TeamSettings: {
+                    ExperimentalViewArchivedChannels: true,
+                },
+            });
+        });
+
         // # Login as non-admin user.
         cy.apiLogin('user-1');
 

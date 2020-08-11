@@ -5,6 +5,7 @@ import {Team} from 'mattermost-redux/types/teams';
 import {Channel, ChannelType} from 'mattermost-redux/types/channels';
 import {UserProfile} from 'mattermost-redux/types/users';
 import {Post} from 'mattermost-redux/types/posts';
+import {AdminConfig} from 'mattermost-redux/types/config';
 import Constants from 'mattermost-redux/constants/general';
 
 import users from '../fixtures/users';
@@ -195,7 +196,7 @@ function apiGetMe() : Cypress.Chainable<UserProfile> {
         headers: {'X-Requested-With': 'XMLHttpRequest'},
         url: 'api/v4/users/me',
         method: 'GET',
-    }).then((response) => {
+    }).then((response: Cypress.Response) => {
         expect(response.status).to.equal(httpStatusOk);
 
         const user = response.body as UserProfile;
@@ -203,3 +204,36 @@ function apiGetMe() : Cypress.Chainable<UserProfile> {
     });
 }
 Cypress.Commands.add('apiGetMe', apiGetMe);
+
+// A recursive partial type: all the properties are optional, including the ones
+// in nested objects. Taken from
+// https://stackoverflow.com/questions/47914536/use-partial-in-nested-property-with-typescript
+type DeepPartial<T> = {
+    [P in keyof T]?: DeepPartial<T[P]>;
+};
+
+export type PartialAdminConfig = DeepPartial<AdminConfig>;
+
+function apiUpdateConfig(newConfig: PartialAdminConfig) : Cypress.Chainable<AdminConfig> {
+    // # Get current settings
+    return cy.request('/api/v4/config').then((response: Cypress.Response) => {
+        expect(response.status).to.equal(httpStatusOk);
+
+        const oldConfig = response.body as AdminConfig;
+        const config = {...oldConfig, ...newConfig};
+
+        // # Set the modified config
+        return cy.request({
+            url: '/api/v4/config',
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
+            method: 'PUT',
+            body: config,
+        }).then((updateResponse: Cypress.Response) => {
+            expect(updateResponse.status).to.equal(httpStatusOk);
+
+            const updatedConfig = response.body as AdminConfig;
+            return cy.wrap(updatedConfig);
+        });
+    });
+}
+Cypress.Commands.add('apiUpdateConfig', apiUpdateConfig);

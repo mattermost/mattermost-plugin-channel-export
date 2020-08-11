@@ -10,6 +10,8 @@ declare namespace Cypress {
     type Channel = import('mattermost-redux/types/channels').Channel;
     type Team = import('mattermost-redux/types/teams').Team;
     type UserProfile = import('mattermost-redux/types/users').UserProfile;
+    type PartialAdminConfig = import('./server_api_commands').PartialAdminConfig;
+    type AdminConfig = import('mattermost-redux/types/config').AdminConfig;
 
     interface Chainable<Subject> {
 
@@ -125,6 +127,12 @@ declare namespace Cypress {
          * @return The retrieved user.
         */
         apiGetMe(): Chainable<UserProfile>;
+
+        /**
+         * Update the admin configuration with the passed settings
+         * @param {PartialAdminConfig} newConfig - the partial configuration that needs to be updated
+        */
+        apiUpdateConfig(newConfig: PartialAdminConfig): Chainable<AdminConfig>;
 
         // *****************************************************************************
         //
