@@ -139,7 +139,13 @@ describe('Test Area - Permissions', () => {
 
             // # Unarchive the channel logged in as an admin
             cy.apiLogin('sysadmin').then(() => {
+                // # Visit the channel
                 cy.visit(`/ad-1/channels/${channel.name}`);
+
+                // * Verify that the channel has loaded
+                cy.get('#channelHeaderTitle').contains(channel.display_name);
+
+                // # Unarchive the channel
                 cy.unarchiveCurrentChannel();
             });
 
