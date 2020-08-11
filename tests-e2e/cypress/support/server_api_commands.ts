@@ -6,6 +6,7 @@ import {Channel, ChannelType} from 'mattermost-redux/types/channels';
 import {UserProfile} from 'mattermost-redux/types/users';
 import {Post} from 'mattermost-redux/types/posts';
 import {AdminConfig} from 'mattermost-redux/types/config';
+import {PreferenceType} from 'mattermost-redux/types/preferences';
 import Constants from 'mattermost-redux/constants/general';
 
 import users from '../fixtures/users';
@@ -237,3 +238,29 @@ function apiUpdateConfig(newConfig: PartialAdminConfig) : Cypress.Chainable<Admi
     });
 }
 Cypress.Commands.add('apiUpdateConfig', apiUpdateConfig);
+
+export type MessageDisplay = 'compact' | 'clean';
+
+function apiSaveMessageDisplayPreference(value: MessageDisplay) : Cypress.Chainable<PreferenceType[]> {
+    return cy.getCookie('MMUSERID').then((cookie: Cypress.Cookie | null) => {
+        const messageDisplayPreference = {
+            user_id: cookie?.value,
+            category: 'display_settings',
+            name: 'message_display',
+            value,
+        };
+
+        return cy.request({
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
+            url: '/api/v4/users/me/preferences',
+            method: 'PUT',
+            body: [messageDisplayPreference],
+        }).then((response: Cypress.Response) => {
+            expect(response.status).to.equal(httpStatusOk);
+
+            const preferences = response.body as PreferenceType[];
+            return cy.wrap(preferences);
+        });
+    });
+}
+Cypress.Commands.add('apiSaveMessageDisplayPreference', apiSaveMessageDisplayPreference);

@@ -10,8 +10,11 @@ declare namespace Cypress {
     type Channel = import('mattermost-redux/types/channels').Channel;
     type Team = import('mattermost-redux/types/teams').Team;
     type UserProfile = import('mattermost-redux/types/users').UserProfile;
-    type PartialAdminConfig = import('./server_api_commands').PartialAdminConfig;
     type AdminConfig = import('mattermost-redux/types/config').AdminConfig;
+    type PreferenceType = import('mattermost-redux/types/preferences').PreferenceType;
+
+    type PartialAdminConfig = import('./server_api_commands').PartialAdminConfig;
+    type MessageDisplay = import('./server_api_commands').MessageDisplay;
 
     interface Chainable<Subject> {
 
@@ -134,6 +137,14 @@ declare namespace Cypress {
         */
         apiUpdateConfig(newConfig: PartialAdminConfig): Chainable<AdminConfig>;
 
+        /**
+         * Save message display preference of a user directly via API
+         * This API assume that the user is logged in and has cookie to access
+         * @param {MessageDisplay} value - Either "clean" (default) or "compact"
+         * @return The array of preferences of the user
+        */
+        apiSaveMessageDisplayPreference(value: MessageDisplay) : Cypress.Chainable<PreferenceType[]>;
+
         // *****************************************************************************
         //
         // UI Commands
@@ -192,13 +203,6 @@ declare namespace Cypress {
          * @return Nothing.
         */
         kickUser(userName: string): Chainable<void>;
-
-        /**
-         * Set the Message Display setting to Standard, though Account Settings
-         * > Display > Message Display.
-         * @return Nothing.
-        */
-        setMessageDisplayToStandard(): Chainable<void>;
 
         // *****************************************************************************
         //

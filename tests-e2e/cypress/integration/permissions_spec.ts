@@ -29,7 +29,7 @@ describe('Test Area - Permissions', () => {
         cy.visit('/');
 
         // # Set the Message Display to Standard
-        cy.setMessageDisplayToStandard();
+        cy.apiSaveMessageDisplayPreference('clean');
     });
 
     beforeEach(() => {
