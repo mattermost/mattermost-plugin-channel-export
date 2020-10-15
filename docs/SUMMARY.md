@@ -6,5 +6,7 @@
 
 ## Contributing
 
+- [Contribution Guidelines](contributing.md)
+
 ## Help and Support
 
