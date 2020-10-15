@@ -1,1 +1,1 @@
-This plugin allows channel export into a human readable format.
+This plugin exports channel messages into a human readable, `.csv` file format.
