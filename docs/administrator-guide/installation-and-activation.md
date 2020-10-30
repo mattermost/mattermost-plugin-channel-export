@@ -9,8 +9,6 @@ Mattermost Incident Management is available in the Plugin Marketplace. You can d
 5. Select **true** to enable the plugin.
 6. Select **Save**.
 
-When you open the Main Menu, **Playbooks & Incidents** is available as a menu item.
-
 ## Activating Channel Export for Cloud Deployments
 
 Channel Export is included in the Mattermost Cloud workspace and is enabled by default.
