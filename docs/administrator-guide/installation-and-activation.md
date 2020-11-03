@@ -1,6 +1,6 @@
 ## Installing Channel Export for Self-Managed Deployments
 
-Mattermost Incident Management is available in the Plugin Marketplace. You can download and install the plugin from Mattermost.
+Channel Export can be installed and configured once Mattermost Incident Management has been installed.
 
 1. Open **System Console > Plugin Management**.
 2. Search for **Channel Export** using the search bar or scroll through the list manually.
