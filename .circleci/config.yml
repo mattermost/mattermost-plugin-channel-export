@@ -5,18 +5,16 @@ orbs:
 
 workflows:
   version: 2
-  test:
+  deploy:
     jobs:
       - plugin-ci/lint
       - plugin-ci/test
       - plugin-ci/build
-  deploy:
-    jobs:
       - plugin-ci/deploy-release:
           filters:
             tags:
               only: /^v.*/
             branches:
-              ignore: /.*/
+              only: master
           requires:
-            - test
+            - plugin-ci/lint
