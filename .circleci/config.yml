@@ -4,22 +4,21 @@ orbs:
   plugin-ci: mattermost/plugin-ci@0.1.0
 
 workflows:
-  ci:
+  test:
     jobs:
       - plugin-ci/lint
       - plugin-ci/test
       - plugin-ci/build
   deploy:
     jobs:
-      - plugin-ci/lint
-      - plugin-ci/test
-      - plugin-ci/build
       - plugin-ci/deploy-release:
         filters:
           tags:
             only: /^v.*/
           branches:
             ignore: /.*/
+        requires:
+          - test
       - plugin-ci/deploy-release-github:
         filters:
           tags:
@@ -28,7 +27,4 @@ workflows:
             ignore: /.*/
         context: matterbuild-github-token
         requires:
-          - plugin-ci/lint
-          - plugin-ci/test
-          - plugin-ci/build
           - plugin-ci/deploy-release
