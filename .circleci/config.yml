@@ -10,20 +10,18 @@ workflows:
       - plugin-ci/lint
       - plugin-ci/test
       - plugin-ci/build
-      - plugin-ci/deploy-release
+      - plugin-ci/deploy-release:
         filters:
           tags:
             only: /^v.*/
           branches:
-            only:
-              - master
-      - plugin-ci/deploy-release-github
+            ignore: /.*/
+      - plugin-ci/deploy-release-github:
         filters:
           tags:
             only: /^v.*/
           branches:
-            only:
-              - master
+            ignore: /.*/
         context: matterbuild-github-token
         requires:
           - plugin-ci/lint
