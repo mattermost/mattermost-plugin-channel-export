@@ -4,6 +4,7 @@ orbs:
   plugin-ci: mattermost/plugin-ci@0.1.0
 
 workflows:
+  version: 2
   test:
     jobs:
       - plugin-ci/lint
@@ -12,10 +13,10 @@ workflows:
   deploy:
     jobs:
       - plugin-ci/deploy-release:
-        filters:
-          tags:
-            only: /^v.*/
-          branches:
-            ignore: /.*/
-        requires:
-          - test
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+          requires:
+            - test
