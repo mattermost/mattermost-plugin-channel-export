@@ -15,3 +15,7 @@ workflows:
             only: /^v.*/
           branches:
             ignore: /.*/
+        requires:
+          - plugin-ci/lint
+          - plugin-ci/test
+          - plugin-ci/build
