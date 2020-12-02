@@ -9,3 +9,11 @@ workflows:
       - plugin-ci/lint
       - plugin-ci/test
       - plugin-ci/build
+  deploy:
+    jobs:
+      - plugin-ci/deploy-release:
+        filters:
+          tags:
+            only: /^v.*/
+          branches:
+            ignore: /.*/
