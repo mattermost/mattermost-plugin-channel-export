@@ -5,8 +5,27 @@ orbs:
 
 workflows:
   version: 2
-  ci:
+  deploy:
     jobs:
       - plugin-ci/lint
       - plugin-ci/test
       - plugin-ci/build
+      - plugin-ci/deploy-release:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only: master
+          requires:
+            - plugin-ci/lint
+            - plugin-ci/test
+            - plugin-ci/build
+      - plugin-ci/deploy-release-github:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only: master
+          context: matterbuild-github-token
+          requires:
+            - plugin-ci/deploy-release
