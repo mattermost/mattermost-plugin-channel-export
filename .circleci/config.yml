@@ -10,3 +10,23 @@ workflows:
       - plugin-ci/lint
       - plugin-ci/test
       - plugin-ci/build
+      - plugin-ci/deploy-release
+        filters:
+          tags:
+            only: /^v.*/
+          branches:
+            only:
+              - master
+      - plugin-ci/deploy-release-github
+        filters:
+          tags:
+            only: /^v.*/
+          branches:
+            only:
+              - master
+        context: matterbuild-github-token
+        requires:
+          - plugin-ci/lint
+          - plugin-ci/test
+          - plugin-ci/build
+          - plugin-ci/deploy-release
