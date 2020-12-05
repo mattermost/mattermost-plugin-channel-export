@@ -1,31 +1,53 @@
 version: 2.1
 
 orbs:
-  plugin-ci: mattermost/plugin-ci@0.1.0
+  plugin-ci: mattermost/plugin-ci@volatile
 
 workflows:
   version: 2
-  deploy:
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - master
     jobs:
       - plugin-ci/lint
       - plugin-ci/test
       - plugin-ci/build
-      - plugin-ci/deploy-release:
+  ci:
+    jobs:
+      - plugin-ci/lint:
           filters:
             tags:
               only: /^v.*/
+      - plugin-ci/coverage:
+          filters:
+            tags:
+              only: /^v.*/
+      - plugin-ci/build:
+          filters:
+            tags:
+              only: /^v.*/
+      - plugin-ci/deploy-ci:
+          filters:
             branches:
               only: master
+          context: plugin-ci
           requires:
             - plugin-ci/lint
-            - plugin-ci/test
+            - plugin-ci/coverage
             - plugin-ci/build
       - plugin-ci/deploy-release-github:
           filters:
             tags:
               only: /^v.*/
             branches:
-              only: master
+              ignore: /.*/
           context: matterbuild-github-token
           requires:
-            - plugin-ci/deploy-release
+            - plugin-ci/lint
+            - plugin-ci/coverage
+            - plugin-ci/build
