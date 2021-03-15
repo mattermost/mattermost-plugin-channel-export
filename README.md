@@ -1,6 +1,6 @@
 # Mattermost Channel Export Plugin
 
-This plugin allows channel export into a human readable format.
+This plugin allows channel export into a human readable format. 
 
 ## License
 
@@ -14,6 +14,4 @@ On startup, the plugin checks for a valid Mattermost Enterprise Edition E20 lice
 
 This plugin contains both a server and web app portion. Read our documentation about the [Developer Workflow](https://developers.mattermost.com/extend/plugins/developer-workflow/) and [Developer Setup](https://developers.mattermost.com/extend/plugins/developer-setup/) for more information about developing and extending plugins.
 
-For more information about contributing to Mattermost, and the different ways you can contribute, see https://www.mattermost.org/contribute-to-mattermost.
-
-Please visit the [Channel Export developer docs](https://mattermost.gitbook.io/channel-export-plugin/development/contributing) to learn more about contributing to the Incident Response plugin.
+Please visit the [Channel Export developer docs](https://mattermost.gitbook.io/channel-export-plugin/development/contributing) to learn more about contributing to the Incident Collaboration plugin.
