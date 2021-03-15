@@ -1,6 +1,8 @@
 # Mattermost Channel Export Plugin
 
-This plugin allows channel export into a human readable format. 
+This plugin allows channel export into a human readable format.
+
+Please visit the [Channel Export documentation](https://mattermost.gitbook.io/channel-export-plugin/) for more information.
 
 ## License
 
