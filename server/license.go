@@ -2,24 +2,11 @@ package main
 
 import (
 	"github.com/mattermost/mattermost-server/v5/model"
+
+	originalapi "github.com/mattermost/mattermost-plugin-api"
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 )
 
-func isLicensed(license *model.License) bool {
-	if license == nil {
-		return false
-	}
-
-	if license.Features == nil {
-		return false
-	}
-
-	if license.Features.FutureFeatures == nil {
-		return false
-	}
-
-	if !*license.Features.FutureFeatures {
-		return false
-	}
-
-	return true
+func isLicensed(license *model.License, api *pluginapi.Wrapper) bool {
+	return originalapi.IsE20LicensedOrDevelopment(api.Configuration.GetConfig(), api.System.GetLicense())
 }

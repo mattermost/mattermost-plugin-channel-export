@@ -44,7 +44,7 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 
 func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandResponse {
 	license := p.client.System.GetLicense()
-	if !isLicensed(license) {
+	if !isLicensed(license, p.client) {
 		return &model.CommandResponse{
 			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
 			Text:         "The channel export plugin requires a valid E20 license.",

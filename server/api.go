@@ -88,7 +88,7 @@ func (h *Handler) hasPermissionToChannel(userID, channelID string) (*model.Chann
 // Export handles /api/v1/export, exporting the requested channel.
 func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 	license := h.client.System.GetLicense()
-	if !isLicensed(license) {
+	if !isLicensed(license, h.client) {
 		handleError(w, http.StatusBadRequest, "the channel export plugin requires a valid E20 license.")
 		return
 	}
