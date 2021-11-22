@@ -2,43 +2,10 @@
 
 package main
 
-import (
-	"strings"
-
-	"github.com/mattermost/mattermost-server/v5/model"
-)
-
-var manifest *model.Manifest
-
-const manifestStr = `
-{
-  "id": "com.mattermost.plugin-channel-export",
-  "name": "Channel Export",
-  "description": "This plugin allows channel export into a human readable format.",
-  "homepage_url": "https://github.com/mattermost/mattermost-plugin-channel-export/",
-  "support_url": "https://github.com/mattermost/mattermost-plugin-channel-export/issues",
-  "release_notes_url": "https://github.com/mattermost/mattermost-plugin-channel-export/releases/tag/v1.0.0",
-  "version": "1.0.0",
-  "min_server_version": "5.12.0",
-  "server": {
-    "executables": {
-      "darwin-amd64": "server/dist/plugin-darwin-amd64",
-      "linux-amd64": "server/dist/plugin-linux-amd64",
-      "windows-amd64": "server/dist/plugin-windows-amd64.exe"
-    },
-    "executable": ""
-  },
-  "webapp": {
-    "bundle_path": "webapp/dist/main.js"
-  },
-  "settings_schema": {
-    "header": "",
-    "footer": "",
-    "settings": []
-  }
-}
-`
-
-func init() {
-	manifest = model.ManifestFromJson(strings.NewReader(manifestStr))
+var manifest = struct {
+	ID      string
+	Version string
+}{
+	ID:      "com.mattermost.plugin-channel-export",
+	Version: "1.0.0",
 }

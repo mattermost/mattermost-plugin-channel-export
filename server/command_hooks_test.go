@@ -9,8 +9,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
-	"github.com/mattermost/mattermost-server/v5/model"
-	"github.com/mattermost/mattermost-server/v5/plugin"
+	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost-server/v6/plugin"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -49,7 +49,7 @@ func TestExecuteCommand(t *testing.T) {
 		})
 
 		require.Nil(t, appError)
-		assert.Equal(t, model.COMMAND_RESPONSE_TYPE_EPHEMERAL, commandResponse.ResponseType)
+		assert.Equal(t, model.CommandResponseTypeEphemeral, commandResponse.ResponseType)
 		assert.Equal(t, "Unknown command: /unknown", commandResponse.Text)
 	})
 
@@ -82,7 +82,7 @@ func TestExecuteCommand(t *testing.T) {
 		})
 
 		require.Nil(t, appError)
-		assert.Equal(t, model.COMMAND_RESPONSE_TYPE_EPHEMERAL, commandResponse.ResponseType)
+		assert.Equal(t, model.CommandResponseTypeEphemeral, commandResponse.ResponseType)
 		assert.Equal(t, "The channel export plugin requires a valid E20 license.", commandResponse.Text)
 	})
 
@@ -112,7 +112,7 @@ func TestExecuteCommand(t *testing.T) {
 		}).Times(1)
 		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Name: "channel_name"}, nil)
 		mockChannel.EXPECT().GetDirect("user_id", "bot_id").Return(&model.Channel{Id: "direct"}, nil)
-		mockUser.EXPECT().HasPermissionTo("user_id", model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
+		mockUser.EXPECT().HasPermissionTo("user_id", model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			PrivacySettings: model.PrivacySettings{
 				ShowEmailAddress: &trueValue,
@@ -141,7 +141,7 @@ func TestExecuteCommand(t *testing.T) {
 		})
 
 		require.Nil(t, appError)
-		assert.Equal(t, model.COMMAND_RESPONSE_TYPE_EPHEMERAL, commandResponse.ResponseType)
+		assert.Equal(t, model.CommandResponseTypeEphemeral, commandResponse.ResponseType)
 		assert.Equal(t, "Exporting ~channel_name. @channelexport will send you a direct message when the export is ready.", commandResponse.Text)
 
 		// Export runs asynchronuosly, so give time for that to occur and complete above
@@ -178,7 +178,7 @@ func TestExecuteCommand(t *testing.T) {
 		})
 
 		require.Nil(t, appError)
-		assert.Equal(t, model.COMMAND_RESPONSE_TYPE_EPHEMERAL, commandResponse.ResponseType)
+		assert.Equal(t, model.CommandResponseTypeEphemeral, commandResponse.ResponseType)
 		assert.Equal(t, "Unable to retrieve the channel to export.", commandResponse.Text)
 	})
 
@@ -213,7 +213,7 @@ func TestExecuteCommand(t *testing.T) {
 		})
 
 		require.Nil(t, appError)
-		assert.Equal(t, model.COMMAND_RESPONSE_TYPE_EPHEMERAL, commandResponse.ResponseType)
+		assert.Equal(t, model.CommandResponseTypeEphemeral, commandResponse.ResponseType)
 		assert.Equal(t, "An error occurred trying to create a direct message channel between you and @channelexport.", commandResponse.Text)
 	})
 
@@ -240,7 +240,7 @@ func TestExecuteCommand(t *testing.T) {
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
 		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Name: "channel_name"}, nil)
 		mockChannel.EXPECT().GetDirect("user_id", "bot_id").Return(&model.Channel{Id: "direct"}, nil)
-		mockUser.EXPECT().HasPermissionTo("user_id", model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
+		mockUser.EXPECT().HasPermissionTo("user_id", model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
 		mockFile.EXPECT().Upload(gomock.Any(), "channel_name.csv", "direct").Do(func(reader io.Reader, fileName, channelID string) {
 			contents, err := ioutil.ReadAll(reader)
@@ -265,7 +265,7 @@ func TestExecuteCommand(t *testing.T) {
 		})
 
 		require.Nil(t, appError)
-		assert.Equal(t, model.COMMAND_RESPONSE_TYPE_EPHEMERAL, commandResponse.ResponseType)
+		assert.Equal(t, model.CommandResponseTypeEphemeral, commandResponse.ResponseType)
 		assert.Equal(t, "Exporting ~channel_name. @channelexport will send you a direct message when the export is ready.", commandResponse.Text)
 
 		// Export runs asynchronuosly, so give time for that to occur and complete above
@@ -296,7 +296,7 @@ func TestExecuteCommand(t *testing.T) {
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
 		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Name: "channel_name"}, nil)
 		mockChannel.EXPECT().GetDirect("user_id", "bot_id").Return(&model.Channel{Id: "direct"}, nil)
-		mockUser.EXPECT().HasPermissionTo("user_id", model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
+		mockUser.EXPECT().HasPermissionTo("user_id", model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			PrivacySettings: model.PrivacySettings{
 				ShowEmailAddress: &trueValue,
@@ -325,7 +325,7 @@ func TestExecuteCommand(t *testing.T) {
 		})
 
 		require.Nil(t, appError)
-		assert.Equal(t, model.COMMAND_RESPONSE_TYPE_EPHEMERAL, commandResponse.ResponseType)
+		assert.Equal(t, model.CommandResponseTypeEphemeral, commandResponse.ResponseType)
 		assert.Equal(t, "Exporting ~channel_name. @channelexport will send you a direct message when the export is ready.", commandResponse.Text)
 
 		// Export runs asynchronuosly, so give time for that to occur and complete above

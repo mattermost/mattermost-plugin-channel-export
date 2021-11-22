@@ -10,7 +10,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
-	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/stretchr/testify/require"
 
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
@@ -107,8 +107,8 @@ func TestHandler(t *testing.T) {
 			},
 		}).Times(1)
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
-		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL).Return(true).Times(1)
-		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
+		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(true).Times(1)
+		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			PrivacySettings: model.PrivacySettings{
 				ShowEmailAddress: &trueValue,
@@ -290,7 +290,7 @@ func TestHandler(t *testing.T) {
 		}}).Times(2)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
-		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL).Return(false).Times(1)
+		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(false).Times(1)
 
 		err := client.ExportChannel(ioutil.Discard, channelID, FormatCSV)
 		require.EqualError(t, err, "channel 'channel_id' not found or user does not have permission")
@@ -322,8 +322,8 @@ func TestHandler(t *testing.T) {
 		}}).Times(2)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
-		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL).Return(true).Times(1)
-		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
+		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(true).Times(1)
+		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			PrivacySettings: model.PrivacySettings{
 				ShowEmailAddress: &falseValue,
@@ -367,8 +367,8 @@ func TestHandler(t *testing.T) {
 		}}).Times(2)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
-		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL).Return(true).Times(1)
-		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
+		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(true).Times(1)
+		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			PrivacySettings: model.PrivacySettings{
 				ShowEmailAddress: &trueValue,

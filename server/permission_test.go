@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
-	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,7 +30,7 @@ func TestShowEmailAddress(t *testing.T) {
 
 		userID := "user_id"
 
-		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(true).Times(1)
+		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(true).Times(1)
 		assert.True(t, showEmailAddress(mockAPI, userID))
 	})
 
@@ -50,7 +50,7 @@ func TestShowEmailAddress(t *testing.T) {
 
 		userID := "user_id"
 
-		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
+		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			PrivacySettings: model.PrivacySettings{
 				ShowEmailAddress: &trueValue,
@@ -75,7 +75,7 @@ func TestShowEmailAddress(t *testing.T) {
 
 		userID := "user_id"
 
-		mockUser.EXPECT().HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM).Return(false).Times(1)
+		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			PrivacySettings: model.PrivacySettings{
 				ShowEmailAddress: &falseValue,

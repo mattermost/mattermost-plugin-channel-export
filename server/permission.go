@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
-	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v6/model"
 )
 
 // showEmailAddress determines if the given user has access to email addresses within the system.
 func showEmailAddress(client *pluginapi.Wrapper, userID string) bool {
-	if client.User.HasPermissionTo(userID, model.PERMISSION_MANAGE_SYSTEM) {
+	if client.User.HasPermissionTo(userID, model.PermissionManageSystem) {
 		return true
 	}
 

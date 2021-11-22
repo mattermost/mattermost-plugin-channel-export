@@ -6,9 +6,10 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
-	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/sirupsen/logrus"
+
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
+	"github.com/mattermost/mattermost-server/v6/model"
 )
 
 // Handler encapsulates the context necessary for the channel export API.
@@ -78,7 +79,7 @@ func (h *Handler) hasPermissionToChannel(userID, channelID string) (*model.Chann
 		return nil, false
 	}
 
-	if h.client.User.HasPermissionToChannel(userID, channelID, model.PERMISSION_READ_CHANNEL) {
+	if h.client.User.HasPermissionToChannel(userID, channelID, model.PermissionReadChannel) {
 		return channel, true
 	}
 

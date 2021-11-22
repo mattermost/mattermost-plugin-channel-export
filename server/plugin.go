@@ -5,19 +5,20 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	pluginAPIWrapper "github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	pluginapi "github.com/mattermost/mattermost-plugin-api"
+	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost-server/v6/plugin"
 
-	"github.com/mattermost/mattermost-server/v5/model"
-	"github.com/mattermost/mattermost-server/v5/plugin"
+	pluginAPIWrapper "github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 )
 
 // Plugin implements the interface expected by the Mattermost server to communicate between the server and plugin processes.
 type Plugin struct {
 	plugin.MattermostPlugin
+	clientPluginAPI *pluginapi.Client
 
 	// configurationLock synchronizes access to the configuration.
 	configurationLock sync.RWMutex
@@ -44,11 +45,12 @@ const (
 
 // OnActivate is invoked when the plugin is activated.
 func (p *Plugin) OnActivate() error {
-	client := pluginapi.NewClient(p.API)
+	client := pluginapi.NewClient(p.API, p.Driver)
 	p.client = pluginAPIWrapper.Wrap(client)
+	p.clientPluginAPI = client
 	pluginapi.ConfigureLogrus(logrus.New(), client)
 
-	botID, err := p.Helpers.EnsureBot(&model.Bot{
+	botID, err := p.clientPluginAPI.Bot.EnsureBot(&model.Bot{
 		Username:    botUsername,
 		DisplayName: botDisplayName,
 		Description: botDescription,
