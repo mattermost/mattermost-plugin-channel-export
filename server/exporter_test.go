@@ -9,7 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
-	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
@@ -47,7 +47,6 @@ func TestChannelPostsIterator(t *testing.T) {
 		Type:     "",
 		CreateAt: model.GetMillisForTime(now),
 		Id:       "3j6wc01x7ox5joy3jupjmo69zu",
-		ParentId: "o3p7oxj1yqtnwg66u95802y08j",
 		Message:  "test",
 	}
 
@@ -182,7 +181,6 @@ func TestToExportedPost(t *testing.T) {
 		Type:     "",
 		CreateAt: model.GetMillisForTime(now),
 		Id:       "3j6wc01x7ox5joy3jupjmo69zu",
-		ParentId: "o3p7oxj1yqtnwg66u95802y08j",
 		Message:  "test",
 	}
 
@@ -202,15 +200,14 @@ func TestToExportedPost(t *testing.T) {
 		require.NoError(t, err)
 
 		exportedPost := ExportedPost{
-			CreateAt:     now.UTC(),
-			UserID:       post.UserId,
-			UserEmail:    "",
-			UserType:     "user",
-			UserName:     user.Username,
-			ID:           post.Id,
-			ParentPostID: post.ParentId,
-			Message:      post.Message,
-			Type:         "message",
+			CreateAt:  now.UTC(),
+			UserID:    post.UserId,
+			UserEmail: "",
+			UserType:  "user",
+			UserName:  user.Username,
+			ID:        post.Id,
+			Message:   post.Message,
+			Type:      "message",
 		}
 		require.Equal(t, &exportedPost, actualExportedPost)
 	})
@@ -223,15 +220,14 @@ func TestToExportedPost(t *testing.T) {
 		require.NoError(t, err)
 
 		exportedPost := ExportedPost{
-			CreateAt:     now.UTC(),
-			UserID:       post.UserId,
-			UserEmail:    user.Email,
-			UserType:     "user",
-			UserName:     user.Username,
-			ID:           post.Id,
-			ParentPostID: post.ParentId,
-			Message:      post.Message,
-			Type:         "message",
+			CreateAt:  now.UTC(),
+			UserID:    post.UserId,
+			UserEmail: user.Email,
+			UserType:  "user",
+			UserName:  user.Username,
+			ID:        post.Id,
+			Message:   post.Message,
+			Type:      "message",
 		}
 		require.Equal(t, &exportedPost, actualExportedPost)
 	})
@@ -261,15 +257,14 @@ func TestToExportedPost(t *testing.T) {
 		require.NoError(t, err)
 
 		expectedPost := ExportedPost{
-			CreateAt:     now.UTC(),
-			UserID:       post.UserId,
-			UserEmail:    "",
-			UserType:     "bot",
-			UserName:     user.Username,
-			ID:           post.Id,
-			ParentPostID: post.ParentId,
-			Message:      post.Message,
-			Type:         "message",
+			CreateAt:  now.UTC(),
+			UserID:    post.UserId,
+			UserEmail: "",
+			UserType:  "bot",
+			UserName:  user.Username,
+			ID:        post.Id,
+			Message:   post.Message,
+			Type:      "message",
 		}
 		require.Equal(t, &expectedPost, actualExportedPost)
 	})
@@ -286,15 +281,14 @@ func TestToExportedPost(t *testing.T) {
 		require.NoError(t, err)
 
 		expectedPost := ExportedPost{
-			CreateAt:     now.UTC(),
-			UserID:       post.UserId,
-			UserEmail:    "",
-			UserType:     "system",
-			UserName:     user.Username,
-			ID:           post.Id,
-			ParentPostID: post.ParentId,
-			Message:      post.Message,
-			Type:         systemPost.Type,
+			CreateAt:  now.UTC(),
+			UserID:    post.UserId,
+			UserEmail: "",
+			UserType:  "system",
+			UserName:  user.Username,
+			ID:        post.Id,
+			Message:   post.Message,
+			Type:      systemPost.Type,
 		}
 
 		require.Equal(t, &expectedPost, actualExportedPost)

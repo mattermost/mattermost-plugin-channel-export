@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/pkg/errors"
 )
 
@@ -45,7 +45,7 @@ func NewMattermostServerClient(mattermostServerAddress string) *Client {
 // SetToken configures the authentication token required to identify the Mattermost user.
 func (c *Client) SetToken(token string) {
 	c.AuthToken = token
-	c.AuthType = model.HEADER_BEARER
+	c.AuthType = model.HeaderBearer
 }
 
 func (c *Client) buildURL(urlPath string, args ...interface{}) string {
@@ -59,7 +59,7 @@ func (c *Client) doGet(u string) (*http.Response, error) {
 	}
 
 	if c.AuthToken != "" {
-		r.Header.Set(model.HEADER_AUTH, c.AuthType+" "+c.AuthToken)
+		r.Header.Set(model.HeaderAuth, c.AuthType+" "+c.AuthToken)
 	}
 
 	return c.httpClient.Do(r)

@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/mattermost/mattermost-server/v5/model"
-	"github.com/mattermost/mattermost-server/v5/plugin"
+	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost-server/v6/plugin"
 )
 
 const exportCommandTrigger = "export"
@@ -36,7 +36,7 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 
 	default:
 		return &model.CommandResponse{
-			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
+			ResponseType: model.CommandResponseTypeEphemeral,
 			Text:         fmt.Sprintf("Unknown command: " + args.Command),
 		}, nil
 	}
@@ -46,7 +46,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	license := p.client.System.GetLicense()
 	if !isLicensed(license, p.client) {
 		return &model.CommandResponse{
-			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
+			ResponseType: model.CommandResponseTypeEphemeral,
 			Text:         "The channel export plugin requires a valid E20 license.",
 		}
 	}
@@ -57,7 +57,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 			"Channel ID", args.ChannelId, "Error", err)
 
 		return &model.CommandResponse{
-			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
+			ResponseType: model.CommandResponseTypeEphemeral,
 			Text:         "Unable to retrieve the channel to export.",
 		}
 	}
@@ -68,7 +68,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 			"Bot ID", p.botID, "User ID", args.UserId, "Error", err)
 
 		return &model.CommandResponse{
-			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
+			ResponseType: model.CommandResponseTypeEphemeral,
 			Text:         fmt.Sprintf("An error occurred trying to create a direct message channel between you and @%s.", botUsername),
 		}
 	}
@@ -138,7 +138,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	}()
 
 	return &model.CommandResponse{
-		ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
+		ResponseType: model.CommandResponseTypeEphemeral,
 		Text: fmt.Sprintf("Exporting ~%s. @%s will send you a direct message when the export is ready.",
 			channelToExport.Name, botUsername),
 	}
