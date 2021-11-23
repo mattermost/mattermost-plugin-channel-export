@@ -37,7 +37,7 @@ func NewMattermostServerClient(mattermostServerAddress string) *Client {
 	if !strings.HasSuffix(mattermostServerAddress, "/") {
 		mattermostServerAddress += "/"
 	}
-	mattermostServerAddress += manifest.ID + "/"
+	mattermostServerAddress += manifest.Id + "/"
 
 	return NewClient(mattermostServerAddress)
 }
