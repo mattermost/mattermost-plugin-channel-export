@@ -32,9 +32,9 @@ func registerAPI(router *mux.Router, client *pluginapi.Wrapper, makePostsIterato
 
 // APIError is a type of error returned by the API.
 type APIError struct {
-	StatusCode int
 	StatusText string
 	Message    string
+	StatusCode int
 }
 
 func (e *APIError) Error() string {
