@@ -32,6 +32,7 @@ func NewClient(address string) *Client {
 }
 
 // NewMattermostServerClient creates a client to the channel export plugin at the given Mattermost server address.
+//
 //nolint:deadcode,unused
 func NewMattermostServerClient(mattermostServerAddress string) *Client {
 	if !strings.HasSuffix(mattermostServerAddress, "/") {
