@@ -56,7 +56,7 @@ func (p *Plugin) OnActivate() error {
 		Description: botDescription,
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to ensure bot.")
+		return errors.Wrap(err, "failed to ensure bot")
 	}
 
 	p.botID = botID
