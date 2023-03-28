@@ -17,10 +17,10 @@ const FormatCSV = "csv"
 
 // Client is the programmatic interface to the channel export plugin.
 type Client struct {
+	httpClient *http.Client
 	Address    string
 	AuthToken  string
 	AuthType   string
-	httpClient *http.Client
 }
 
 // NewClient creates a client to the channel export plugin at the given address.

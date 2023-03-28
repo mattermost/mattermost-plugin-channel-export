@@ -20,21 +20,22 @@ type Plugin struct {
 	plugin.MattermostPlugin
 	clientPluginAPI *pluginapi.Client
 
-	// configurationLock synchronizes access to the configuration.
-	configurationLock sync.RWMutex
-
 	// configuration is the active plugin configuration. Consult getConfiguration and
 	// setConfiguration for usage.
 	configuration *configuration
 
 	client *pluginAPIWrapper.Wrapper
-	botID  string
 
 	// router is the plugin's root HTTP handler
 	router *mux.Router
 
 	// makeChannelPostsIterator is a factory function for iterating over posts
 	makeChannelPostsIterator func(*model.Channel, bool) PostIterator
+
+	botID string
+
+	// configurationLock synchronizes access to the configuration.
+	configurationLock sync.RWMutex
 }
 
 const (
