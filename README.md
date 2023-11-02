@@ -50,7 +50,7 @@ You can export ongoing and ended incidents using the `/export` slash command fro
 
 If your Mattermost server is running locally, you can enable [local mode](https://docs.mattermost.com/manage/mmctl-command-line-tool.html#local-mode) to streamline deploying your plugin. Edit your server configuration as follows:
 
-```
+```json
 {
     "ServiceSettings": {
         ...
@@ -64,7 +64,7 @@ Deploy your plugin with ``make deploy``.
 
 You may also customize the Unix socket path:
 
-```
+```bash
 export MM_LOCALSOCKETPATH=/var/tmp/alternate_local.socket
 make deploy
 ```
@@ -75,7 +75,7 @@ If developing a plugin with a webapp, watch for changes and deploy those automat
 
 Alternatively, you can authenticate with the server's API with credentials:
 
-```
+```bash
 export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
 export MM_ADMIN_USERNAME=admin
 export MM_ADMIN_PASSWORD=password
@@ -84,7 +84,7 @@ make deploy
 
 or with a [personal access token](https://developers.mattermost.com/integrate/reference/personal-access-token/):
 
-```
+```bash
 export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
 export MM_ADMIN_TOKEN=j44acwd8obn78cdcx7koid4jkr
 make deploy
