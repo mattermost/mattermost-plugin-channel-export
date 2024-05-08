@@ -4,38 +4,7 @@ This plugin exports playbook channels into a CSV format.
 
 ![image](https://github.com/mattermost/mattermost-plugin-channel-export/assets/74422101/2b3fd0bd-75e3-4ae4-8a3c-251a215348a4)
 
-## Admin guide
-
-### Installation
-
-#### Marketplace installation
-
-1. Open **Main Menu > Marketplace**.
-2. Search for Channel Export using the search bar or scroll through the list manually.
-3. Select **Install**.
-4. Next, select **Configure**.
-5. Select **True** to enable the plugin.
-6. Select **Save**.
-
-#### Manual installation
-
-1. Clone this repository.
-2. Follow the instructions in the [Mattermost Developer documentation](https://developers.mattermost.com/integrate/plugins/developer-setup/) to set up your local development environment.
-
-## Channel export for Mattermost Cloud deployments
-
-Channel export is included in the Mattermost Cloud workspace and is enabled by default.
-
-## User guide
-
-### Export channels
-
-You can export ongoing and ended incidents using the `/export` slash command from within the playbook channel or using the steps below:
-
-1. In Mattermost, go to **Main Menu > Playbooks**.
-2. Select the playbook channel you want to export.
-3. Select the drop-down to the right of the playbook name and select **Export Channel Log**.
-4. Save or open the exported CSV file.
+See the [Mattermost Product Documentation](https://docs.mattermost.com/comply/export-mattermost-channel-data.html#export-channel-data) for details on installing, configuring, enabling, and using this Mattermost integration.
 
 ## Development
 
