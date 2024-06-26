@@ -36,6 +36,9 @@ type Plugin struct {
 
 	// configurationLock synchronizes access to the configuration.
 	configurationLock sync.RWMutex
+
+	// active is non-zero when a export is running via slash command
+	active int32
 }
 
 const (
@@ -76,6 +79,6 @@ func (p *Plugin) OnActivate() error {
 }
 
 // ServeHTTP handles requests to /plugins/com.mattermost.plugin-incident-response
-func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
+func (p *Plugin) ServeHTTP(_ *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	p.router.ServeHTTP(w, r)
 }

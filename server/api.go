@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync/atomic"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -86,8 +87,19 @@ func (h *Handler) hasPermissionToChannel(userID, channelID string) (*model.Chann
 	return nil, false
 }
 
+var exportActive int32
+
 // Export handles /api/v1/export, exporting the requested channel.
 func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
+	// only allow one run via rest API at a time
+	if !atomic.CompareAndSwapInt32(&exportActive, 0, 1) {
+		handleError(w, http.StatusServiceUnavailable, "a channel export is already running.")
+		return
+	}
+	defer func() {
+		atomic.StoreInt32(&exportActive, 0)
+	}()
+
 	license := h.client.System.GetLicense()
 	if !isLicensed(license, h.client) {
 		handleError(w, http.StatusBadRequest, "the channel export plugin requires a valid E20 license.")

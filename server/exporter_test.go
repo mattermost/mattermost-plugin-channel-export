@@ -7,11 +7,12 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/pkg/errors"
+	"github.com/stretchr/testify/require"
+
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
 	"github.com/mattermost/mattermost-server/v6/model"
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/require"
 )
 
 func TestChannelPostsIterator(t *testing.T) {
@@ -60,7 +61,7 @@ func TestChannelPostsIterator(t *testing.T) {
 	t.Run("One post iterator", func(t *testing.T) {
 		postIterator := channelPostsIterator(mockAPI, channel, false)
 
-		mockPost.EXPECT().GetPostsForChannel(channel.Id, 0, 1000).Return(&postList, nil).Times(1)
+		mockPost.EXPECT().GetPostsForChannel(channel.Id, 0, PerPage).Return(&postList, nil).Times(1)
 		mockUser.EXPECT().Get(post.UserId).Return(&user, nil).Times(1)
 
 		posts, err := postIterator()
@@ -71,7 +72,7 @@ func TestChannelPostsIterator(t *testing.T) {
 	t.Run("Paging is correct", func(t *testing.T) {
 		postIterator := channelPostsIterator(mockAPI, channel, false)
 
-		length := 1000
+		length := PerPage
 		posts := make(map[string]*model.Post, length)
 		order := make([]string, length)
 
@@ -93,8 +94,8 @@ func TestChannelPostsIterator(t *testing.T) {
 		secondPage := postList
 
 		gomock.InOrder(
-			mockPost.EXPECT().GetPostsForChannel(channel.Id, 0, 1000).Return(&firstPage, nil).Times(1),
-			mockPost.EXPECT().GetPostsForChannel(channel.Id, 1, 1000).Return(&secondPage, nil).Times(1),
+			mockPost.EXPECT().GetPostsForChannel(channel.Id, 0, PerPage).Return(&firstPage, nil).Times(1),
+			mockPost.EXPECT().GetPostsForChannel(channel.Id, 1, PerPage).Return(&secondPage, nil).Times(1),
 		)
 
 		// Called only once because we are setting the same user in all posts,
@@ -128,7 +129,7 @@ func TestChannelPostsIterator(t *testing.T) {
 			Order: []string{editedPost.Id},
 		}
 
-		mockPost.EXPECT().GetPostsForChannel(channel.Id, 0, 1000).Return(&editedPostList, nil).Times(1)
+		mockPost.EXPECT().GetPostsForChannel(channel.Id, 0, PerPage).Return(&editedPostList, nil).Times(1)
 
 		posts, err := postIterator()
 		require.NoError(t, err)
@@ -139,7 +140,7 @@ func TestChannelPostsIterator(t *testing.T) {
 		postIterator := channelPostsIterator(mockAPI, channel, false)
 
 		expectedError := errors.New("error retreiving posts")
-		mockPost.EXPECT().GetPostsForChannel(channel.Id, 0, 1000).Return(nil, expectedError).Times(1)
+		mockPost.EXPECT().GetPostsForChannel(channel.Id, 0, PerPage).Return(nil, expectedError).Times(1)
 
 		posts, err := postIterator()
 		require.Nil(t, posts)
@@ -151,7 +152,7 @@ func TestChannelPostsIterator(t *testing.T) {
 
 		expectedError := fmt.Errorf("new error")
 		mockUser.EXPECT().Get(post.UserId).Return(nil, expectedError).Times(1)
-		mockPost.EXPECT().GetPostsForChannel(channel.Id, 0, 1000).Return(&postList, nil).Times(1)
+		mockPost.EXPECT().GetPostsForChannel(channel.Id, 0, PerPage).Return(&postList, nil).Times(1)
 
 		posts, err := postIterator()
 		require.Nil(t, posts)
@@ -237,8 +238,8 @@ func TestToExportedPost(t *testing.T) {
 		require.NoError(t, post.ShallowCopy(&postWithoutUserID))
 		postWithoutUserID.UserId = "unknown_user_id"
 
-		error := fmt.Errorf("new error")
-		mockUser.EXPECT().Get(postWithoutUserID.UserId).Return(nil, error).Times(1)
+		err := fmt.Errorf("new error")
+		mockUser.EXPECT().Get(postWithoutUserID.UserId).Return(nil, err).Times(1)
 
 		usersCache := make(map[string]*model.User)
 		actualExportedPost, err := toExportedPost(mockAPI, &postWithoutUserID, false, usersCache)
