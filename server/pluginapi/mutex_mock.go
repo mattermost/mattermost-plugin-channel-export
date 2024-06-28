@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync/atomic"
+	"time"
 )
 
 var (
@@ -29,6 +30,7 @@ func (m *ClusterMutexMock) LockWithContext(ctx context.Context) error {
 				return nil
 			}
 		}
+		time.Sleep(time.Millisecond * 20)
 	}
 }
 
