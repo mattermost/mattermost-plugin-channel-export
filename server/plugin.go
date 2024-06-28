@@ -81,9 +81,7 @@ func (p *Plugin) OnActivate() error {
 	p.makeChannelPostsIterator = func(channel *model.Channel, showEmailAddress bool) PostIterator {
 		return channelPostsIterator(p.client, channel, showEmailAddress)
 	}
-	registerAPI(p.router, p.client, p.makeChannelPostsIterator)
-
-	return nil
+	return registerAPI(p.router, p.client, p.makeChannelPostsIterator)
 }
 
 // ServeHTTP handles requests to /plugins/com.mattermost.plugin-incident-response
