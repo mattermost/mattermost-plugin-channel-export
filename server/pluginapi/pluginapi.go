@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost-server/v6/plugin"
 
 	pluginapi "github.com/mattermost/mattermost-plugin-api"
 )
@@ -60,6 +61,10 @@ type Configuration interface {
 	GetConfig() *model.Config
 }
 
+type Cluster interface {
+	NewMutex(key string) (ClusterMutex, error)
+}
+
 // Wrapper is a wrapper over the mattermost-plugin-api layer, defining
 // interfaces implemented by that package, that are also mockable
 type Wrapper struct {
@@ -71,6 +76,7 @@ type Wrapper struct {
 	User          User
 	System        System
 	Configuration Configuration
+	Cluster       Cluster
 }
 
 // CustomWrapper builds a Wrapper with the implementations of the different
@@ -84,6 +90,7 @@ func CustomWrapper(
 	user User,
 	system System,
 	configuration Configuration,
+	cluster Cluster,
 ) *Wrapper {
 	return &Wrapper{
 		Channel:       channel,
@@ -94,12 +101,13 @@ func CustomWrapper(
 		User:          user,
 		System:        system,
 		Configuration: configuration,
+		Cluster:       cluster,
 	}
 }
 
 // Wrap wraps a plugin.API with the mattermost-plugin-api layer, interfaced by
 // this package
-func Wrap(client *pluginapi.Client) *Wrapper {
+func Wrap(client *pluginapi.Client, api plugin.API) *Wrapper {
 	return CustomWrapper(
 		&client.Channel,
 		&client.File,
@@ -109,5 +117,6 @@ func Wrap(client *pluginapi.Client) *Wrapper {
 		&client.User,
 		&client.System,
 		&client.Configuration,
+		&ClusterService{api: api},
 	)
 }

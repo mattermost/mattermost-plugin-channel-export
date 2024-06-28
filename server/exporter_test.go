@@ -26,8 +26,9 @@ func TestChannelPostsIterator(t *testing.T) {
 	mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 	mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 	mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+	mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
 
-	mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+	mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 	channel := &model.Channel{
 		Id: "jx2289hnvko3dypmc3thfcafpb",
@@ -171,8 +172,9 @@ func TestToExportedPost(t *testing.T) {
 	mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 	mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 	mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+	mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
 
-	mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+	mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 	now := time.Now().Round(time.Millisecond)
 	userID := "h6itnszvtit5k2jhi2c1o3p7ox"

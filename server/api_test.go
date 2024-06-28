@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -22,7 +23,8 @@ import (
 
 func setupAPI(t *testing.T, mockAPI *pluginapi.Wrapper, now time.Time, userID, _ /*channelID*/ string) string {
 	router := mux.NewRouter()
-	registerAPI(router, mockAPI, makeTestPostsIterator(t, now))
+	err := registerAPI(router, mockAPI, makeTestPostsIterator(t, now))
+	require.NoError(t, err)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Simulate what the Mattermost server would normally do after validating a token.
@@ -44,10 +46,25 @@ func TestHandler(t *testing.T) {
 	falseValue := false
 
 	t.Run("unauthorized", func(t *testing.T) {
-		address := setupAPI(t, nil, time.Now(), "", "channel_id")
+		mockCtrl := gomock.NewController(t)
+
+		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
+		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
+
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
+
+		address := setupAPI(t, mockAPI, time.Now(), "", "channel_id")
 		client := NewClient(address)
 
-		err := client.ExportChannel(ioutil.Discard, "channel_id", FormatCSV)
+		err := client.ExportChannel(io.Discard, "channel_id", FormatCSV)
 		require.EqualError(t, err, "failed with status code 401")
 	})
 
@@ -62,8 +79,10 @@ func TestHandler(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
 		client := NewClient(address)
@@ -77,7 +96,7 @@ func TestHandler(t *testing.T) {
 			},
 		}).Times(1)
 
-		err := client.ExportChannel(ioutil.Discard, "channel_id", FormatCSV)
+		err := client.ExportChannel(io.Discard, "channel_id", FormatCSV)
 		require.EqualError(t, err, "the channel export plugin requires a valid E20 license.")
 	})
 
@@ -92,8 +111,10 @@ func TestHandler(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		userID := "user_id"
@@ -140,8 +161,10 @@ func TestHandler(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
 		client := NewClient(address)
@@ -167,8 +190,10 @@ func TestHandler(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
 		client := NewClient(address)
@@ -194,8 +219,10 @@ func TestHandler(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
 		client := NewClient(address)
@@ -221,8 +248,10 @@ func TestHandler(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		channelID := "channel_id"
 		address := setupAPI(t, mockAPI, time.Now(), "user_id", channelID)
@@ -250,8 +279,10 @@ func TestHandler(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		channelID := "channel_id"
 		address := setupAPI(t, mockAPI, time.Now(), "user_id", channelID)
@@ -279,8 +310,10 @@ func TestHandler(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		userID := "user_id"
 		channelID := "channel_id"
@@ -310,8 +343,10 @@ func TestHandler(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		userID := "user_id"
@@ -355,8 +390,10 @@ func TestHandler(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		userID := "user_id"
@@ -400,8 +437,10 @@ func TestHandler(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		userID := "user_id"

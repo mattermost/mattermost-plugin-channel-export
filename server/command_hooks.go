@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strings"
 	"sync"
-	"sync/atomic"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -45,8 +46,11 @@ func (p *Plugin) ExecuteCommand(_ *plugin.Context, args *model.CommandArgs) (*mo
 }
 
 func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandResponse {
-	// only allow one run via slash command at a time
-	if !atomic.CompareAndSwapInt32(&p.active, 0, 1) {
+	// only allow one export at a time
+	// only allow one run via rest API at a time
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
+	defer cancel()
+	if err := p.clusterMutex.LockWithContext(ctx); err != nil {
 		return &model.CommandResponse{
 			ResponseType: model.CommandResponseTypeEphemeral,
 			Text:         "An export is already running.",
@@ -55,7 +59,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	var active bool
 	defer func() {
 		if !active {
-			atomic.StoreInt32(&p.active, 0)
+			p.clusterMutex.Unlock()
 		}
 	}()
 
@@ -161,7 +165,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 
 	// wait until both goroutines above are completed then mark exporter inactive
 	go func() {
-		defer atomic.StoreInt32(&p.active, 0)
+		defer p.clusterMutex.Unlock()
 		wg.Wait()
 	}()
 

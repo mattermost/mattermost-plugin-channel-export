@@ -18,10 +18,14 @@ import (
 )
 
 func setupPlugin(t *testing.T, mockAPI *pluginapi.Wrapper, now time.Time) (*Plugin, *plugin.Context) {
+	clusterMutex, err := mockAPI.Cluster.NewMutex(KeyClusterMutex)
+	require.NoError(t, err)
+
 	return &Plugin{
 		client:                   mockAPI,
 		botID:                    "bot_id",
 		makeChannelPostsIterator: makeTestPostsIterator(t, now),
+		clusterMutex:             clusterMutex,
 	}, &plugin.Context{}
 }
 
@@ -40,8 +44,10 @@ func TestExecuteCommand(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		plugin, pluginContext := setupPlugin(t, mockAPI, time.Now())
 
@@ -65,8 +71,10 @@ func TestExecuteCommand(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		plugin, pluginContext := setupPlugin(t, mockAPI, time.Now())
 
@@ -98,8 +106,10 @@ func TestExecuteCommand(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		plugin, pluginContext := setupPlugin(t, mockAPI, now)
@@ -161,8 +171,10 @@ func TestExecuteCommand(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		plugin, pluginContext := setupPlugin(t, mockAPI, time.Now())
 
@@ -194,8 +206,10 @@ func TestExecuteCommand(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		plugin, pluginContext := setupPlugin(t, mockAPI, time.Now())
 
@@ -229,8 +243,10 @@ func TestExecuteCommand(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		plugin, pluginContext := setupPlugin(t, mockAPI, now)
@@ -285,8 +301,10 @@ func TestExecuteCommand(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		plugin, pluginContext := setupPlugin(t, mockAPI, now)
@@ -345,8 +363,10 @@ func TestExecuteCommand(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		plugin, pluginContext := setupPlugin(t, mockAPI, now)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -37,8 +38,8 @@ type Plugin struct {
 	// configurationLock synchronizes access to the configuration.
 	configurationLock sync.RWMutex
 
-	// active is non-zero when a export is running via slash command
-	active int32
+	// clusterMutex is used to ensure only one export can be done at a time across the cluster
+	clusterMutex pluginAPIWrapper.ClusterMutex
 }
 
 const (
@@ -50,9 +51,16 @@ const (
 // OnActivate is invoked when the plugin is activated.
 func (p *Plugin) OnActivate() error {
 	client := pluginapi.NewClient(p.API, p.Driver)
-	p.client = pluginAPIWrapper.Wrap(client)
+	p.client = pluginAPIWrapper.Wrap(client, p.API)
 	p.clientPluginAPI = client
 	pluginapi.ConfigureLogrus(logrus.New(), client)
+
+	clusterService := pluginAPIWrapper.NewClusterService(p.API)
+	clusterMutex, err := clusterService.NewMutex(KeyClusterMutex)
+	if err != nil {
+		return fmt.Errorf("cannot create cluster mutex: %w", err)
+	}
+	p.clusterMutex = clusterMutex
 
 	botID, err := p.clientPluginAPI.Bot.EnsureBot(&model.Bot{
 		Username:    botUsername,
