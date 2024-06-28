@@ -47,7 +47,6 @@ func (p *Plugin) ExecuteCommand(_ *plugin.Context, args *model.CommandArgs) (*mo
 
 func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandResponse {
 	// only allow one export at a time
-	// only allow one run via rest API at a time
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
 	defer cancel()
 	if err := p.clusterMutex.LockWithContext(ctx); err != nil {
