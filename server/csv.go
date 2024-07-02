@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -68,6 +69,9 @@ func (e *CSV) Export(nextPosts PostIterator, writer io.Writer) error {
 		if len(posts) == 0 {
 			break
 		}
+
+		// don't peg the CPU.
+		time.Sleep(time.Millisecond * 20)
 	}
 
 	csvWriter.Flush()

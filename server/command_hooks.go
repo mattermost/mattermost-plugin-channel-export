@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -28,7 +31,7 @@ func (p *Plugin) registerCommands() error {
 
 // ExecuteCommand executes a command that has been previously registered via the RegisterCommand
 // API.
-func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
+func (p *Plugin) ExecuteCommand(_ *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	trigger := strings.TrimPrefix(strings.Fields(args.Command)[0], "/")
 	switch trigger {
 	case exportCommandTrigger:
@@ -43,6 +46,22 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 }
 
 func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandResponse {
+	// only allow one export at a time
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
+	defer cancel()
+	if err := p.clusterMutex.LockWithContext(ctx); err != nil {
+		return &model.CommandResponse{
+			ResponseType: model.CommandResponseTypeEphemeral,
+			Text:         "An export is already running.",
+		}
+	}
+	var active bool
+	defer func() {
+		if !active {
+			p.clusterMutex.Unlock()
+		}
+	}()
+
 	license := p.client.System.GetLicense()
 	if !isLicensed(license, p.client) {
 		return &model.CommandResponse{
@@ -84,7 +103,12 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	})
 
 	exportedFileReader, exportedFileWriter := io.Pipe()
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	active = true
+
 	go func() {
+		defer wg.Done()
 		err := exporter.Export(p.makeChannelPostsIterator(channelToExport, showEmailAddress(p.client, args.UserId)), exportedFileWriter)
 		if err != nil {
 			logger.WithError(err).Warn("failed to export channel")
@@ -107,6 +131,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	}()
 
 	go func() {
+		defer wg.Done()
 		file, err := p.uploadFileTo(fileName, exportedFileReader, channelDM.Id)
 		if err != nil {
 			logger.WithError(err).Warn("failed to upload exported channel")
@@ -135,6 +160,12 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		if err != nil {
 			logger.WithError(err).Warn("failed to post message about exported channel")
 		}
+	}()
+
+	// wait until both goroutines above are completed then mark exporter inactive
+	go func() {
+		defer p.clusterMutex.Unlock()
+		wg.Wait()
 	}()
 
 	return &model.CommandResponse{

@@ -1,6 +1,6 @@
 module github.com/mattermost/mattermost-plugin-channel-export
 
-go 1.14
+go 1.16
 
 require (
 	github.com/golang/mock v1.4.4
@@ -10,4 +10,5 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
+	github.com/wiggin77/merror v1.0.3
 )

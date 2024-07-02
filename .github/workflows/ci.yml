@@ -1,7 +1,5 @@
 name: ci
 on:
-  schedule:
-    - cron: "0 0 * * *"
   push:
     branches:
       - master
@@ -15,4 +13,7 @@ permissions:
 jobs:
   plugin-ci:
     uses: mattermost/actions-workflows/.github/workflows/plugin-ci.yml@main
+    with:
+      golangci-lint-version: "v1.54.2"
+      golang-version: "1.21"
     secrets: inherit

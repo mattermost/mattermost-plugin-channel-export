@@ -7,6 +7,6 @@ import (
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 )
 
-func isLicensed(license *model.License, api *pluginapi.Wrapper) bool {
+func isLicensed(_ *model.License, api *pluginapi.Wrapper) bool {
 	return originalapi.IsE20LicensedOrDevelopment(api.Configuration.GetConfig(), api.System.GetLicense())
 }
