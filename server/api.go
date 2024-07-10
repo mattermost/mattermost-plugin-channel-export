@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -12,22 +14,34 @@ import (
 	"github.com/mattermost/mattermost-server/v6/model"
 )
 
+const (
+	KeyClusterMutex = "mutex_exporter"
+)
+
 // Handler encapsulates the context necessary for the channel export API.
 type Handler struct {
 	client            *pluginapi.Wrapper
 	makePostsIterator func(*model.Channel, bool) PostIterator
+	clusterMutex      pluginapi.ClusterMutex
 }
 
 // registerAPI registers the API against the given router.
-func registerAPI(router *mux.Router, client *pluginapi.Wrapper, makePostsIterator func(*model.Channel, bool) PostIterator) {
+func registerAPI(router *mux.Router, client *pluginapi.Wrapper, makePostsIterator func(*model.Channel, bool) PostIterator) error {
+	clusterMutex, err := client.Cluster.NewMutex(KeyClusterMutex)
+	if err != nil {
+		return fmt.Errorf("cannot create cluster mutex: %w", err)
+	}
+
 	handler := &Handler{
 		client:            client,
 		makePostsIterator: makePostsIterator,
+		clusterMutex:      clusterMutex,
 	}
 
 	api := router.PathPrefix("/api/v1").Subrouter()
 	api.Use(mattermostAuthorizationRequired)
 	api.HandleFunc("/export", handler.Export)
+	return nil
 }
 
 // APIError is a type of error returned by the API.
@@ -88,6 +102,17 @@ func (h *Handler) hasPermissionToChannel(userID, channelID string) (*model.Chann
 
 // Export handles /api/v1/export, exporting the requested channel.
 func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
+	// only allow one export at a time
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
+	defer cancel()
+	if err := h.clusterMutex.LockWithContext(ctx); err != nil {
+		handleError(w, http.StatusServiceUnavailable, "a channel export is already running.")
+		return
+	}
+	defer func() {
+		h.clusterMutex.Unlock()
+	}()
+
 	license := h.client.System.GetLicense()
 	if !isLicensed(license, h.client) {
 		handleError(w, http.StatusBadRequest, "the channel export plugin requires a valid E20 license.")

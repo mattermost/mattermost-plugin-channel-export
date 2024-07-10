@@ -4,10 +4,11 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
 	"github.com/mattermost/mattermost-server/v6/model"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestShowEmailAddress(t *testing.T) {
@@ -25,8 +26,9 @@ func TestShowEmailAddress(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		userID := "user_id"
 
@@ -45,8 +47,9 @@ func TestShowEmailAddress(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		userID := "user_id"
 
@@ -70,8 +73,9 @@ func TestShowEmailAddress(t *testing.T) {
 		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
 		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
 		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration)
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		userID := "user_id"
 

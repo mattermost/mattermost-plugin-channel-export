@@ -3,16 +3,19 @@ package main
 import (
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/utils"
-	"github.com/pkg/errors"
 )
 
 const (
 	userTypeRegular = "user"
 	userTypeBot     = "bot"
 	userTypeSystem  = "system"
+
+	PerPage = 500
 )
 
 // PostIterator returns the next batch of posts when called
@@ -38,9 +41,8 @@ type ExportedPost struct {
 func channelPostsIterator(client *pluginapi.Wrapper, channel *model.Channel, showEmailAddress bool) PostIterator {
 	usersCache := make(map[string]*model.User)
 	page := 0
-	perPage := 1000
 	return func() ([]*ExportedPost, error) {
-		postList, err := client.Post.GetPostsForChannel(channel.Id, page, perPage)
+		postList, err := client.Post.GetPostsForChannel(channel.Id, page, PerPage)
 		if err != nil {
 			return nil, err
 		}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -36,6 +37,9 @@ type Plugin struct {
 
 	// configurationLock synchronizes access to the configuration.
 	configurationLock sync.RWMutex
+
+	// clusterMutex is used to ensure only one export can be done at a time across the cluster
+	clusterMutex pluginAPIWrapper.ClusterMutex
 }
 
 const (
@@ -47,9 +51,16 @@ const (
 // OnActivate is invoked when the plugin is activated.
 func (p *Plugin) OnActivate() error {
 	client := pluginapi.NewClient(p.API, p.Driver)
-	p.client = pluginAPIWrapper.Wrap(client)
+	p.client = pluginAPIWrapper.Wrap(client, p.API)
 	p.clientPluginAPI = client
 	pluginapi.ConfigureLogrus(logrus.New(), client)
+
+	clusterService := pluginAPIWrapper.NewClusterService(p.API)
+	clusterMutex, err := clusterService.NewMutex(KeyClusterMutex)
+	if err != nil {
+		return fmt.Errorf("cannot create cluster mutex: %w", err)
+	}
+	p.clusterMutex = clusterMutex
 
 	botID, err := p.clientPluginAPI.Bot.EnsureBot(&model.Bot{
 		Username:    botUsername,
@@ -70,12 +81,10 @@ func (p *Plugin) OnActivate() error {
 	p.makeChannelPostsIterator = func(channel *model.Channel, showEmailAddress bool) PostIterator {
 		return channelPostsIterator(p.client, channel, showEmailAddress)
 	}
-	registerAPI(p.router, p.client, p.makeChannelPostsIterator)
-
-	return nil
+	return registerAPI(p.router, p.client, p.makeChannelPostsIterator)
 }
 
 // ServeHTTP handles requests to /plugins/com.mattermost.plugin-incident-response
-func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
+func (p *Plugin) ServeHTTP(_ *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	p.router.ServeHTTP(w, r)
 }
