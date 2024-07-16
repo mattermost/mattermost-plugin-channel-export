@@ -40,6 +40,9 @@ type Plugin struct {
 
 	// clusterMutex is used to ensure only one export can be done at a time across the cluster
 	clusterMutex pluginAPIWrapper.ClusterMutex
+
+	// handler is here to ensure the api is able to check configuration
+	handler Handler
 }
 
 const (
@@ -81,7 +84,9 @@ func (p *Plugin) OnActivate() error {
 	p.makeChannelPostsIterator = func(channel *model.Channel, showEmailAddress bool) PostIterator {
 		return channelPostsIterator(p.client, channel, showEmailAddress)
 	}
-	return registerAPI(p.router, p.client, p.makeChannelPostsIterator)
+	p.handler = Handler{}
+
+	return p.registerAPI(p.router, p.client, p.makeChannelPostsIterator)
 }
 
 // ServeHTTP handles requests to /plugins/com.mattermost.plugin-incident-response
