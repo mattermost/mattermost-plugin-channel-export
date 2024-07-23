@@ -70,7 +70,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		}
 	}
 
-	if !p.hasPermissionToExportChannel(args.UserId) {
+	if !p.hasPermissionToExportChannel(args.UserId, args.ChannelId) {
 		return &model.CommandResponse{
 			ResponseType: model.CommandResponseTypeEphemeral,
 			Text:         "You do not have enough permissions to export this channel",
@@ -193,10 +193,10 @@ func (p *Plugin) uploadFileTo(fileName string, contents io.Reader, channelID str
 	return file, nil
 }
 
-func (p *Plugin) hasPermissionToExportChannel(userID string) bool {
+func (p *Plugin) hasPermissionToExportChannel(userID, channelID string) bool {
 	conf := p.getConfiguration()
 	if conf.EnableAdminRestrictions {
-		if !(p.client.User.HasPermissionTo(userID, model.PermissionManageChannelRoles) || p.client.User.HasPermissionTo(userID, model.PermissionManageSystem)) {
+		if !(p.client.User.HasPermissionToChannel(userID, channelID, model.PermissionManageChannelRoles) || p.client.User.HasPermissionTo(userID, model.PermissionManageSystem)) {
 			return false
 		}
 	}

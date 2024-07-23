@@ -143,7 +143,7 @@ func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !h.plugin.hasPermissionToExportChannel(userID) {
+	if !h.plugin.hasPermissionToExportChannel(userID, channelID) {
 		handleError(w, http.StatusForbidden, "user does not have permission", channelID)
 		return
 	}
