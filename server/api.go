@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
@@ -23,24 +22,26 @@ type Handler struct {
 	client            *pluginapi.Wrapper
 	makePostsIterator func(*model.Channel, bool) PostIterator
 	clusterMutex      pluginapi.ClusterMutex
+	plugin            *Plugin
 }
 
 // registerAPI registers the API against the given router.
-func (p *Plugin) registerAPI(router *mux.Router, client *pluginapi.Wrapper, makePostsIterator func(*model.Channel, bool) PostIterator) error {
-	clusterMutex, err := client.Cluster.NewMutex(KeyClusterMutex)
+func registerAPI(plugin *Plugin, makePostsIterator func(*model.Channel, bool) PostIterator) error {
+	clusterMutex, err := plugin.client.Cluster.NewMutex(KeyClusterMutex)
 	if err != nil {
 		return fmt.Errorf("cannot create cluster mutex: %w", err)
 	}
 
-	p.handler = Handler{
-		client:            client,
+	handler := &Handler{
+		client:            plugin.client,
 		makePostsIterator: makePostsIterator,
 		clusterMutex:      clusterMutex,
+		plugin:            plugin,
 	}
 
-	api := router.PathPrefix("/api/v1").Subrouter()
+	api := handler.plugin.router.PathPrefix("/api/v1").Subrouter()
 	api.Use(mattermostAuthorizationRequired)
-	api.HandleFunc("/export", p.Export)
+	api.HandleFunc("/export", handler.Export)
 	return nil
 }
 
@@ -84,8 +85,8 @@ func mattermostAuthorizationRequired(next http.Handler) http.Handler {
 	})
 }
 
-func (p *Plugin) hasPermissionToChannel(userID, channelID string) (*model.Channel, bool) {
-	channel, err := p.handler.client.Channel.Get(channelID)
+func (h *Handler) hasPermissionToChannel(userID, channelID string) (*model.Channel, bool) {
+	channel, err := h.client.Channel.Get(channelID)
 	if appErr, ok := err.(*model.AppError); ok && appErr.StatusCode == http.StatusNotFound {
 		return nil, false
 	} else if err != nil {
@@ -93,7 +94,7 @@ func (p *Plugin) hasPermissionToChannel(userID, channelID string) (*model.Channe
 		return nil, false
 	}
 
-	if p.handler.client.User.HasPermissionToChannel(userID, channelID, model.PermissionReadChannel) {
+	if h.client.User.HasPermissionToChannel(userID, channelID, model.PermissionReadChannel) {
 		return channel, true
 	}
 
@@ -101,20 +102,20 @@ func (p *Plugin) hasPermissionToChannel(userID, channelID string) (*model.Channe
 }
 
 // Export handles /api/v1/export, exporting the requested channel.
-func (p *Plugin) Export(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 	// only allow one export at a time
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
 	defer cancel()
-	if err := p.handler.clusterMutex.LockWithContext(ctx); err != nil {
+	if err := h.clusterMutex.LockWithContext(ctx); err != nil {
 		handleError(w, http.StatusServiceUnavailable, "a channel export is already running.")
 		return
 	}
 	defer func() {
-		p.handler.clusterMutex.Unlock()
+		h.clusterMutex.Unlock()
 	}()
 
-	license := p.handler.client.System.GetLicense()
-	if !isLicensed(license, p.handler.client) {
+	license := h.client.System.GetLicense()
+	if !isLicensed(license, h.client) {
 		handleError(w, http.StatusBadRequest, "the channel export plugin requires a valid E20 license.")
 		return
 	}
@@ -136,21 +137,18 @@ func (p *Plugin) Export(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID := r.Header.Get("Mattermost-User-ID")
-	channel, ok := p.hasPermissionToChannel(userID, channelID)
+	channel, ok := h.hasPermissionToChannel(userID, channelID)
 	if !ok {
 		handleError(w, http.StatusNotFound, "channel '%s' not found or user does not have permission", channelID)
 		return
 	}
 
-	conf := p.getConfiguration()
-	if conf.EnableAdminRestrictions {
-		if !(p.handler.client.User.HasPermissionTo(userID, model.PermissionManageChannelRoles) || p.handler.client.User.HasPermissionTo(userID, model.PermissionManageSystem)) {
-			handleError(w, http.StatusNotFound, "user does not have permission", channelID)
-			return
-		}
+	if !h.plugin.hasPermissionToExportChannel(userID) {
+		handleError(w, http.StatusForbidden, "user does not have permission", channelID)
+		return
 	}
 
-	postIterator := p.handler.makePostsIterator(channel, showEmailAddress(p.handler.client, userID))
+	postIterator := h.makePostsIterator(channel, showEmailAddress(h.client, userID))
 
 	exporter := CSV{}
 	fileName := exporter.FileName(channel.Name)
