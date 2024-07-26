@@ -36,7 +36,16 @@ const manifestStr = `
   "settings_schema": {
     "header": "",
     "footer": "",
-    "settings": []
+    "settings": [
+      {
+        "key": "EnableAdminRestrictions",
+        "display_name": "Enable Admin Restrictions",
+        "type": "bool",
+        "help_text": "Restricts the exporting of channels to system administrators or channel administrators",
+        "placeholder": "",
+        "default": "false"
+      }
+    ]
   }
 }
 `

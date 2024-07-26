@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
@@ -23,22 +22,24 @@ type Handler struct {
 	client            *pluginapi.Wrapper
 	makePostsIterator func(*model.Channel, bool) PostIterator
 	clusterMutex      pluginapi.ClusterMutex
+	plugin            *Plugin
 }
 
 // registerAPI registers the API against the given router.
-func registerAPI(router *mux.Router, client *pluginapi.Wrapper, makePostsIterator func(*model.Channel, bool) PostIterator) error {
-	clusterMutex, err := client.Cluster.NewMutex(KeyClusterMutex)
+func registerAPI(plugin *Plugin, makePostsIterator func(*model.Channel, bool) PostIterator) error {
+	clusterMutex, err := plugin.client.Cluster.NewMutex(KeyClusterMutex)
 	if err != nil {
 		return fmt.Errorf("cannot create cluster mutex: %w", err)
 	}
 
 	handler := &Handler{
-		client:            client,
+		client:            plugin.client,
 		makePostsIterator: makePostsIterator,
 		clusterMutex:      clusterMutex,
+		plugin:            plugin,
 	}
 
-	api := router.PathPrefix("/api/v1").Subrouter()
+	api := handler.plugin.router.PathPrefix("/api/v1").Subrouter()
 	api.Use(mattermostAuthorizationRequired)
 	api.HandleFunc("/export", handler.Export)
 	return nil
@@ -139,6 +140,11 @@ func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 	channel, ok := h.hasPermissionToChannel(userID, channelID)
 	if !ok {
 		handleError(w, http.StatusNotFound, "channel '%s' not found or user does not have permission", channelID)
+		return
+	}
+
+	if !h.plugin.hasPermissionToExportChannel(userID, channelID) {
+		handleError(w, http.StatusForbidden, "user does not have permission", channelID)
 		return
 	}
 

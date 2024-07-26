@@ -23,7 +23,12 @@ import (
 
 func setupAPI(t *testing.T, mockAPI *pluginapi.Wrapper, now time.Time, userID, _ /*channelID*/ string) string {
 	router := mux.NewRouter()
-	err := registerAPI(router, mockAPI, makeTestPostsIterator(t, now))
+	p := Plugin{
+		router: router,
+		client: mockAPI,
+	}
+
+	err := registerAPI(&p, makeTestPostsIterator(t, now))
 	require.NoError(t, err)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
