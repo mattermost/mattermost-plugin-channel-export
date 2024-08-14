@@ -88,6 +88,35 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		}
 	}
 
+	var channelToExportName, exportSuccessMsg, exportProcessMsg string
+	if channelToExport.Type == model.ChannelTypeOpen || channelToExport.Type == model.ChannelTypePrivate {
+		channelToExportName = channelToExport.Name
+		exportSuccessMsg = fmt.Sprintf("Channel ~%s exported:", channelToExportName)
+		exportProcessMsg = "Exporting ~%s. @%s will send you a direct message when the export is ready."
+	} else if channelToExport.Type == model.ChannelTypeGroup {
+		channelToExportName = channelToExport.Name
+		exportProcessMsg = "Exporting this GM channel ~%s. @%s will send you a direct message when the export is ready."
+		team, err := p.API.GetTeam(args.TeamId)
+		if err != nil {
+			p.client.Log.Error("error occurred while getting the details of team for the channel.",
+				"GM channel ID", args.ChannelId, "User ID", args.UserId, "Error", err)
+
+			return &model.CommandResponse{
+				ResponseType: model.CommandResponseTypeEphemeral,
+				Text:         fmt.Sprintf("An error occurred trying to exporting the chat for %s GM channel", channelToExportName),
+			}
+		}
+		link := fmt.Sprintf("%s/%s/messages/%s", args.SiteURL, team.Name, channelToExportName)
+		exportSuccessMsg = fmt.Sprintf("GM Channel ~[%s](%s) exported:", channelToExportName, link)
+
+	} else if channelToExport.Type == model.ChannelTypeDirect {
+		DMUserName := strings.Split(channelToExport.Name, "__")[0]
+		user, _ := p.client.User.Get(DMUserName)
+		channelToExportName = user.Username
+		exportSuccessMsg = fmt.Sprintf("DM with @%s exported:", channelToExportName)
+		exportProcessMsg = "Exporting DM with @%s. @%s will send you a direct message when the export is ready."
+	}
+
 	channelDM, err := p.client.Channel.GetDirect(args.UserId, p.botID)
 	if err != nil {
 		p.client.Log.Error("unable to create a direct message channel between the bot and the user",
@@ -100,7 +129,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	}
 
 	exporter := CSV{}
-	fileName := exporter.FileName(channelToExport.Name)
+	fileName := exporter.FileName(channelToExportName)
 
 	exportError := errors.New("failed to export channel")
 
@@ -125,7 +154,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 			err = p.client.Post.CreatePost(&model.Post{
 				UserId:    p.botID,
 				ChannelId: channelDM.Id,
-				Message:   fmt.Sprintf("An error occurred exporting channel ~%s.", channelToExport.Name),
+				Message:   fmt.Sprintf("An error occurred exporting channel ~%s.", channelToExportName),
 			})
 			if err != nil {
 				logger.WithError(err).Warn("failed to post message about failure to export channel")
@@ -148,7 +177,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 				err = p.client.Post.CreatePost(&model.Post{
 					UserId:    p.botID,
 					ChannelId: channelDM.Id,
-					Message:   fmt.Sprintf("An error occurred uploading the exported channel ~%s.", channelToExport.Name),
+					Message:   fmt.Sprintf("An error occurred uploading the exported channel ~%s.", channelToExportName),
 				})
 				if err != nil {
 					logger.WithError(err).Warn("failed to post message about failure to upload exported channel")
@@ -161,7 +190,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		err = p.client.Post.CreatePost(&model.Post{
 			UserId:    p.botID,
 			ChannelId: channelDM.Id,
-			Message:   fmt.Sprintf("Channel ~%s exported:", channelToExport.Name),
+			Message:   exportSuccessMsg,
 			FileIds:   []string{file.Id},
 		})
 		if err != nil {
@@ -177,8 +206,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 
 	return &model.CommandResponse{
 		ResponseType: model.CommandResponseTypeEphemeral,
-		Text: fmt.Sprintf("Exporting ~%s. @%s will send you a direct message when the export is ready.",
-			channelToExport.Name, botUsername),
+		Text:         fmt.Sprintf(exportProcessMsg, channelToExportName, botUsername),
 	}
 }
 
