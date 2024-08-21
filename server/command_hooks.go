@@ -92,10 +92,9 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	if channelToExport.Type == model.ChannelTypeOpen || channelToExport.Type == model.ChannelTypePrivate {
 		channelToExportName = channelToExport.Name
 		exportSuccessMsg = fmt.Sprintf("Channel ~%s exported:", channelToExportName)
-		exportProcessMsg = "Exporting ~%s. @%s will send you a direct message when the export is ready."
+		exportProcessMsg = fmt.Sprintf("Exporting ~%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
 	} else if channelToExport.Type == model.ChannelTypeGroup {
 		channelToExportName = channelToExport.Name
-		exportProcessMsg = "Exporting this GM channel ~%s. @%s will send you a direct message when the export is ready."
 		team, err := p.API.GetTeam(args.TeamId)
 		if err != nil {
 			p.client.Log.Error("error occurred while getting the details of team for the channel.",
@@ -107,6 +106,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 			}
 		}
 		link := fmt.Sprintf("%s/%s/messages/%s", args.SiteURL, team.Name, channelToExportName)
+		exportProcessMsg = fmt.Sprintf("Exporting this GM channel ~[%s](%s). @%s will send you a direct message when the export is ready.", channelToExportName, link, botUsername)
 		exportSuccessMsg = fmt.Sprintf("GM Channel ~[%s](%s) exported:", channelToExportName, link)
 
 	} else if channelToExport.Type == model.ChannelTypeDirect {
@@ -114,7 +114,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		user, _ := p.client.User.Get(DMUserName)
 		channelToExportName = user.Username
 		exportSuccessMsg = fmt.Sprintf("DM with @%s exported:", channelToExportName)
-		exportProcessMsg = "Exporting DM with @%s. @%s will send you a direct message when the export is ready."
+		exportProcessMsg = fmt.Sprintf("Exporting DM with @%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
 	}
 
 	channelDM, err := p.client.Channel.GetDirect(args.UserId, p.botID)
@@ -206,7 +206,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 
 	return &model.CommandResponse{
 		ResponseType: model.CommandResponseTypeEphemeral,
-		Text:         fmt.Sprintf(exportProcessMsg, channelToExportName, botUsername),
+		Text:         exportProcessMsg,
 	}
 }
 
