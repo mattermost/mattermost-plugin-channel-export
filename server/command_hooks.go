@@ -89,11 +89,12 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	}
 
 	var channelToExportName, exportSuccessMsg, exportProcessMsg string
-	if channelToExport.Type == model.ChannelTypeOpen || channelToExport.Type == model.ChannelTypePrivate {
+	switch channelToExport.Type {
+	case model.ChannelTypeOpen, model.ChannelTypePrivate:
 		channelToExportName = channelToExport.Name
 		exportSuccessMsg = fmt.Sprintf("Channel ~%s exported:", channelToExportName)
 		exportProcessMsg = fmt.Sprintf("Exporting ~%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
-	} else if channelToExport.Type == model.ChannelTypeGroup {
+	case model.ChannelTypeGroup:
 		channelToExportName = channelToExport.Name
 		team, err := p.API.GetTeam(args.TeamId)
 		if err != nil {
@@ -106,12 +107,26 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 			exportProcessMsg = fmt.Sprintf("Exporting this GM channel ~[%s](%s). @%s will send you a direct message when the export is ready.", channelToExportName, link, botUsername)
 			exportSuccessMsg = fmt.Sprintf("GM Channel ~[%s](%s) exported:", channelToExportName, link)
 		}
-	} else if channelToExport.Type == model.ChannelTypeDirect {
-		DMUserName := strings.Split(channelToExport.Name, "__")[0]
-		user, _ := p.client.User.Get(DMUserName)
-		channelToExportName = user.Username
-		exportSuccessMsg = fmt.Sprintf("DM with @%s exported:", channelToExportName)
-		exportProcessMsg = fmt.Sprintf("Exporting DM with @%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
+	case model.ChannelTypeDirect:
+		var DMUserID string
+		userIDs := strings.Split(channelToExport.Name, "__")
+		if userIDs[0] == args.UserId {
+			DMUserID = userIDs[1]
+		} else {
+			DMUserID = userIDs[0]
+		}
+
+		user, err := p.client.User.Get(DMUserID)
+		if err != nil {
+			p.client.Log.Error("error occurred while getting the details of user for the DM.", "DMChannelID", args.ChannelId, "TeamID", args.TeamId, "Error", err)
+
+			exportSuccessMsg = fmt.Sprintf("DM %s exported:", channelToExportName)
+			exportProcessMsg = fmt.Sprintf("Exporting the DM  ~%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
+		} else {
+			channelToExportName = user.Username
+			exportSuccessMsg = fmt.Sprintf("DM with @%s exported:", channelToExportName)
+			exportProcessMsg = fmt.Sprintf("Exporting DM with @%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
+		}
 	}
 
 	channelDM, err := p.client.Channel.GetDirect(args.UserId, p.botID)
