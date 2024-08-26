@@ -97,18 +97,15 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		channelToExportName = channelToExport.Name
 		team, err := p.API.GetTeam(args.TeamId)
 		if err != nil {
-			p.client.Log.Error("error occurred while getting the details of team for the channel.",
-				"GM channel ID", args.ChannelId, "User ID", args.UserId, "Error", err)
+			p.client.Log.Error("error occurred while getting the details of team for the channel.", "GMChannelID", args.ChannelId, "TeamID", args.TeamId, "Error", err)
 
-			return &model.CommandResponse{
-				ResponseType: model.CommandResponseTypeEphemeral,
-				Text:         fmt.Sprintf("An error occurred trying to exporting the chat for %s GM channel", channelToExportName),
-			}
+			exportProcessMsg = fmt.Sprintf("Exporting this GM channel ~%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
+			exportSuccessMsg = fmt.Sprintf("GM Channel ~%s exported:", channelToExportName)
+		} else {
+			link := fmt.Sprintf("%s/%s/messages/%s", args.SiteURL, team.Name, channelToExportName)
+			exportProcessMsg = fmt.Sprintf("Exporting this GM channel ~[%s](%s). @%s will send you a direct message when the export is ready.", channelToExportName, link, botUsername)
+			exportSuccessMsg = fmt.Sprintf("GM Channel ~[%s](%s) exported:", channelToExportName, link)
 		}
-		link := fmt.Sprintf("%s/%s/messages/%s", args.SiteURL, team.Name, channelToExportName)
-		exportProcessMsg = fmt.Sprintf("Exporting this GM channel ~[%s](%s). @%s will send you a direct message when the export is ready.", channelToExportName, link, botUsername)
-		exportSuccessMsg = fmt.Sprintf("GM Channel ~[%s](%s) exported:", channelToExportName, link)
-
 	} else if channelToExport.Type == model.ChannelTypeDirect {
 		DMUserName := strings.Split(channelToExport.Name, "__")[0]
 		user, _ := p.client.User.Get(DMUserName)
