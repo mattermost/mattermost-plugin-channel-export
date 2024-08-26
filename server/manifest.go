@@ -43,7 +43,7 @@ const manifestStr = `
         "type": "bool",
         "help_text": "Restricts the exporting of channels to system administrators or channel administrators",
         "placeholder": "",
-        "default": "false"
+        "default": false
       }
     ]
   }
