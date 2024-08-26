@@ -92,7 +92,7 @@ func TestExecuteCommand(t *testing.T) {
 
 		require.Nil(t, appError)
 		assert.Equal(t, model.CommandResponseTypeEphemeral, commandResponse.ResponseType)
-		assert.Equal(t, "The channel export plugin requires a valid E20 license.", commandResponse.Text)
+		assert.Equal(t, "The channel export plugin requires a valid Enterprise license.", commandResponse.Text)
 	})
 
 	t.Run("missing e20 license with Testing and Developer modes enabled", func(t *testing.T) {

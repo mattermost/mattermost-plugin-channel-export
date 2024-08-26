@@ -102,7 +102,7 @@ func TestHandler(t *testing.T) {
 		}).Times(1)
 
 		err := client.ExportChannel(io.Discard, "channel_id", FormatCSV)
-		require.EqualError(t, err, "the channel export plugin requires a valid E20 license.")
+		require.EqualError(t, err, "the channel export plugin requires a valid Enterprise license.")
 	})
 
 	t.Run("missing e20 license with Testing and Developer modes enabled", func(t *testing.T) {
