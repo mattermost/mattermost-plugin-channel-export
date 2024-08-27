@@ -96,9 +96,9 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		exportProcessMsg = fmt.Sprintf("Exporting ~%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
 	case model.ChannelTypeGroup:
 		channelToExportName = channelToExport.Name
-		team, err := p.API.GetTeam(args.TeamId)
-		if err != nil {
-			p.client.Log.Error("error occurred while getting the details of team for the channel.", "GMChannelID", args.ChannelId, "TeamID", args.TeamId, "Error", err)
+		team, appErr := p.API.GetTeam(args.TeamId)
+		if appErr != nil {
+			p.client.Log.Error("error occurred while getting the details of team for the channel.", "GMChannelID", args.ChannelId, "TeamID", args.TeamId, "Error", appErr)
 
 			exportProcessMsg = fmt.Sprintf("Exporting this GM channel ~%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
 			exportSuccessMsg = fmt.Sprintf("GM Channel ~%s exported:", channelToExportName)
@@ -116,7 +116,8 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 			DMUserID = userIDs[0]
 		}
 
-		user, err := p.client.User.Get(DMUserID)
+		var user *model.User
+		user, err = p.client.User.Get(DMUserID)
 		if err != nil {
 			p.client.Log.Error("error occurred while getting the details of user for the DM.", "DMChannelID", args.ChannelId, "TeamID", args.TeamId, "Error", err)
 
