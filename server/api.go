@@ -143,6 +143,11 @@ func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if channel.DeleteAt > 0 && h.plugin.API.GetConfig().TeamSettings.ExperimentalViewArchivedChannels == nil {
+		handleError(w, http.StatusNotFound, "channel '%s' is deleted and not visible anymore", channelID)
+		return
+	}
+
 	if !h.plugin.hasPermissionToExportChannel(userID, channelID) {
 		handleError(w, http.StatusForbidden, "user does not have permission to export channels")
 		return
