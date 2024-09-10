@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -138,6 +139,11 @@ func TestHandler(t *testing.T) {
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
 		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(true).Times(1)
 		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
+			TeamSettings: model.TeamSettings{
+				ExperimentalViewArchivedChannels: &trueValue,
+			},
+		}).Times(2)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			PrivacySettings: model.PrivacySettings{
 				ShowEmailAddress: &trueValue,
@@ -368,6 +374,11 @@ func TestHandler(t *testing.T) {
 		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(true).Times(1)
 		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
+			TeamSettings: model.TeamSettings{
+				ExperimentalViewArchivedChannels: &trueValue,
+			},
+		}).Times(2)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			PrivacySettings: model.PrivacySettings{
 				ShowEmailAddress: &falseValue,
 			},
@@ -414,6 +425,11 @@ func TestHandler(t *testing.T) {
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
 		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(true).Times(1)
 		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
+			TeamSettings: model.TeamSettings{
+				ExperimentalViewArchivedChannels: &trueValue,
+			},
+		}).Times(2)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			PrivacySettings: model.PrivacySettings{
 				ShowEmailAddress: &trueValue,
@@ -465,6 +481,11 @@ func TestHandler(t *testing.T) {
 		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(true).Times(1)
 		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
+			TeamSettings: model.TeamSettings{
+				ExperimentalViewArchivedChannels: &trueValue,
+			},
+		}).Times(2)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			PrivacySettings: model.PrivacySettings{
 				ShowEmailAddress: &trueValue,
 			},
@@ -496,5 +517,55 @@ func TestHandler(t *testing.T) {
 		for _, err := range merr.Errors() {
 			require.Equal(t, "a channel export is already running.", err.Error())
 		}
+	})
+
+	t.Run("export when channel is archived and not visible", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+
+		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
+		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
+
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
+
+		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
+		userID := "user_id"
+		channelID := "channel_id"
+		address := setupAPI(t, mockAPI, now, userID, channelID)
+		client := NewClient(address)
+		client.SetToken("token")
+
+		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
+			FutureFeatures: &trueValue,
+		}}).Times(2)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
+		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID, DeleteAt: 1}, nil).Times(1)
+		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(true).Times(1)
+		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
+			TeamSettings: model.TeamSettings{
+				ExperimentalViewArchivedChannels: &falseValue,
+			},
+		}).Times(2)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
+			PrivacySettings: model.PrivacySettings{
+				ShowEmailAddress: &trueValue,
+			},
+		})
+
+		var buffer bytes.Buffer
+		err := client.ExportChannel(&buffer, channelID, FormatCSV)
+		require.EqualValues(t, "", buffer.String())
+
+		expectedErr := fmt.Sprintf("channel '%s' is archived and not visible anymore", channelID)
+
+		require.EqualError(t, err, expectedErr)
 	})
 }
