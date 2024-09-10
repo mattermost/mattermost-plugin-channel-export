@@ -440,7 +440,6 @@ func (m *MockUser) HasPermissionTo(userID string, permission *model.Permission) 
 	return args.Bool(0)
 }
 
-// Implement other methods required by the pluginapi.User interface
 func (m *MockUser) Get(userID string) (*model.User, error) {
 	args := m.Called(userID)
 	return args.Get(0).(*model.User), args.Error(1)
