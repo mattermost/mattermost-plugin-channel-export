@@ -568,4 +568,55 @@ func TestHandler(t *testing.T) {
 
 		require.EqualError(t, err, expectedErr)
 	})
+
+	t.Run("export when channel is archived and visible", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+
+		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
+		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
+
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
+
+		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
+		userID := "user_id"
+		channelID := "channel_id"
+		address := setupAPI(t, mockAPI, now, userID, channelID)
+		client := NewClient(address)
+		client.SetToken("token")
+
+		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
+			FutureFeatures: &trueValue,
+		}}).Times(2)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
+		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID, DeleteAt: 1}, nil).Times(1)
+		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(true).Times(1)
+		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
+			TeamSettings: model.TeamSettings{
+				ExperimentalViewArchivedChannels: &trueValue,
+			},
+		}).Times(2)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
+			PrivacySettings: model.PrivacySettings{
+				ShowEmailAddress: &trueValue,
+			},
+		})
+
+		var buffer bytes.Buffer
+		err := client.ExportChannel(&buffer, channelID, FormatCSV)
+		require.Nil(t, err)
+
+		expected := `Post Creation Time,User Id,User Email,User Type,User Name,Post Id,Parent Post Id,Post Message,Post Type
+2009-11-11 07:00:00 +0000 UTC,post_user_id,post_user_email,user,post_user_nickname,post_id,post_parent_id,post_message,message
+`
+		require.EqualValues(t, expected, buffer.String())
+	})
 }
