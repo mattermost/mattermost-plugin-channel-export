@@ -95,16 +95,27 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		exportSuccessMsg = fmt.Sprintf("Channel ~%s exported:", channelToExportName)
 		exportProcessMsg = fmt.Sprintf("Exporting ~%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
 	case model.ChannelTypeGroup:
-		channelToExportName = channelToExport.Name
+		channelToExportNameID := channelToExport.Name
+		groupChannelMembers := strings.Split(channelToExport.DisplayName, ", ")
+		membersCount := len(groupChannelMembers)
+
+		for i := 0; i < 2 && i < membersCount; i++ {
+			channelToExportName += groupChannelMembers[i] + ", "
+		}
+
+		if membersCount > 2 {
+			channelToExportName += fmt.Sprintf("and %d more", (membersCount - 2))
+		}
+
 		team, appErr := p.API.GetTeam(args.TeamId)
 		if appErr != nil {
 			p.client.Log.Error("error occurred while getting the details of team for the channel.", "GMChannelID", args.ChannelId, "TeamID", args.TeamId, "Error", appErr)
 
-			exportProcessMsg = fmt.Sprintf("Exporting this GM channel ~%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
+			exportProcessMsg = fmt.Sprintf("Exporting GM channel ~%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
 			exportSuccessMsg = fmt.Sprintf("GM Channel ~%s exported:", channelToExportName)
 		} else {
-			link := fmt.Sprintf("%s/%s/messages/%s", args.SiteURL, team.Name, channelToExportName)
-			exportProcessMsg = fmt.Sprintf("Exporting this GM channel ~[%s](%s). @%s will send you a direct message when the export is ready.", channelToExportName, link, botUsername)
+			link := fmt.Sprintf("%s/%s/messages/%s", args.SiteURL, team.Name, channelToExportNameID)
+			exportProcessMsg = fmt.Sprintf("Exporting GM channel ~[%s](%s). @%s will send you a direct message when the export is ready.", channelToExportName, link, botUsername)
 			exportSuccessMsg = fmt.Sprintf("GM Channel ~[%s](%s) exported:", channelToExportName, link)
 		}
 	case model.ChannelTypeDirect:
