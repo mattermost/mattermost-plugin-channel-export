@@ -121,7 +121,7 @@ func TestExecuteCommand(t *testing.T) {
 				EnableDeveloper: &trueValue,
 			},
 		}).Times(1)
-		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Name: "channel_name"}, nil)
+		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Name: "channel_name", Type: model.ChannelTypeOpen}, nil)
 		mockChannel.EXPECT().GetDirect("user_id", "bot_id").Return(&model.Channel{Id: "direct"}, nil)
 		mockUser.EXPECT().HasPermissionTo("user_id", model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
@@ -217,7 +217,7 @@ func TestExecuteCommand(t *testing.T) {
 			FutureFeatures: &trueValue,
 		}}).Times(2)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
-		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id"}, nil)
+		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Type: model.ChannelTypeOpen}, nil)
 		mockChannel.EXPECT().GetDirect("user_id", "bot_id").Return(nil, errors.New("failed"))
 		mockLog.EXPECT().Error("unable to create a direct message channel between the bot and the user", "Bot ID", "bot_id", "User ID", "user_id", "Error", gomock.Any())
 
@@ -255,7 +255,7 @@ func TestExecuteCommand(t *testing.T) {
 			FutureFeatures: &trueValue,
 		}}).Times(2)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
-		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Name: "channel_name"}, nil)
+		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Name: "channel_name", Type: model.ChannelTypeOpen}, nil)
 		mockChannel.EXPECT().GetDirect("user_id", "bot_id").Return(&model.Channel{Id: "direct"}, nil)
 		mockUser.EXPECT().HasPermissionTo("user_id", model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
@@ -313,7 +313,7 @@ func TestExecuteCommand(t *testing.T) {
 			FutureFeatures: &trueValue,
 		}}).Times(2)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
-		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Name: "channel_name"}, nil)
+		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Name: "channel_name", Type: model.ChannelTypeOpen}, nil)
 		mockChannel.EXPECT().GetDirect("user_id", "bot_id").Return(&model.Channel{Id: "direct"}, nil)
 		mockUser.EXPECT().HasPermissionTo("user_id", model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
@@ -375,7 +375,7 @@ func TestExecuteCommand(t *testing.T) {
 			FutureFeatures: &trueValue,
 		}}).Times(2)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
-		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Name: "channel_name"}, nil)
+		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Name: "channel_name", Type: model.ChannelTypeOpen}, nil)
 		mockChannel.EXPECT().GetDirect("user_id", "bot_id").Return(&model.Channel{Id: "direct"}, nil)
 		mockUser.EXPECT().HasPermissionTo("user_id", model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
