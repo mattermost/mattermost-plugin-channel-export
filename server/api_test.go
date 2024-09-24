@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -22,11 +21,12 @@ import (
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
 )
 
-func setupAPI(t *testing.T, mockAPI *pluginapi.Wrapper, now time.Time, userID, _ /*channelID*/ string) string {
+func setupAPI(t *testing.T, mockAPI *pluginapi.Wrapper, now time.Time, userID, _ /*channelID*/ string, pluginConfiguration *configuration) string {
 	router := mux.NewRouter()
 	p := Plugin{
-		router: router,
-		client: mockAPI,
+		router:        router,
+		client:        mockAPI,
+		configuration: pluginConfiguration,
 	}
 
 	err := registerAPI(&p, makeTestPostsIterator(t, now))
@@ -67,7 +67,7 @@ func TestHandler(t *testing.T) {
 
 		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
-		address := setupAPI(t, mockAPI, time.Now(), "", "channel_id")
+		address := setupAPI(t, mockAPI, time.Now(), "", "channel_id", nil)
 		client := NewClient(address)
 
 		err := client.ExportChannel(io.Discard, "channel_id", FormatCSV)
@@ -90,7 +90,7 @@ func TestHandler(t *testing.T) {
 
 		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
-		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
+		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id", nil)
 		client := NewClient(address)
 		client.SetToken("token")
 
@@ -125,7 +125,7 @@ func TestHandler(t *testing.T) {
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		userID := "user_id"
 		channelID := "channel_id"
-		address := setupAPI(t, mockAPI, now, userID, channelID)
+		address := setupAPI(t, mockAPI, now, userID, channelID, nil)
 		client := NewClient(address)
 		client.SetToken("token")
 
@@ -177,7 +177,7 @@ func TestHandler(t *testing.T) {
 
 		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
-		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
+		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id", nil)
 		client := NewClient(address)
 		client.SetToken("token")
 
@@ -186,7 +186,7 @@ func TestHandler(t *testing.T) {
 		}}).Times(2)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
 
-		err := client.ExportChannel(ioutil.Discard, "", FormatCSV)
+		err := client.ExportChannel(io.Discard, "", FormatCSV)
 		require.EqualError(t, err, "missing channel_id parameter")
 	})
 
@@ -206,7 +206,7 @@ func TestHandler(t *testing.T) {
 
 		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
-		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
+		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id", nil)
 		client := NewClient(address)
 		client.SetToken("token")
 
@@ -215,7 +215,7 @@ func TestHandler(t *testing.T) {
 		}}).Times(2)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
 
-		err := client.ExportChannel(ioutil.Discard, "channel_id", "")
+		err := client.ExportChannel(io.Discard, "channel_id", "")
 		require.EqualError(t, err, "missing format parameter")
 	})
 
@@ -235,7 +235,7 @@ func TestHandler(t *testing.T) {
 
 		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
-		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id")
+		address := setupAPI(t, mockAPI, time.Now(), "user_id", "channel_id", nil)
 		client := NewClient(address)
 		client.SetToken("token")
 
@@ -244,7 +244,7 @@ func TestHandler(t *testing.T) {
 		}}).Times(2)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
 
-		err := client.ExportChannel(ioutil.Discard, "channel_id", "pdf2")
+		err := client.ExportChannel(io.Discard, "channel_id", "pdf2")
 		require.EqualError(t, err, "unsupported format parameter 'pdf2'")
 	})
 
@@ -265,7 +265,7 @@ func TestHandler(t *testing.T) {
 		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		channelID := "channel_id"
-		address := setupAPI(t, mockAPI, time.Now(), "user_id", channelID)
+		address := setupAPI(t, mockAPI, time.Now(), "user_id", channelID, nil)
 		client := NewClient(address)
 		client.SetToken("token")
 
@@ -275,7 +275,7 @@ func TestHandler(t *testing.T) {
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
 		mockChannel.EXPECT().Get(channelID).Return(nil, &model.AppError{StatusCode: http.StatusNotFound}).Times(1)
 
-		err := client.ExportChannel(ioutil.Discard, channelID, FormatCSV)
+		err := client.ExportChannel(io.Discard, channelID, FormatCSV)
 		require.EqualError(t, err, "channel 'channel_id' not found or user does not have permission")
 	})
 
@@ -296,7 +296,7 @@ func TestHandler(t *testing.T) {
 		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		channelID := "channel_id"
-		address := setupAPI(t, mockAPI, time.Now(), "user_id", channelID)
+		address := setupAPI(t, mockAPI, time.Now(), "user_id", channelID, nil)
 		client := NewClient(address)
 		client.SetToken("token")
 
@@ -306,7 +306,7 @@ func TestHandler(t *testing.T) {
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
 		mockChannel.EXPECT().Get(channelID).Return(nil, &model.AppError{StatusCode: http.StatusInternalServerError}).Times(1)
 
-		err := client.ExportChannel(ioutil.Discard, channelID, FormatCSV)
+		err := client.ExportChannel(io.Discard, channelID, FormatCSV)
 		require.EqualError(t, err, "channel 'channel_id' not found or user does not have permission")
 	})
 
@@ -328,7 +328,7 @@ func TestHandler(t *testing.T) {
 
 		userID := "user_id"
 		channelID := "channel_id"
-		address := setupAPI(t, mockAPI, time.Now(), userID, channelID)
+		address := setupAPI(t, mockAPI, time.Now(), userID, channelID, nil)
 		client := NewClient(address)
 		client.SetToken("token")
 
@@ -339,7 +339,7 @@ func TestHandler(t *testing.T) {
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID}, nil).Times(1)
 		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(false).Times(1)
 
-		err := client.ExportChannel(ioutil.Discard, channelID, FormatCSV)
+		err := client.ExportChannel(io.Discard, channelID, FormatCSV)
 		require.EqualError(t, err, "channel 'channel_id' not found or user does not have permission")
 	})
 
@@ -362,7 +362,7 @@ func TestHandler(t *testing.T) {
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		userID := "user_id"
 		channelID := "channel_id"
-		address := setupAPI(t, mockAPI, now, userID, channelID)
+		address := setupAPI(t, mockAPI, now, userID, channelID, nil)
 		client := NewClient(address)
 		client.SetToken("token")
 
@@ -414,7 +414,7 @@ func TestHandler(t *testing.T) {
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		userID := "user_id"
 		channelID := "channel_id"
-		address := setupAPI(t, mockAPI, now, userID, channelID)
+		address := setupAPI(t, mockAPI, now, userID, channelID, nil)
 		client := NewClient(address)
 		client.SetToken("token")
 
@@ -466,7 +466,7 @@ func TestHandler(t *testing.T) {
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		userID := "user_id"
 		channelID := "channel_id"
-		address := setupAPI(t, mockAPI, now, userID, channelID)
+		address := setupAPI(t, mockAPI, now, userID, channelID, nil)
 		client := NewClient(address)
 		client.SetToken("token")
 
@@ -538,7 +538,7 @@ func TestHandler(t *testing.T) {
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		userID := "user_id"
 		channelID := "channel_id"
-		address := setupAPI(t, mockAPI, now, userID, channelID)
+		address := setupAPI(t, mockAPI, now, userID, channelID, nil)
 		client := NewClient(address)
 		client.SetToken("token")
 
@@ -588,7 +588,7 @@ func TestHandler(t *testing.T) {
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
 		userID := "user_id"
 		channelID := "channel_id"
-		address := setupAPI(t, mockAPI, now, userID, channelID)
+		address := setupAPI(t, mockAPI, now, userID, channelID, nil)
 		client := NewClient(address)
 		client.SetToken("token")
 
@@ -618,5 +618,57 @@ func TestHandler(t *testing.T) {
 2009-11-11 07:00:00 +0000 UTC,post_user_id,post_user_email,user,post_user_nickname,post_id,post_parent_id,post_message,message
 `
 		require.EqualValues(t, expected, buffer.String())
+	})
+
+	t.Run("no permissions", func(t *testing.T) {
+		mockCtrl := gomock.NewController(t)
+
+		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
+		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
+
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
+
+		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
+		userID := "user_id"
+		channelID := "channel_id"
+		address := setupAPI(t, mockAPI, now, userID, channelID, &configuration{
+			EnableAdminRestrictions: true,
+		})
+		client := NewClient(address)
+		client.SetToken("token")
+
+		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
+			FutureFeatures: &trueValue,
+		}}).Times(2)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
+		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID, DeleteAt: 1}, nil).Times(1)
+		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(false).Times(1)
+		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
+			TeamSettings: model.TeamSettings{
+				ExperimentalViewArchivedChannels: &falseValue,
+			},
+		}).Times(2)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
+			PrivacySettings: model.PrivacySettings{
+				ShowEmailAddress: &trueValue,
+			},
+		})
+
+		var buffer bytes.Buffer
+		err := client.ExportChannel(&buffer, channelID, FormatCSV)
+		require.EqualValues(t, "", buffer.String())
+
+		expectedErr := fmt.Sprintf("channel '%s' not found or user does not have permission", channelID)
+
+		require.EqualError(t, err, expectedErr)
 	})
 }
