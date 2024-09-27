@@ -445,7 +445,7 @@ func (m *MockUser) Get(userID string) (*model.User, error) {
 	return args.Get(0).(*model.User), args.Error(1)
 }
 
-func TestHasPermissionToExportChannel(t *testing.T) {
+func TestPermissionToExportChannel(t *testing.T) {
 	mockUser := new(MockUser)
 	clientWrapper := &pluginapi.Wrapper{
 		User: mockUser,
