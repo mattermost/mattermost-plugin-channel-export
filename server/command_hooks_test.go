@@ -462,199 +462,143 @@ func TestExecuteCommand(t *testing.T) {
 }
 
 func TestHasPermissionToExportChannel(t *testing.T) {
-	trueValue := true
+	testCases := []struct {
+		name                   string
+		setupMocks             func(mockUser *mock_pluginapi.MockUser, mockSystem *mock_pluginapi.MockSystem, mockConfiguration *mock_pluginapi.MockConfiguration)
+		expectedExportPermission bool
+	}{
+		{
+			name: "user does not have permission to manage channel and is not a system admin",
+			setupMocks: func(mockUser *mock_pluginapi.MockUser, mockSystem *mock_pluginapi.MockSystem, mockConfiguration *mock_pluginapi.MockConfiguration) {
+				mockUser.EXPECT().HasPermissionTo("userID", model.PermissionManageSystem).Return(false)
+				mockUser.EXPECT().HasPermissionToChannel("userID", "chanelID", model.PermissionManageChannelRoles).Return(false)
+			},
+			expectedExportPermission: false,
+		},
+		{
+			name: "user has permission to manage channel but is not a system admin",
+			setupMocks: func(mockUser *mock_pluginapi.MockUser, mockSystem *mock_pluginapi.MockSystem, mockConfiguration *mock_pluginapi.MockConfiguration) {
+				mockUser.EXPECT().HasPermissionToChannel("userID", "chanelID", model.PermissionManageChannelRoles).Return(true)
+			},
+			expectedExportPermission: true,
+		},
+		{
+			name: "user is not having permission to manage the channel but is a system admin",
+			setupMocks: func(mockUser *mock_pluginapi.MockUser, mockSystem *mock_pluginapi.MockSystem, mockConfiguration *mock_pluginapi.MockConfiguration) {
+				mockUser.EXPECT().HasPermissionTo("userID", model.PermissionManageSystem).Return(true)
+				mockUser.EXPECT().HasPermissionToChannel("userID", "chanelID", model.PermissionManageChannelRoles).Return(false)
+			},
+			expectedExportPermission: true,
+		},
+		{
+			name: "user has permission to manage the channel and is a system admin",
+			setupMocks: func(mockUser *mock_pluginapi.MockUser, mockSystem *mock_pluginapi.MockSystem, mockConfiguration *mock_pluginapi.MockConfiguration) {
+				mockUser.EXPECT().HasPermissionToChannel("userID", "chanelID", model.PermissionManageChannelRoles).Return(true)
+			},
+			expectedExportPermission: true,
+		},
+	}
 
-	t.Run("user does not have permission to manage channel and is not a system admin", func(t *testing.T) {
-		mockCtrl := gomock.NewController(t)
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
 
-		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
-		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
-		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
-		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
-		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
-		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
-		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
-		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
-		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
-		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
+			mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+			mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+			mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+			mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+			mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+			mockUser := mock_pluginapi.NewMockUser(mockCtrl)
+			mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+			mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+			mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
+			mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		plugin, _ := setupPlugin(t, mockAPI, time.Now())
-		plugin.setConfiguration(&configuration{EnableAdminRestrictions: true})
+			testCase.setupMocks(mockUser, mockSystem, mockConfiguration)
 
-		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
-			FutureFeatures: &trueValue,
-		}}).Times(2)
-		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
-		mockUser.EXPECT().HasPermissionTo("userID", model.PermissionManageSystem).Return(false)
-		mockUser.EXPECT().HasPermissionToChannel("userID", "chanelID", model.PermissionManageChannelRoles).Return(false)
+			mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
-		exportPermssion := plugin.hasPermissionToExportChannel("userID", "chanelID")
+			plugin, _ := setupPlugin(t, mockAPI, time.Now())
+			plugin.setConfiguration(&configuration{EnableAdminRestrictions: true})
 
-		assert.Equal(t, false, exportPermssion)
-	})
+			exportPermission := plugin.hasPermissionToExportChannel("userID", "chanelID")
 
-	t.Run("user has permission to manage channel but is not a system admin", func(t *testing.T) {
-		mockCtrl := gomock.NewController(t)
-
-		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
-		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
-		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
-		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
-		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
-		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
-		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
-		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
-		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
-		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
-
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
-
-		plugin, _ := setupPlugin(t, mockAPI, time.Now())
-		plugin.setConfiguration(&configuration{EnableAdminRestrictions: true})
-
-		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
-			FutureFeatures: &trueValue,
-		}}).Times(2)
-		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
-		mockUser.EXPECT().HasPermissionTo("userID", model.PermissionManageSystem).Return(true)
-		mockUser.EXPECT().HasPermissionToChannel("userID", "chanelID", model.PermissionManageChannelRoles).Return(false)
-
-		exportPermssion := plugin.hasPermissionToExportChannel("userID", "chanelID")
-
-		assert.Equal(t, true, exportPermssion)
-	})
-
-	t.Run("user is not having permission to manage the channel but is a system admin", func(t *testing.T) {
-		mockCtrl := gomock.NewController(t)
-
-		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
-		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
-		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
-		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
-		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
-		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
-		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
-		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
-		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
-		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
-
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
-
-		plugin, _ := setupPlugin(t, mockAPI, time.Now())
-		plugin.setConfiguration(&configuration{EnableAdminRestrictions: true})
-
-		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
-			FutureFeatures: &trueValue,
-		}}).Times(2)
-		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
-		mockUser.EXPECT().HasPermissionTo("userID", model.PermissionManageSystem).Return(false)
-		mockUser.EXPECT().HasPermissionToChannel("userID", "chanelID", model.PermissionManageChannelRoles).Return(true)
-
-		exportPermssion := plugin.hasPermissionToExportChannel("userID", "chanelID")
-
-		assert.Equal(t, true, exportPermssion)
-	})
-
-	t.Run("user has permission to manage the channel and is a system admin", func(t *testing.T) {
-		mockCtrl := gomock.NewController(t)
-
-		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
-		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
-		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
-		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
-		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
-		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
-		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
-		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
-		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
-		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
-
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
-
-		plugin, _ := setupPlugin(t, mockAPI, time.Now())
-		plugin.setConfiguration(&configuration{EnableAdminRestrictions: true})
-
-		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
-			FutureFeatures: &trueValue,
-		}}).Times(2)
-		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
-		mockUser.EXPECT().HasPermissionTo("userID", model.PermissionManageSystem).Return(true)
-		mockUser.EXPECT().HasPermissionToChannel("userID", "chanelID", model.PermissionManageChannelRoles).Return(true)
-
-		exportPermssion := plugin.hasPermissionToExportChannel("userID", "chanelID")
-
-		assert.Equal(t, true, exportPermssion)
-	})
+			assert.Equal(t, testCase.expectedExportPermission, exportPermission)
+		})
+	}
 }
 
 func TestUploadFileTo(t *testing.T) {
 	trueValue := true
-	t.Run("file upload error", func(t *testing.T) {
-		mockCtrl := gomock.NewController(t)
 
-		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
-		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
-		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
-		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
-		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
-		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
-		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
-		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
-		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
-		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
-		mockLog.EXPECT().Error("unable to upload the exported file to the channel", "Channel ID", "channelID", "Error", gomock.Any())
-		var content io.Reader
-		mockFile.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("file upload error"))
+	testCases := []struct {
+		name          string
+		setupMocks    func(mockFile *mock_pluginapi.MockFile, mockLog *mock_pluginapi.MockLog, mockSystem *mock_pluginapi.MockSystem, mockConfiguration *mock_pluginapi.MockConfiguration)
+		expectedError string
+		expectedFile  *model.FileInfo
+	}{
+		{
+			name: "file upload error",
+			setupMocks: func(mockFile *mock_pluginapi.MockFile, mockLog *mock_pluginapi.MockLog, mockSystem *mock_pluginapi.MockSystem, mockConfiguration *mock_pluginapi.MockConfiguration) {
+				mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
+					FutureFeatures: &trueValue,
+				}}).AnyTimes()
+				mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).AnyTimes()
+				mockLog.EXPECT().Error("unable to upload the exported file to the channel", "Channel ID", "channelID", "Error", gomock.Any())
+				mockFile.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("file upload error"))
+			},
+			expectedError: "unable to upload the exported file: file upload error",
+		},
+		{
+			name: "file upload successful",
+			setupMocks: func(mockFile *mock_pluginapi.MockFile, mockLog *mock_pluginapi.MockLog, mockSystem *mock_pluginapi.MockSystem, mockConfiguration *mock_pluginapi.MockConfiguration) {
+				mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
+					FutureFeatures: &trueValue,
+				}}).AnyTimes()
+				mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).AnyTimes()
+				var file *model.FileInfo
+				mockFile.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).Return(file, nil)
+			},
+			expectedFile: nil,
+		},
+	}
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
 
-		plugin, _ := setupPlugin(t, mockAPI, time.Now())
-		plugin.setConfiguration(&configuration{EnableAdminRestrictions: true})
+			mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+			mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+			mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+			mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+			mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+			mockUser := mock_pluginapi.NewMockUser(mockCtrl)
+			mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+			mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+			mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
 
-		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
-			FutureFeatures: &trueValue,
-		}}).Times(2)
-		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
+			mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
 
-		_, err := plugin.uploadFileTo("fileName", content, "channelID")
+			testCase.setupMocks(mockFile, mockLog, mockSystem, mockConfiguration)
 
-		assert.Error(t, err)
-		assert.Equal(t, "unable to upload the exported file: file upload error", err.Error())
-	})
+			mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
-	t.Run("file upload successfull", func(t *testing.T) {
-		mockCtrl := gomock.NewController(t)
+			plugin, _ := setupPlugin(t, mockAPI, time.Now())
+			plugin.setConfiguration(&configuration{EnableAdminRestrictions: true})
 
-		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
-		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
-		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
-		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
-		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
-		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
-		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
-		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
-		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
-		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
-		var file *model.FileInfo
-		mockFile.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).Return(file, nil)
+			var content io.Reader
+			uploadedFile, err := plugin.uploadFileTo("fileName", content, "channelID")
 
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
-
-		plugin, _ := setupPlugin(t, mockAPI, time.Now())
-		plugin.setConfiguration(&configuration{EnableAdminRestrictions: true})
-
-		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
-			FutureFeatures: &trueValue,
-		}}).Times(2)
-		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
-
-		var content io.Reader
-
-		uploadedFile, err := plugin.uploadFileTo("fileName", content, "channelID")
-
-		assert.NoError(t, err)
-		assert.Equal(t, file, uploadedFile)
-	})
+			if testCase.expectedError != "" {
+				assert.Error(t, err)
+				assert.Equal(t, testCase.expectedError, err.Error())
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, testCase.expectedFile, uploadedFile)
+			}
+		})
+	}
 }
