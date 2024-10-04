@@ -473,7 +473,6 @@ func TestHasPermissionToExportChannel(t *testing.T) {
 				mockUser.EXPECT().HasPermissionTo("mockUserID", model.PermissionManageSystem).Return(false)
 				mockUser.EXPECT().HasPermissionToChannel("mockUserID", "mockChannelID", model.PermissionManageChannelRoles).Return(false)
 			},
-			expectedExportPermission: false,
 		},
 		{
 			name: "user has permission to manage channel but is not a system admin",
@@ -499,19 +498,19 @@ func TestHasPermissionToExportChannel(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
 			_, _, _, _, _, mockUser, mockSystem, mockConfiguration, mockCluster, mockAPI := BaseMockSetup(t)
 
 			mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
-			testCase.setupMocks(mockUser, mockSystem, mockConfiguration)
+			tt.setupMocks(mockUser, mockSystem, mockConfiguration)
 
 			plugin, _ := setupPlugin(t, mockAPI, time.Now())
 			plugin.setConfiguration(&configuration{EnableAdminRestrictions: true})
 
 			exportPermission := plugin.hasPermissionToExportChannel("mockUserID", "mockChannelID")
 
-			assert.Equal(t, testCase.expectedExportPermission, exportPermission)
+			assert.Equal(t, tt.expectedExportPermission, exportPermission)
 		})
 	}
 }
@@ -547,16 +546,15 @@ func TestUploadFileTo(t *testing.T) {
 				var file *model.FileInfo
 				mockFile.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).Return(file, nil)
 			},
-			expectedFile: nil,
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
 			_, mockFile, mockLog, _, _, _, mockSystem, mockConfiguration, mockCluster, mockAPI := BaseMockSetup(t)
 
 			mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
-			testCase.setupMocks(mockFile, mockLog, mockSystem, mockConfiguration)
+			tt.setupMocks(mockFile, mockLog, mockSystem, mockConfiguration)
 
 			plugin, _ := setupPlugin(t, mockAPI, time.Now())
 			plugin.setConfiguration(&configuration{EnableAdminRestrictions: true})
@@ -564,12 +562,12 @@ func TestUploadFileTo(t *testing.T) {
 			var content io.Reader
 			uploadedFile, err := plugin.uploadFileTo("mockFileName", content, "mockChannelID")
 
-			if testCase.expectedError != "" {
+			if tt.expectedError != "" {
 				assert.Error(t, err)
-				assert.Equal(t, testCase.expectedError, err.Error())
+				assert.Equal(t, tt.expectedError, err.Error())
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, testCase.expectedFile, uploadedFile)
+				assert.Equal(t, tt.expectedFile, uploadedFile)
 			}
 		})
 	}
