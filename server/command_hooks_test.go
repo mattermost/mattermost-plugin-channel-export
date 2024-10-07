@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
@@ -598,4 +599,99 @@ func TestHasPermissionToExportChannel(t *testing.T) {
 		hasPermission := plugin.hasPermissionToExportChannel("user_id", "channel_id")
 		assert.False(t, hasPermission)
 	})
+}
+
+type MockUser struct {
+	mock.Mock
+}
+
+func (m *MockUser) HasPermissionToChannel(userID, channelID string, permission *model.Permission) bool {
+	args := m.Called(userID, channelID, permission)
+	return args.Bool(0)
+}
+
+func (m *MockUser) HasPermissionTo(userID string, permission *model.Permission) bool {
+	args := m.Called(userID, permission)
+	return args.Bool(0)
+}
+
+func (m *MockUser) Get(userID string) (*model.User, error) {
+	args := m.Called(userID)
+	return args.Get(0).(*model.User), args.Error(1)
+}
+
+func TestPermissionToExportChannel(t *testing.T) {
+	mockUser := new(MockUser)
+	clientWrapper := &pluginapi.Wrapper{
+		User: mockUser,
+	}
+	plugin := &Plugin{
+		client: clientWrapper,
+	}
+
+	tests := []struct {
+		name                    string
+		enableAdminRestrictions bool
+		userID                  string
+		channelID               string
+		hasPermissionToChannel  bool
+		hasPermissionToSystem   bool
+		expected                bool
+	}{
+		{
+			name:                    "Admin restrictions enabled and user has permission to channel",
+			enableAdminRestrictions: true,
+			userID:                  "mockUser1",
+			channelID:               "mockChannel1",
+			hasPermissionToChannel:  true,
+			hasPermissionToSystem:   false,
+			expected:                true,
+		},
+		{
+			name:                    "Admin restrictions enabled and user has permission to system",
+			enableAdminRestrictions: true,
+			userID:                  "mockUser2",
+			channelID:               "mockChannel2",
+			hasPermissionToChannel:  false,
+			hasPermissionToSystem:   true,
+			expected:                true,
+		},
+		{
+			name:                    "Admin restrictions enabled and user lacks both system and channel permissions",
+			enableAdminRestrictions: true,
+			userID:                  "mockUser3",
+			channelID:               "mockChannel3",
+			hasPermissionToChannel:  false,
+			hasPermissionToSystem:   false,
+			expected:                false,
+		},
+		{
+			name:                    "Admin restrictions disabled",
+			enableAdminRestrictions: false,
+			userID:                  "mockUser4",
+			channelID:               "mockChannel4",
+			hasPermissionToChannel:  false,
+			hasPermissionToSystem:   false,
+			expected:                true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.enableAdminRestrictions {
+				mockUser.On("HasPermissionToChannel", tt.userID, tt.channelID, model.PermissionManageChannelRoles).Return(tt.hasPermissionToChannel)
+				if !tt.hasPermissionToChannel {
+					mockUser.On("HasPermissionTo", tt.userID, model.PermissionManageSystem).Return(tt.hasPermissionToSystem)
+				}
+			}
+
+			plugin.configuration = &configuration{
+				EnableAdminRestrictions: tt.enableAdminRestrictions,
+			}
+
+			resp := plugin.hasPermissionToExportChannel(tt.userID, tt.channelID)
+			assert.Equal(t, tt.expected, resp)
+			mockUser.AssertExpectations(t)
+		})
+	}
 }
