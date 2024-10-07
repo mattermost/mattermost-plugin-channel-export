@@ -448,7 +448,7 @@ func TestExecuteCommand(t *testing.T) {
 	})
 }
 
-func TestHasPermissionToExportChannel(t *testing.T) {
+func TestPermissionToExportChannel(t *testing.T) {
 	testCases := []struct {
 		name                     string
 		setupMocks               func(mockUser *mock_pluginapi.MockUser)
