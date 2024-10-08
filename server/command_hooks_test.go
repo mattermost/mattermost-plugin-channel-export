@@ -719,60 +719,6 @@ func TestPermissionToExportChannel(t *testing.T) {
 	}
 }
 
-func TestPermissionToExportChannel(t *testing.T) {
-	testCases := []struct {
-		name                     string
-		setupMocks               func(mockUser *mock_pluginapi.MockUser)
-		expectedExportPermission bool
-	}{
-		{
-			name: "user does not have permission to manage channel and is not a system admin",
-			setupMocks: func(mockUser *mock_pluginapi.MockUser) {
-				mockUser.EXPECT().HasPermissionTo("mockUserID", model.PermissionManageSystem).Return(false)
-				mockUser.EXPECT().HasPermissionToChannel("mockUserID", "mockChannelID", model.PermissionManageChannelRoles).Return(false)
-			},
-		},
-		{
-			name: "user has permission to manage channel but is not a system admin",
-			setupMocks: func(mockUser *mock_pluginapi.MockUser) {
-				mockUser.EXPECT().HasPermissionToChannel("mockUserID", "mockChannelID", model.PermissionManageChannelRoles).Return(true)
-			},
-			expectedExportPermission: true,
-		},
-		{
-			name: "user is not having permission to manage the channel but is a system admin",
-			setupMocks: func(mockUser *mock_pluginapi.MockUser) {
-				mockUser.EXPECT().HasPermissionTo("mockUserID", model.PermissionManageSystem).Return(true)
-				mockUser.EXPECT().HasPermissionToChannel("mockUserID", "mockChannelID", model.PermissionManageChannelRoles).Return(false)
-			},
-			expectedExportPermission: true,
-		},
-		{
-			name: "user has permission to manage the channel and is a system admin",
-			setupMocks: func(mockUser *mock_pluginapi.MockUser) {
-				mockUser.EXPECT().HasPermissionToChannel("mockUserID", "mockChannelID", model.PermissionManageChannelRoles).Return(true)
-			},
-			expectedExportPermission: true,
-		},
-	}
-
-	for _, tt := range testCases {
-		t.Run(tt.name, func(t *testing.T) {
-			_, _, _, _, _, mockUser, _, _, mockCluster, mockAPI := BaseMockSetup(t)
-
-			mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
-			tt.setupMocks(mockUser)
-
-			plugin, _ := setupPlugin(t, mockAPI, time.Now())
-			plugin.setConfiguration(&configuration{EnableAdminRestrictions: true})
-
-			exportPermission := plugin.hasPermissionToExportChannel("mockUserID", "mockChannelID")
-
-			assert.Equal(t, tt.expectedExportPermission, exportPermission)
-		})
-	}
-}
-
 func TestUploadFileTo(t *testing.T) {
 	trueValue := true
 
