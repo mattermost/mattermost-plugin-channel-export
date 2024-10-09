@@ -698,7 +698,6 @@ func TestPermissionToExportChannel(t *testing.T) {
 			expected:                true,
 		},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.enableAdminRestrictions {
@@ -733,7 +732,7 @@ func TestUploadFileTo(t *testing.T) {
 			setupMocks: func(mockFile *mock_pluginapi.MockFile, mockLog *mock_pluginapi.MockLog, mockSystem *mock_pluginapi.MockSystem, mockConfiguration *mock_pluginapi.MockConfiguration) {
 				mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
 					FutureFeatures: &trueValue,
-				}}).AnyTimes()
+				}}).Times(1)
 				mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).AnyTimes()
 				mockLog.EXPECT().Error("unable to upload the exported file to the channel", "Channel ID", "mockChannelID", "Error", gomock.Any())
 				mockFile.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("file upload error"))
@@ -745,14 +744,13 @@ func TestUploadFileTo(t *testing.T) {
 			setupMocks: func(mockFile *mock_pluginapi.MockFile, _ *mock_pluginapi.MockLog, mockSystem *mock_pluginapi.MockSystem, mockConfiguration *mock_pluginapi.MockConfiguration) {
 				mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
 					FutureFeatures: &trueValue,
-				}}).AnyTimes()
+				}}).Times(1)
 				mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).AnyTimes()
 				var file *model.FileInfo
 				mockFile.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).Return(file, nil)
 			},
 		},
 	}
-
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 			_, mockFile, mockLog, _, _, _, mockSystem, mockConfiguration, mockCluster, mockAPI := BaseMockSetup(t)
@@ -791,7 +789,6 @@ func BaseMockSetup(t *testing.T) (
 ) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-
 	mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
 	mockFile := mock_pluginapi.NewMockFile(mockCtrl)
 	mockLog := mock_pluginapi.NewMockLog(mockCtrl)
