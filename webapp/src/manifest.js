@@ -33,7 +33,15 @@ const manifest = JSON.parse(`
                 "type": "bool",
                 "help_text": "Restricts the exporting of channels to system administrators or channel administrators",
                 "placeholder": "",
-                "default": "false"
+                "default": false
+            },
+            {
+                "key": "MaxFileSize",
+                "display_name": "Maximum size of channel export file in bytes",
+                "type": "number",
+                "help_text": "Determines the maximum size of the channel export file when using the slash command. A value of 0 will use the [FileSettings.MaxFileSize](https://docs.mattermost.com/configure/environment-configuration-settings.html#maximum-file-size) from Mattermost server.",
+                "placeholder": "",
+                "default": 0
             }
         ]
     }

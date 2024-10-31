@@ -1,0 +1,57 @@
+package util
+
+import (
+	"fmt"
+	"io"
+)
+
+type ErrLimitExceeded struct {
+	limit uint64
+}
+
+func (e ErrLimitExceeded) Error() string {
+	return fmt.Sprintf("limit (%d bytes) exceeded", e.limit)
+}
+
+// LimitPipeWriter wraps an io.PipeWriter and provides a limit to the number of bytes that can be written.
+// Exceeding the limit will cause the current Write call to error, and the underlying PipeWriter will be
+// closed, causing subsequent reads on the pipe to error.
+type LimitPipeWriter struct {
+	pw    *io.PipeWriter
+	limit uint64
+	count uint64
+}
+
+// NewLimitPipeWriter creates a new LimitPipeWriter with the specified limit.
+func NewLimitPipeWriter(pw *io.PipeWriter, limit uint64) *LimitPipeWriter {
+	return &LimitPipeWriter{
+		pw:    pw,
+		limit: limit,
+	}
+}
+
+// Write implements io.Writer
+func (lpw *LimitPipeWriter) Write(p []byte) (int, error) {
+	count := uint64(len(p))
+	if lpw.count+count > lpw.limit {
+		err := ErrLimitExceeded{lpw.limit}
+		lpw.pw.CloseWithError(err) // ok to call multiple times
+		return 0, err
+	}
+
+	n, err := lpw.pw.Write(p)
+	lpw.count += uint64(n)
+	return n, err
+}
+
+// CloseWithError closes the writer. Future reads from the underlying pipe will return the specified error.
+// It is safe to call this multiple times - subsequent calls to CloseWithError will be a no-op.
+func (lpw *LimitPipeWriter) CloseWithError(err error) error {
+	return lpw.pw.CloseWithError(err)
+}
+
+// Close closes the writer; subsequent reads from the
+// read half of the pipe will return no bytes and io.EOF.
+func (lpw *LimitPipeWriter) Close() error {
+	return lpw.pw.Close()
+}

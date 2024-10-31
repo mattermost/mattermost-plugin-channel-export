@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/mattermost/mattermost-plugin-channel-export/server/util"
 	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin"
 )
@@ -109,7 +110,8 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		"channel_id": channelToExport.Id,
 	})
 
-	exportedFileReader, exportedFileWriter := io.Pipe()
+	exportedFileReader, exportedPipeWriter := io.Pipe()
+	exportedFileWriter := util.NewLimitPipeWriter(exportedPipeWriter, p.getMaxFileSize())
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 	active = true
@@ -125,7 +127,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 			err = p.client.Post.CreatePost(&model.Post{
 				UserId:    p.botID,
 				ChannelId: channelDM.Id,
-				Message:   fmt.Sprintf("An error occurred exporting channel ~%s.", channelToExport.Name),
+				Message:   fmt.Sprintf("An error occurred exporting channel ~%s: %s", channelToExport.Name, err.Error()),
 			})
 			if err != nil {
 				logger.WithError(err).Warn("failed to post message about failure to export channel")
@@ -144,11 +146,12 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 			logger.WithError(err).Warn("failed to upload exported channel")
 
 			// Post the upload error only if the exporter did not do it before
-			if !errors.Is(err, exportError) {
+			var errLimitExceeded *util.ErrLimitExceeded
+			if !errors.Is(err, exportError) && !errors.As(err, errLimitExceeded) {
 				err = p.client.Post.CreatePost(&model.Post{
 					UserId:    p.botID,
 					ChannelId: channelDM.Id,
-					Message:   fmt.Sprintf("An error occurred uploading the exported channel ~%s.", channelToExport.Name),
+					Message:   fmt.Sprintf("An error occurred uploading the exported channel ~%s: %s", channelToExport.Name, err.Error()),
 				})
 				if err != nil {
 					logger.WithError(err).Warn("failed to post message about failure to upload exported channel")
@@ -182,6 +185,9 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	}
 }
 
+// uploadFileTo uploads the contents of an io.Reader to a file in the specified channel. Unfortunately MM server
+// does not support streaming the file, therefore the entire file is first read into memory in the plugin api layer,
+// and the whole file is passed to MM server as a []byte.
 func (p *Plugin) uploadFileTo(fileName string, contents io.Reader, channelID string) (*model.FileInfo, error) {
 	file, err := p.client.File.Upload(contents, fileName, channelID)
 	if err != nil {
