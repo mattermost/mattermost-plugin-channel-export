@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"io"
+	"sync"
 )
 
 type ErrLimitExceeded struct {
@@ -20,6 +21,7 @@ type LimitPipeWriter struct {
 	pw    *io.PipeWriter
 	limit uint64
 	count uint64
+	mux   sync.Mutex // protects limit, count
 }
 
 // NewLimitPipeWriter creates a new LimitPipeWriter with the specified limit.
@@ -32,6 +34,9 @@ func NewLimitPipeWriter(pw *io.PipeWriter, limit uint64) *LimitPipeWriter {
 
 // Write implements io.Writer
 func (lpw *LimitPipeWriter) Write(p []byte) (int, error) {
+	lpw.mux.Lock()
+	defer lpw.mux.Unlock()
+
 	count := uint64(len(p))
 	if lpw.count+count > lpw.limit {
 		err := ErrLimitExceeded{lpw.limit}
