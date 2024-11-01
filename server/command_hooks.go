@@ -67,7 +67,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	if !isLicensed(license, p.client) {
 		return &model.CommandResponse{
 			ResponseType: model.CommandResponseTypeEphemeral,
-			Text:         "The channel export plugin requires a valid E20 license.",
+			Text:         "The channel export plugin requires a valid Enterprise license.",
 		}
 	}
 
@@ -89,6 +89,59 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		}
 	}
 
+	var channelToExportName, exportSuccessMsg, exportProcessMsg string
+	switch channelToExport.Type {
+	case model.ChannelTypeOpen, model.ChannelTypePrivate:
+		channelToExportName = channelToExport.Name
+		exportSuccessMsg = fmt.Sprintf("Channel ~%s exported:", channelToExportName)
+		exportProcessMsg = fmt.Sprintf("Exporting ~%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
+	case model.ChannelTypeGroup:
+		channelToExportNameID := channelToExport.Name
+		groupChannelMembers := strings.Split(channelToExport.DisplayName, ", ")
+		membersCount := len(groupChannelMembers)
+
+		for i := 0; i < 2 && i < membersCount; i++ {
+			channelToExportName += groupChannelMembers[i] + ", "
+		}
+
+		if membersCount > 2 {
+			channelToExportName += fmt.Sprintf("and %d more", (membersCount - 2))
+		}
+
+		team, appErr := p.API.GetTeam(args.TeamId)
+		if appErr != nil {
+			p.client.Log.Error("error occurred while getting the details of team for the channel.", "GMChannelID", args.ChannelId, "TeamID", args.TeamId, "Error", appErr)
+
+			exportProcessMsg = fmt.Sprintf("Exporting GM channel ~%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
+			exportSuccessMsg = fmt.Sprintf("GM Channel ~%s exported:", channelToExportName)
+		} else {
+			link := fmt.Sprintf("%s/%s/messages/%s", args.SiteURL, team.Name, channelToExportNameID)
+			exportProcessMsg = fmt.Sprintf("Exporting GM channel ~[%s](%s). @%s will send you a direct message when the export is ready.", channelToExportName, link, botUsername)
+			exportSuccessMsg = fmt.Sprintf("GM Channel ~[%s](%s) exported:", channelToExportName, link)
+		}
+	case model.ChannelTypeDirect:
+		var DMUserID string
+		userIDs := strings.Split(channelToExport.Name, "__")
+		if userIDs[0] == args.UserId {
+			DMUserID = userIDs[1]
+		} else {
+			DMUserID = userIDs[0]
+		}
+
+		var user *model.User
+		user, err = p.client.User.Get(DMUserID)
+		if err != nil {
+			p.client.Log.Error("error occurred while getting the details of user for the DM.", "DMChannelID", args.ChannelId, "TeamID", args.TeamId, "Error", err)
+
+			exportSuccessMsg = fmt.Sprintf("DM %s exported:", channelToExportName)
+			exportProcessMsg = fmt.Sprintf("Exporting the DM  ~%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
+		} else {
+			channelToExportName = user.Username
+			exportSuccessMsg = fmt.Sprintf("DM with @%s exported:", channelToExportName)
+			exportProcessMsg = fmt.Sprintf("Exporting DM with @%s. @%s will send you a direct message when the export is ready.", channelToExportName, botUsername)
+		}
+	}
+
 	channelDM, err := p.client.Channel.GetDirect(args.UserId, p.botID)
 	if err != nil {
 		p.client.Log.Error("unable to create a direct message channel between the bot and the user",
@@ -101,7 +154,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 	}
 
 	exporter := CSV{}
-	fileName := exporter.FileName(channelToExport.Name)
+	fileName := exporter.FileName(channelToExportName)
 
 	exportError := errors.New("failed to export channel")
 
@@ -164,7 +217,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 		err = p.client.Post.CreatePost(&model.Post{
 			UserId:    p.botID,
 			ChannelId: channelDM.Id,
-			Message:   fmt.Sprintf("Channel ~%s exported:", channelToExport.Name),
+			Message:   exportSuccessMsg,
 			FileIds:   []string{file.Id},
 		})
 		if err != nil {
@@ -180,8 +233,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 
 	return &model.CommandResponse{
 		ResponseType: model.CommandResponseTypeEphemeral,
-		Text: fmt.Sprintf("Exporting ~%s. @%s will send you a direct message when the export is ready.",
-			channelToExport.Name, botUsername),
+		Text:         exportProcessMsg,
 	}
 }
 

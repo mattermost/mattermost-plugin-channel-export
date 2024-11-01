@@ -116,7 +116,7 @@ func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 
 	license := h.client.System.GetLicense()
 	if !isLicensed(license, h.client) {
-		handleError(w, http.StatusBadRequest, "the channel export plugin requires a valid E20 license.")
+		handleError(w, http.StatusBadRequest, "the channel export plugin requires a valid Enterprise license.")
 		return
 	}
 
@@ -143,8 +143,18 @@ func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	areArchivedChannelsVisible := true
+	if h.client.Configuration.GetConfig().TeamSettings.ExperimentalViewArchivedChannels == nil || !*h.client.Configuration.GetConfig().TeamSettings.ExperimentalViewArchivedChannels {
+		areArchivedChannelsVisible = false
+	}
+
+	if channel.DeleteAt > 0 && !areArchivedChannelsVisible {
+		handleError(w, http.StatusNotFound, "channel '%s' is archived and not visible anymore", channelID)
+		return
+	}
+
 	if !h.plugin.hasPermissionToExportChannel(userID, channelID) {
-		handleError(w, http.StatusForbidden, "user does not have permission", channelID)
+		handleError(w, http.StatusForbidden, "user does not have permission to export channels")
 		return
 	}
 
