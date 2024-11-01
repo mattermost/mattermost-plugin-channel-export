@@ -9,6 +9,6 @@ require (
 	github.com/mattermost/mattermost-server/v6 v6.0.3
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.9.0
 	github.com/wiggin77/merror v1.0.3
 )
