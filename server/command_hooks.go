@@ -199,7 +199,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 			logger.WithError(err).Warn("failed to upload exported channel")
 
 			// Post the upload error only if the exporter did not do it before
-			var errLimitExceeded *util.ErrLimitExceeded
+			var errLimitExceeded util.ErrLimitExceeded
 			if !errors.Is(err, exportError) && !errors.As(err, &errLimitExceeded) {
 				err = p.client.Post.CreatePost(&model.Post{
 					UserId:    p.botID,
