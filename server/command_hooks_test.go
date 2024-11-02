@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"sync"
 	"testing"
@@ -448,6 +449,73 @@ func TestExecuteCommand(t *testing.T) {
 		wg.Wait()
 	})
 
+	var (
+		mockTypeString = gomock.AssignableToTypeOf("string")
+	)
+
+	t.Run("export file size exceeds max", func(t *testing.T) {
+		const maxFileSize = 50
+
+		mockCtrl := gomock.NewController(t)
+
+		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
+		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
+		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
+		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
+		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
+		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
+		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
+		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
+		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
+		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
+
+		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
+
+		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
+		plugin, pluginContext := setupPlugin(t, mockAPI, now)
+
+		// set maximum file size
+		configuration := plugin.getConfiguration()
+		configuration.MaxFileSize = maxFileSize // bytes maximum
+		plugin.setConfiguration(configuration)
+
+		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
+			FutureFeatures: &trueValue,
+		}}).Times(2)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
+		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Name: "channel_name", Type: model.ChannelTypeOpen}, nil)
+		mockChannel.EXPECT().GetDirect("user_id", "bot_id").Return(&model.Channel{Id: "direct"}, nil)
+		mockUser.EXPECT().HasPermissionTo("user_id", model.PermissionManageSystem).Return(false).Times(1)
+		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
+		mockLog.EXPECT().Error(mockTypeString, "Channel ID", mockTypeString, "Error", gomock.Any())
+
+		mockFile.EXPECT().Upload(gomock.Any(), "channel_name.csv", "direct").DoAndReturn(func(reader io.Reader, _, _ string) (*model.FileInfo, error) {
+			_, err := io.ReadAll(reader)
+			require.Error(t, err)
+			return nil, err
+		})
+
+		mockPost.EXPECT().CreatePost(&model.Post{
+			UserId:    "bot_id",
+			ChannelId: "direct",
+			Message:   fmt.Sprintf("An error occurred uploading the exported channel ~channel_name: unable to upload the exported file: limit (%d bytes) exceeded", maxFileSize),
+		})
+
+		commandResponse, appError := plugin.ExecuteCommand(pluginContext, &model.CommandArgs{
+			Command:   "/export",
+			ChannelId: "channel_id",
+			UserId:    "user_id",
+		})
+
+		require.Nil(t, appError)
+		assert.Equal(t, model.CommandResponseTypeEphemeral, commandResponse.ResponseType)
+		assert.Equal(t, "Exporting ~channel_name. @channelexport will send you a direct message when the export is ready.", commandResponse.Text)
+
+		// Export runs asynchronuosly, so give time for that to occur and complete above
+		// mock assertions.
+		time.Sleep(1 * time.Second)
+	})
+
 	t.Run("no permissions", func(t *testing.T) {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
@@ -773,73 +841,6 @@ func TestUploadFileTo(t *testing.T) {
 			}
 		})
 	}
-
-	var (
-		mockTypeString = gomock.AssignableToTypeOf("string")
-	)
-
-	t.Run("export file size exceeds max", func(t *testing.T) {
-		const maxFileSize = 50
-
-		mockCtrl := gomock.NewController(t)
-
-		mockChannel := mock_pluginapi.NewMockChannel(mockCtrl)
-		mockFile := mock_pluginapi.NewMockFile(mockCtrl)
-		mockLog := mock_pluginapi.NewMockLog(mockCtrl)
-		mockPost := mock_pluginapi.NewMockPost(mockCtrl)
-		mockSlashCommand := mock_pluginapi.NewMockSlashCommand(mockCtrl)
-		mockUser := mock_pluginapi.NewMockUser(mockCtrl)
-		mockSystem := mock_pluginapi.NewMockSystem(mockCtrl)
-		mockConfiguration := mock_pluginapi.NewMockConfiguration(mockCtrl)
-		mockCluster := mock_pluginapi.NewMockCluster(mockCtrl)
-		mockCluster.EXPECT().NewMutex(gomock.Eq(KeyClusterMutex)).Return(pluginapi.NewClusterMutexMock(), nil)
-
-		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
-
-		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
-		plugin, pluginContext := setupPlugin(t, mockAPI, now)
-
-		// set maximum file size
-		configuration := plugin.getConfiguration()
-		configuration.MaxFileSize = maxFileSize // bytes maximum
-		plugin.setConfiguration(configuration)
-
-		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
-			FutureFeatures: &trueValue,
-		}}).Times(2)
-		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
-		mockChannel.EXPECT().Get("channel_id").Return(&model.Channel{Id: "channel_id", Name: "channel_name"}, nil)
-		mockChannel.EXPECT().GetDirect("user_id", "bot_id").Return(&model.Channel{Id: "direct"}, nil)
-		mockUser.EXPECT().HasPermissionTo("user_id", model.PermissionManageSystem).Return(false).Times(1)
-		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
-		mockLog.EXPECT().Error(mockTypeString, "Channel ID", mockTypeString, "Error", gomock.Any())
-
-		mockFile.EXPECT().Upload(gomock.Any(), "channel_name.csv", "direct").DoAndReturn(func(reader io.Reader, _, _ string) (*model.FileInfo, error) {
-			_, err := io.ReadAll(reader)
-			require.Error(t, err)
-			return nil, err
-		})
-
-		mockPost.EXPECT().CreatePost(&model.Post{
-			UserId:    "bot_id",
-			ChannelId: "direct",
-			Message:   "An error occurred uploading the exported channel ~channel_name.",
-		})
-
-		commandResponse, appError := plugin.ExecuteCommand(pluginContext, &model.CommandArgs{
-			Command:   "/export",
-			ChannelId: "channel_id",
-			UserId:    "user_id",
-		})
-
-		require.Nil(t, appError)
-		assert.Equal(t, model.CommandResponseTypeEphemeral, commandResponse.ResponseType)
-		assert.Equal(t, "Exporting ~channel_name. @channelexport will send you a direct message when the export is ready.", commandResponse.Text)
-
-		// Export runs asynchronuosly, so give time for that to occur and complete above
-		// mock assertions.
-		time.Sleep(1 * time.Second)
-	})
 }
 
 func BaseMockSetup(t *testing.T) (

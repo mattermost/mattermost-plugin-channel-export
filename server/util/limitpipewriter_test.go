@@ -114,7 +114,7 @@ func TestLimitPipeWriter_WriteUpToLimit(t *testing.T) {
 func TestLimitPipeWriter_CloseWithError(t *testing.T) {
 	r, w := io.Pipe()
 	lpw := NewLimitPipeWriter(w, 10)
-	expectedErr := fmt.Errorf("oh no!")
+	expectedErr := fmt.Errorf("oh no")
 
 	go func() {
 		data := []byte("hello")

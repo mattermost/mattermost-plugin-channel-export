@@ -88,11 +88,16 @@ func (p *Plugin) OnConfigurationChange() error {
 // If not set in plugin config, then the MM server FileUpload size is used instead.
 func (p *Plugin) getMaxFileSize() uint64 {
 	maxSize := p.getConfiguration().MaxFileSize
-	if maxSize == 0 {
-		mmconfig := p.API.GetConfig()
+	if maxSize == 0 && p.API != nil {
+		mmconfig := p.client.Configuration.GetConfig()
 		if mmconfig.FileSettings.MaxFileSize != nil {
 			maxSize = uint64(*mmconfig.FileSettings.MaxFileSize)
 		}
 	}
+
+	if maxSize == 0 {
+		maxSize = 100 * 1024 * 1024 // 100MB (IEC)
+	}
+
 	return maxSize
 }
