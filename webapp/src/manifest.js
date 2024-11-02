@@ -8,7 +8,7 @@ const manifest = JSON.parse(`
     "homepage_url": "https://github.com/mattermost/mattermost-plugin-channel-export/",
     "support_url": "https://github.com/mattermost/mattermost-plugin-channel-export/issues",
     "release_notes_url": "https://github.com/mattermost/mattermost-plugin-channel-export/releases/tag/v1.0.0",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "min_server_version": "5.37.0",
     "server": {
         "executables": {
