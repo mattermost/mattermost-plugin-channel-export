@@ -8,7 +8,7 @@ const manifest = JSON.parse(`
     "homepage_url": "https://github.com/mattermost/mattermost-plugin-channel-export/",
     "support_url": "https://github.com/mattermost/mattermost-plugin-channel-export/issues",
     "release_notes_url": "https://github.com/mattermost/mattermost-plugin-channel-export/releases/tag/v1.0.0",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "min_server_version": "5.37.0",
     "server": {
         "executables": {
@@ -33,7 +33,15 @@ const manifest = JSON.parse(`
                 "type": "bool",
                 "help_text": "Restricts the exporting of channels to system administrators or channel administrators",
                 "placeholder": "",
-                "default": true
+                "default": false
+            },
+            {
+                "key": "MaxFileSize",
+                "display_name": "Maximum size of channel export file in bytes",
+                "type": "number",
+                "help_text": "Determines the maximum size of the channel export file when using the slash command. A value of 0 will use the [FileSettings.MaxFileSize](https://docs.mattermost.com/configure/environment-configuration-settings.html#maximum-file-size) from Mattermost server.",
+                "placeholder": "",
+                "default": 0
             }
         ]
     }
