@@ -11,6 +11,10 @@ DLV_DEBUG_PORT := 2346
 
 export GO111MODULE=on
 
+# We need to export GOBIN to allow it to be set
+# for processes spawned from the Makefile
+export GOBIN ?= $(PWD)/bin
+
 # You can include assets this directory into the bundle. This can be e.g. used to include profile pictures.
 ASSETS_DIR ?= assets
 
@@ -162,6 +166,8 @@ ifneq ($(HAS_SERVER),)
 
 	@echo Running golangci-lint
 	golangci-lint run ./...
+	$(GO) install github.com/mattermost/mattermost-govet/v2@3f08281c344327ac09364f196b15f9a81c7eff08
+	$(GO) vet -vettool=$(GOBIN)/mattermost-govet -license -license.year=2020 ./server/...
 endif
 
 ## Builds the server, if it exists, for all supported architectures.
