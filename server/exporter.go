@@ -8,9 +8,10 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/utils"
+
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 )
 
 const (
@@ -98,14 +99,15 @@ func toExportedPost(client *pluginapi.Wrapper, post *model.Post, showEmailAddres
 	}
 
 	exportedPost := &ExportedPost{
-		CreateAt:  utils.TimeFromMillis(post.CreateAt).UTC(),
-		UserID:    post.UserId,
-		UserEmail: "",
-		UserType:  userType,
-		UserName:  user.Username,
-		ID:        post.Id,
-		Message:   post.Message,
-		Type:      postType,
+		CreateAt:     utils.TimeFromMillis(post.CreateAt).UTC(),
+		UserID:       post.UserId,
+		UserEmail:    "",
+		UserType:     userType,
+		UserName:     user.Username,
+		ID:           post.Id,
+		Message:      post.Message,
+		Type:         postType,
+		ParentPostID: post.RootId,
 	}
 
 	if showEmailAddress {
