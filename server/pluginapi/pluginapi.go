@@ -6,10 +6,10 @@ package pluginapi
 import (
 	"io"
 
-	"github.com/mattermost/mattermost-server/v6/model"
-	"github.com/mattermost/mattermost-server/v6/plugin"
+	"github.com/mattermost/mattermost/server/public/model"
+	"github.com/mattermost/mattermost/server/public/plugin"
 
-	pluginapi "github.com/mattermost/mattermost-plugin-api"
+	pluginapi "github.com/mattermost/mattermost/server/public/pluginapi"
 )
 
 // Channel is an interface declaring only the functions from

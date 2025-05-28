@@ -6,7 +6,7 @@ package mock_pluginapi
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	model "github.com/mattermost/mattermost-server/v6/model"
+	model "github.com/mattermost/mattermost/server/public/model"
 	io "io"
 	reflect "reflect"
 )
