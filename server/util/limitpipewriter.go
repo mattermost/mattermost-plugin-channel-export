@@ -10,11 +10,11 @@ import (
 )
 
 type ErrLimitExceeded struct {
-	limit uint64
+	Limit uint64
 }
 
 func (e ErrLimitExceeded) Error() string {
-	return fmt.Sprintf("limit (%d bytes) exceeded", e.limit)
+	return fmt.Sprintf("limit (%d bytes) exceeded", e.Limit)
 }
 
 // LimitPipeWriter wraps an io.PipeWriter and provides a limit to the number of bytes that can be written.
@@ -48,7 +48,9 @@ func (lpw *LimitPipeWriter) Write(p []byte) (int, error) {
 	}
 
 	n, err := lpw.pw.Write(p)
-	lpw.count += uint64(n)
+	if n > 0 {
+		lpw.count += uint64(n)
+	}
 	return n, err
 }
 
