@@ -6,10 +6,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 
-	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost/server/public/model"
 	"github.com/pkg/errors"
 )
 
@@ -20,7 +19,7 @@ package main
 import (
 	"encoding/json"
 
-	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost/server/public/model"
 )
 
 var manifest *model.Manifest
@@ -127,7 +126,7 @@ func applyManifest(manifest *model.Manifest) error {
 		manifestStr := string(manifestBytes)
 
 		// write generated code to file by using Go file template.
-		if err := ioutil.WriteFile(
+		if err := os.WriteFile(
 			"server/manifest.go",
 			[]byte(fmt.Sprintf(pluginIDGoFileTemplate, manifestStr)),
 			0600,
@@ -147,7 +146,7 @@ func applyManifest(manifest *model.Manifest) error {
 		manifestStr := string(manifestBytes)
 
 		// write generated code to file by using JS file template.
-		if err := ioutil.WriteFile(
+		if err := os.WriteFile(
 			"webapp/src/manifest.js",
 			[]byte(fmt.Sprintf(pluginIDJSFileTemplate, manifestStr)),
 			0600,

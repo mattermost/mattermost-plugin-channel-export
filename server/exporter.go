@@ -9,8 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
-	"github.com/mattermost/mattermost-server/v6/model"
-	"github.com/mattermost/mattermost-server/v6/utils"
+	"github.com/mattermost/mattermost/server/public/model"
 )
 
 const (
@@ -98,7 +97,7 @@ func toExportedPost(client *pluginapi.Wrapper, post *model.Post, showEmailAddres
 	}
 
 	exportedPost := &ExportedPost{
-		CreateAt:  utils.TimeFromMillis(post.CreateAt).UTC(),
+		CreateAt:  time.Unix(0, post.CreateAt*int64(time.Millisecond)).UTC(),
 		UserID:    post.UserId,
 		UserEmail: "",
 		UserType:  userType,

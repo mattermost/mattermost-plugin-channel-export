@@ -6,8 +6,8 @@ package pluginapi
 import (
 	"context"
 
-	"github.com/mattermost/mattermost-plugin-api/cluster"
-	"github.com/mattermost/mattermost-server/v6/plugin"
+	"github.com/mattermost/mattermost/server/public/plugin"
+	"github.com/mattermost/mattermost/server/public/pluginapi/cluster"
 )
 
 type ClusterMutex interface {

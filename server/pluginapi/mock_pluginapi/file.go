@@ -5,36 +5,37 @@
 package mock_pluginapi
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	model "github.com/mattermost/mattermost-server/v6/model"
 	io "io"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+	model "github.com/mattermost/mattermost/server/public/model"
 )
 
-// MockFile is a mock of File interface
+// MockFile is a mock of File interface.
 type MockFile struct {
 	ctrl     *gomock.Controller
 	recorder *MockFileMockRecorder
 }
 
-// MockFileMockRecorder is the mock recorder for MockFile
+// MockFileMockRecorder is the mock recorder for MockFile.
 type MockFileMockRecorder struct {
 	mock *MockFile
 }
 
-// NewMockFile creates a new mock instance
+// NewMockFile creates a new mock instance.
 func NewMockFile(ctrl *gomock.Controller) *MockFile {
 	mock := &MockFile{ctrl: ctrl}
 	mock.recorder = &MockFileMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockFile) EXPECT() *MockFileMockRecorder {
 	return m.recorder
 }
 
-// Upload mocks base method
+// Upload mocks base method.
 func (m *MockFile) Upload(arg0 io.Reader, arg1, arg2 string) (*model.FileInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Upload", arg0, arg1, arg2)
@@ -43,7 +44,7 @@ func (m *MockFile) Upload(arg0 io.Reader, arg1, arg2 string) (*model.FileInfo, e
 	return ret0, ret1
 }
 
-// Upload indicates an expected call of Upload
+// Upload indicates an expected call of Upload.
 func (mr *MockFileMockRecorder) Upload(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upload", reflect.TypeOf((*MockFile)(nil).Upload), arg0, arg1, arg2)

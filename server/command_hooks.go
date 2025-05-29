@@ -15,8 +15,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/mattermost/mattermost-plugin-channel-export/server/util"
-	"github.com/mattermost/mattermost-server/v6/model"
-	"github.com/mattermost/mattermost-server/v6/plugin"
+	"github.com/mattermost/mattermost/server/public/model"
+	"github.com/mattermost/mattermost/server/public/plugin"
 )
 
 const exportCommandTrigger = "export"
@@ -44,7 +44,7 @@ func (p *Plugin) ExecuteCommand(_ *plugin.Context, args *model.CommandArgs) (*mo
 	default:
 		return &model.CommandResponse{
 			ResponseType: model.CommandResponseTypeEphemeral,
-			Text:         fmt.Sprintf("Unknown command: " + args.Command),
+			Text:         "Unknown command: " + args.Command,
 		}, nil
 	}
 }

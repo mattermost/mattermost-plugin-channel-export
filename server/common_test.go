@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost/server/public/model"
 )
 
 func makeTestPostsIterator(_ *testing.T, now time.Time) func(channel *model.Channel, showEmailAddress bool) PostIterator {

@@ -4,6 +4,5 @@ copyright: "©2020-present Mattermost, Inc. All Rights Reserved. See LICENSE.txt
 description: "This document includes a list of open source components used in the plugin, including those that have been modified."
 search:
   - "go.mod"
-  - "webapp/package.json"
 dependencies: []
 devDependencies: []

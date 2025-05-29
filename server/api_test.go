@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/wiggin77/merror"
 
-	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost/server/public/model"
 
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
@@ -551,17 +551,11 @@ func TestHandler(t *testing.T) {
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID, DeleteAt: 1}, nil).Times(1)
 		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(true).Times(1)
-		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			TeamSettings: model.TeamSettings{
 				ExperimentalViewArchivedChannels: &falseValue,
 			},
 		}).Times(2)
-		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
-			PrivacySettings: model.PrivacySettings{
-				ShowEmailAddress: &trueValue,
-			},
-		})
 
 		var buffer bytes.Buffer
 		err := client.ExportChannel(&buffer, channelID, FormatCSV)
@@ -601,17 +595,12 @@ func TestHandler(t *testing.T) {
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
 		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID, DeleteAt: 1}, nil).Times(1)
 		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(true).Times(1)
-		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
+		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(true).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			TeamSettings: model.TeamSettings{
 				ExperimentalViewArchivedChannels: &trueValue,
 			},
 		}).Times(2)
-		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
-			PrivacySettings: model.PrivacySettings{
-				ShowEmailAddress: &trueValue,
-			},
-		})
 
 		var buffer bytes.Buffer
 		err := client.ExportChannel(&buffer, channelID, FormatCSV)
@@ -652,25 +641,21 @@ func TestHandler(t *testing.T) {
 			FutureFeatures: &trueValue,
 		}}).Times(2)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{}).Times(1)
-		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID, DeleteAt: 1}, nil).Times(1)
-		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(false).Times(1)
+		mockChannel.EXPECT().Get(channelID).Return(&model.Channel{Id: channelID, DeleteAt: 0}, nil).Times(1)
+		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionReadChannel).Return(true).Times(1)
+		mockUser.EXPECT().HasPermissionToChannel(userID, channelID, model.PermissionManageChannelRoles).Return(false).Times(1)
 		mockUser.EXPECT().HasPermissionTo(userID, model.PermissionManageSystem).Return(false).Times(1)
 		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
 			TeamSettings: model.TeamSettings{
-				ExperimentalViewArchivedChannels: &falseValue,
+				ExperimentalViewArchivedChannels: &trueValue,
 			},
 		}).Times(2)
-		mockConfiguration.EXPECT().GetConfig().Return(&model.Config{
-			PrivacySettings: model.PrivacySettings{
-				ShowEmailAddress: &trueValue,
-			},
-		})
 
 		var buffer bytes.Buffer
 		err := client.ExportChannel(&buffer, channelID, FormatCSV)
 		require.EqualValues(t, "", buffer.String())
 
-		expectedErr := fmt.Sprintf("channel '%s' not found or user does not have permission", channelID)
+		expectedErr := "user does not have permission to export channels"
 
 		require.EqualError(t, err, expectedErr)
 	})
