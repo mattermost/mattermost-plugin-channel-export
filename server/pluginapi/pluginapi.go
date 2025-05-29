@@ -29,6 +29,7 @@ type File interface {
 // mattermost-plugin-api LogService that are used in this plugin
 type Log interface {
 	Error(message string, keyValuePairs ...interface{})
+	Warn(message string, keyValuePairs ...interface{})
 }
 
 // Post is an interface declaring only the functions from

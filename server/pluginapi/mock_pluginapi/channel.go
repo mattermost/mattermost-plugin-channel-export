@@ -5,35 +5,36 @@
 package mock_pluginapi
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	model "github.com/mattermost/mattermost/server/public/model"
-	reflect "reflect"
 )
 
-// MockChannel is a mock of Channel interface
+// MockChannel is a mock of Channel interface.
 type MockChannel struct {
 	ctrl     *gomock.Controller
 	recorder *MockChannelMockRecorder
 }
 
-// MockChannelMockRecorder is the mock recorder for MockChannel
+// MockChannelMockRecorder is the mock recorder for MockChannel.
 type MockChannelMockRecorder struct {
 	mock *MockChannel
 }
 
-// NewMockChannel creates a new mock instance
+// NewMockChannel creates a new mock instance.
 func NewMockChannel(ctrl *gomock.Controller) *MockChannel {
 	mock := &MockChannel{ctrl: ctrl}
 	mock.recorder = &MockChannelMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockChannel) EXPECT() *MockChannelMockRecorder {
 	return m.recorder
 }
 
-// Get mocks base method
+// Get mocks base method.
 func (m *MockChannel) Get(arg0 string) (*model.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0)
@@ -42,13 +43,13 @@ func (m *MockChannel) Get(arg0 string) (*model.Channel, error) {
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get
+// Get indicates an expected call of Get.
 func (mr *MockChannelMockRecorder) Get(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockChannel)(nil).Get), arg0)
 }
 
-// GetDirect mocks base method
+// GetDirect mocks base method.
 func (m *MockChannel) GetDirect(arg0, arg1 string) (*model.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDirect", arg0, arg1)
@@ -57,7 +58,7 @@ func (m *MockChannel) GetDirect(arg0, arg1 string) (*model.Channel, error) {
 	return ret0, ret1
 }
 
-// GetDirect indicates an expected call of GetDirect
+// GetDirect indicates an expected call of GetDirect.
 func (mr *MockChannelMockRecorder) GetDirect(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDirect", reflect.TypeOf((*MockChannel)(nil).GetDirect), arg0, arg1)

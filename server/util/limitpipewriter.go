@@ -48,7 +48,9 @@ func (lpw *LimitPipeWriter) Write(p []byte) (int, error) {
 	}
 
 	n, err := lpw.pw.Write(p)
-	if n > 0 {
+	// According to io.Writer interface contract, n should always be >= 0
+	// However, we still check to satisfy the gosec G115 warning about int to uint64 conversion
+	if n >= 0 {
 		lpw.count += uint64(n)
 	}
 	return n, err

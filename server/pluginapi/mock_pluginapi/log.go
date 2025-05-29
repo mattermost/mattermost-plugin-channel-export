@@ -5,34 +5,35 @@
 package mock_pluginapi
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
-// MockLog is a mock of Log interface
+// MockLog is a mock of Log interface.
 type MockLog struct {
 	ctrl     *gomock.Controller
 	recorder *MockLogMockRecorder
 }
 
-// MockLogMockRecorder is the mock recorder for MockLog
+// MockLogMockRecorder is the mock recorder for MockLog.
 type MockLogMockRecorder struct {
 	mock *MockLog
 }
 
-// NewMockLog creates a new mock instance
+// NewMockLog creates a new mock instance.
 func NewMockLog(ctrl *gomock.Controller) *MockLog {
 	mock := &MockLog{ctrl: ctrl}
 	mock.recorder = &MockLogMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockLog) EXPECT() *MockLogMockRecorder {
 	return m.recorder
 }
 
-// Error mocks base method
+// Error mocks base method.
 func (m *MockLog) Error(arg0 string, arg1 ...interface{}) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0}
@@ -42,9 +43,26 @@ func (m *MockLog) Error(arg0 string, arg1 ...interface{}) {
 	m.ctrl.Call(m, "Error", varargs...)
 }
 
-// Error indicates an expected call of Error
+// Error indicates an expected call of Error.
 func (mr *MockLogMockRecorder) Error(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Error", reflect.TypeOf((*MockLog)(nil).Error), varargs...)
+}
+
+// Warn mocks base method.
+func (m *MockLog) Warn(arg0 string, arg1 ...interface{}) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Warn", varargs...)
+}
+
+// Warn indicates an expected call of Warn.
+func (mr *MockLogMockRecorder) Warn(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Warn", reflect.TypeOf((*MockLog)(nil).Warn), varargs...)
 }

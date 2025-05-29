@@ -5,35 +5,36 @@
 package mock_pluginapi
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	model "github.com/mattermost/mattermost/server/public/model"
-	reflect "reflect"
 )
 
-// MockPost is a mock of Post interface
+// MockPost is a mock of Post interface.
 type MockPost struct {
 	ctrl     *gomock.Controller
 	recorder *MockPostMockRecorder
 }
 
-// MockPostMockRecorder is the mock recorder for MockPost
+// MockPostMockRecorder is the mock recorder for MockPost.
 type MockPostMockRecorder struct {
 	mock *MockPost
 }
 
-// NewMockPost creates a new mock instance
+// NewMockPost creates a new mock instance.
 func NewMockPost(ctrl *gomock.Controller) *MockPost {
 	mock := &MockPost{ctrl: ctrl}
 	mock.recorder = &MockPostMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPost) EXPECT() *MockPostMockRecorder {
 	return m.recorder
 }
 
-// CreatePost mocks base method
+// CreatePost mocks base method.
 func (m *MockPost) CreatePost(arg0 *model.Post) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreatePost", arg0)
@@ -41,13 +42,13 @@ func (m *MockPost) CreatePost(arg0 *model.Post) error {
 	return ret0
 }
 
-// CreatePost indicates an expected call of CreatePost
+// CreatePost indicates an expected call of CreatePost.
 func (mr *MockPostMockRecorder) CreatePost(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePost", reflect.TypeOf((*MockPost)(nil).CreatePost), arg0)
 }
 
-// GetPostsForChannel mocks base method
+// GetPostsForChannel mocks base method.
 func (m *MockPost) GetPostsForChannel(arg0 string, arg1, arg2 int) (*model.PostList, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPostsForChannel", arg0, arg1, arg2)
@@ -56,7 +57,7 @@ func (m *MockPost) GetPostsForChannel(arg0 string, arg1, arg2 int) (*model.PostL
 	return ret0, ret1
 }
 
-// GetPostsForChannel indicates an expected call of GetPostsForChannel
+// GetPostsForChannel indicates an expected call of GetPostsForChannel.
 func (mr *MockPostMockRecorder) GetPostsForChannel(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostsForChannel", reflect.TypeOf((*MockPost)(nil).GetPostsForChannel), arg0, arg1, arg2)
