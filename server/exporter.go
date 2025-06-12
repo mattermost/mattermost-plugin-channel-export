@@ -97,14 +97,15 @@ func toExportedPost(client *pluginapi.Wrapper, post *model.Post, showEmailAddres
 	}
 
 	exportedPost := &ExportedPost{
-		CreateAt:  time.Unix(0, post.CreateAt*int64(time.Millisecond)).UTC(),
-		UserID:    post.UserId,
-		UserEmail: "",
-		UserType:  userType,
-		UserName:  user.Username,
-		ID:        post.Id,
-		Message:   post.Message,
-		Type:      postType,
+		CreateAt:     time.Unix(0, post.CreateAt*int64(time.Millisecond)).UTC(),
+		UserID:       post.UserId,
+		UserEmail:    "",
+		UserType:     userType,
+		UserName:     user.Username,
+		ID:           post.Id,
+		Message:      post.Message,
+		Type:         postType,
+		ParentPostID: post.RootId,
 	}
 
 	if showEmailAddress {
