@@ -2,6 +2,8 @@ module github.com/mattermost/mattermost-plugin-channel-export
 
 go 1.23.0
 
+toolchain go1.23.7
+
 require (
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.1
