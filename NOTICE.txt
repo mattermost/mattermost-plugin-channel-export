@@ -1263,7 +1263,7 @@ This product contains 'mattermost/mattermost-plugin-api' by Mattermost.
 A hackathon project to explore reworking the Mattermost Plugin API.
 
 * HOMEPAGE:
-  * https://github.com/mattermost/mattermost-plugin-api
+  * https://github.com/mattermost/mattermost/server/public/pluginapi
 
 * LICENSE: Other
 

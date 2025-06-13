@@ -1,4 +1,5 @@
 dist/
+bin/
 
 # Mac
 .DS_Store
@@ -11,3 +12,4 @@ dist/
 
 # notice
 .notice-work
+.aider*

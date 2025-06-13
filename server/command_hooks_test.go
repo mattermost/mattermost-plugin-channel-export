@@ -18,8 +18,8 @@ import (
 
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
-	"github.com/mattermost/mattermost-server/v6/model"
-	"github.com/mattermost/mattermost-server/v6/plugin"
+	"github.com/mattermost/mattermost/server/public/model"
+	"github.com/mattermost/mattermost/server/public/plugin"
 )
 
 func setupPlugin(t *testing.T, mockAPI *pluginapi.Wrapper, now time.Time) (*Plugin, *plugin.Context) {
@@ -475,12 +475,44 @@ func TestExecuteCommand(t *testing.T) {
 		mockAPI := pluginapi.CustomWrapper(mockChannel, mockFile, mockLog, mockPost, mockSlashCommand, mockUser, mockSystem, mockConfiguration, mockCluster)
 
 		now := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.FixedZone("UTC-8", -8*60*60))
-		plugin, pluginContext := setupPlugin(t, mockAPI, now)
+
+		// Create a custom plugin with a mocked makeChannelPostsIterator
+		clusterMutex, err := mockAPI.Cluster.NewMutex(KeyClusterMutex)
+		require.NoError(t, err)
+
+		// Create a plugin with a custom makeChannelPostsIterator that will trigger a size limit error
+		p := &Plugin{
+			client:       mockAPI,
+			botID:        "bot_id",
+			clusterMutex: clusterMutex,
+			makeChannelPostsIterator: func(_ *model.Channel, _ bool) PostIterator {
+				return func() ([]*ExportedPost, error) {
+					// Return a large number of posts to exceed the size limit
+					posts := make([]*ExportedPost, 100)
+					for i := 0; i < 100; i++ {
+						posts[i] = &ExportedPost{
+							CreateAt:     now,
+							UserID:       "post_user_id",
+							UserEmail:    "post_user_email",
+							UserType:     "user",
+							UserName:     "post_user_nickname",
+							ID:           fmt.Sprintf("post_id_%d", i),
+							ParentPostID: "post_parent_id",
+							Message:      "post_message_that_is_very_long_to_exceed_the_limit_quickly",
+							Type:         "message",
+						}
+					}
+					return posts, nil
+				}
+			},
+		}
+
+		pluginContext := &plugin.Context{}
 
 		// set maximum file size
-		configuration := plugin.getConfiguration()
+		configuration := p.getConfiguration()
 		configuration.MaxFileSize = maxFileSize // bytes maximum
-		plugin.setConfiguration(configuration)
+		p.setConfiguration(configuration)
 
 		mockSystem.EXPECT().GetLicense().Return(&model.License{Features: &model.Features{
 			FutureFeatures: &trueValue,
@@ -498,13 +530,14 @@ func TestExecuteCommand(t *testing.T) {
 			return nil, err
 		})
 
+		// Expect the error post to be created
 		mockPost.EXPECT().CreatePost(&model.Post{
 			UserId:    "bot_id",
 			ChannelId: "direct",
-			Message:   fmt.Sprintf("An error occurred uploading the exported channel ~channel_name: unable to upload the exported file: limit (%d bytes) exceeded", maxFileSize),
+			Message:   fmt.Sprintf("An error occurred exporting channel ~channel_name: unable to write csv: limit (%d bytes) exceeded", maxFileSize),
 		})
 
-		commandResponse, appError := plugin.ExecuteCommand(pluginContext, &model.CommandArgs{
+		commandResponse, appError := p.ExecuteCommand(pluginContext, &model.CommandArgs{
 			Command:   "/export",
 			ChannelId: "channel_id",
 			UserId:    "user_id",

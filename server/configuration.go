@@ -94,7 +94,13 @@ func (p *Plugin) getMaxFileSize() uint64 {
 	if maxSize == 0 && p.API != nil {
 		mmconfig := p.client.Configuration.GetConfig()
 		if mmconfig.FileSettings.MaxFileSize != nil {
-			maxSize = uint64(*mmconfig.FileSettings.MaxFileSize)
+			// Safely convert int64 to uint64 to avoid potential overflow
+			fileSize := *mmconfig.FileSettings.MaxFileSize
+			if fileSize > 0 {
+				maxSize = uint64(fileSize)
+			} else {
+				p.client.Log.Warn("Invalid FileSettings.MaxFileSize. Setting MaxSize to 100MB", "FileSettings.MaxFileSize", fileSize)
+			}
 		}
 	}
 

@@ -5,35 +5,36 @@
 package mock_pluginapi
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	pluginapi "github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
-	reflect "reflect"
 )
 
-// MockCluster is a mock of Cluster interface
+// MockCluster is a mock of Cluster interface.
 type MockCluster struct {
 	ctrl     *gomock.Controller
 	recorder *MockClusterMockRecorder
 }
 
-// MockClusterMockRecorder is the mock recorder for MockCluster
+// MockClusterMockRecorder is the mock recorder for MockCluster.
 type MockClusterMockRecorder struct {
 	mock *MockCluster
 }
 
-// NewMockCluster creates a new mock instance
+// NewMockCluster creates a new mock instance.
 func NewMockCluster(ctrl *gomock.Controller) *MockCluster {
 	mock := &MockCluster{ctrl: ctrl}
 	mock.recorder = &MockClusterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCluster) EXPECT() *MockClusterMockRecorder {
 	return m.recorder
 }
 
-// NewMutex mocks base method
+// NewMutex mocks base method.
 func (m *MockCluster) NewMutex(arg0 string) (pluginapi.ClusterMutex, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewMutex", arg0)
@@ -42,7 +43,7 @@ func (m *MockCluster) NewMutex(arg0 string) (pluginapi.ClusterMutex, error) {
 	return ret0, ret1
 }
 
-// NewMutex indicates an expected call of NewMutex
+// NewMutex indicates an expected call of NewMutex.
 func (mr *MockClusterMockRecorder) NewMutex(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewMutex", reflect.TypeOf((*MockCluster)(nil).NewMutex), arg0)
