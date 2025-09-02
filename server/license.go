@@ -12,5 +12,10 @@ import (
 func isLicensed(_ *model.License, api *pluginapi.Wrapper) bool {
 	license := api.System.GetLicense()
 	config := api.Configuration.GetConfig()
-	return originalapi.IsE20LicensedOrDevelopment(config, license) && (!originalapi.IsConfiguredForDevelopment(config) && license != nil && license.SkuShortName != "entry")
+
+	if originalapi.IsConfiguredForDevelopment(config) {
+		return true
+	}
+
+	return originalapi.IsE20LicensedOrDevelopment(config, license) && license != nil && license.SkuShortName != "entry"
 }
