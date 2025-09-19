@@ -38,7 +38,7 @@ const manifestStr = `
         "key": "EnableAdminRestrictions",
         "display_name": "Enable Admin Restrictions",
         "type": "bool",
-        "help_text": "Restricts the exporting of channels to system administrators or channel administrators",
+        "help_text": "Restricts the exporting of channels to system administrators, team administrators or channel administrators",
         "placeholder": "",
         "default": false,
         "hosting": "",
