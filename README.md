@@ -20,6 +20,9 @@ See the [Mattermost Product Documentation](https://docs.mattermost.com/comply/ex
 - [Contribute](#contribute)
   - [Development](#development)
   - [Test Your Changes](#test-your-changes)
+  - [Deployment](#deploy-with-local-mode)
+  - [Deployment](#deploy-with-credentials)
+  - [Deployment](#or-with-a-personal-access-token)
 - [How to Release](#how-to-release)
 - [License](#license)
 - [Security Vulnerability Disclosure](#security-vulnerability-disclosure)
@@ -72,7 +75,52 @@ If the plugin exposes slash commands, use them from the message input (for examp
 
 ### Test Your Changes
 -Run unit and integration tests as provided by the Makefile or CI workflows.
--For local testing, follow deployment steps in the [Admin Guide](docs/admin-setup.md) to install your built plugin on a dev server.
+-For local testing, follow deployment steps in the [Admin Guide](docs/admin-guide.md) to install your built plugin on a dev server.
+
+
+### Deploy with local mode
+
+If your Mattermost server is running locally, you can enable [local mode](https://docs.mattermost.com/manage/mmctl-command-line-tool.html#local-mode) to streamline deploying your plugin. Edit your server configuration as follows:
+
+```json
+{
+    "ServiceSettings": {
+        ...
+        "EnableLocalMode": true,
+        "LocalModeSocketLocation": "/var/tmp/mattermost_local.socket"
+    }
+}
+```
+
+ Deploy your plugin with ``make deploy``.
+
+You may also customize the Unix socket path if needed:
+
+```bash
+export MM_LOCALSOCKETPATH=/var/tmp/alternate_local.socket
+make deploy
+```
+
+If developing a plugin with a webapp, watch for changes and deploy those automatically using ``make watch``.
+
+### Deploy with credentials
+
+Alternatively, you can authenticate with the server's API with credentials:
+
+```bash
+export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
+export MM_ADMIN_USERNAME=admin
+export MM_ADMIN_PASSWORD=password
+make deploy
+```
+
+### or with a [personal access token](https://developers.mattermost.com/integrate/reference/personal-access-token/):
+
+```bash
+export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
+export MM_ADMIN_TOKEN=j44acwd8obn78cdcx7koid4jkr
+make deploy
+```
 
 ## How to Release
 To trigger a release, follow these steps:
