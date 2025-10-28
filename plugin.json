@@ -4,8 +4,8 @@
     "description": "This plugin allows channel export into a human readable format.",
     "homepage_url": "https://github.com/mattermost/mattermost-plugin-channel-export/",
     "support_url": "https://github.com/mattermost/mattermost-plugin-channel-export/issues",
-    "release_notes_url": "https://github.com/mattermost/mattermost-plugin-channel-export/releases/tag/v1.0.0",
-    "version": "1.2.1",
+    "release_notes_url": "https://github.com/mattermost/mattermost-plugin-channel-export/releases/tag/v1.3.0",
+    "version": "1.3.0",
     "min_server_version": "5.37.0",
     "server": {
         "executables": {
