@@ -172,6 +172,23 @@ On startup, the plugin checks for a valid Mattermost Enterprise license. If you'
 ## Security Vulnerability Disclosure
 If you discover a security issue, please report it responsibly via Mattermost’s published security channels and avoid public disclosure until a fix is available.
 
+## Get Help
+
+- **Developer Workflow:** [Mattermost Plugin Developer Workflow](https://developers.mattermost.com/extend/plugins/developer-workflow/)  
+  Learn how to build, extend, and maintain Mattermost plugins.
+
+- **Developer Setup:** [Plugin Developer Setup Guide](https://developers.mattermost.com/extend/plugins/developer-setup/)  
+  Step‑by‑step instructions for setting up your development environment.
+
+- **Product Documentation:** [Export Channel Data](https://docs.mattermost.com/comply/export-mattermost-channel-data.html#export-channel-data)  
+  Official Mattermost documentation on exporting channel data.
+
+- **Report Issues:**  
+  To report a bug or request a feature, please open a GitHub issue in this repository.
+
+- **Community & Support:**  
+  Join the Mattermost community forums or contact Mattermost support if you need additional help.
+
 ## Help and support
 
 This plugin contains both a server and web app portion. Read our documentation about the [Developer Workflow](https://developers.mattermost.com/extend/plugins/developer-workflow/) and [Developer Setup](https://developers.mattermost.com/extend/plugins/developer-setup/) for more information about developing and extending plugins.
