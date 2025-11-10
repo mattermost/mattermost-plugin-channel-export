@@ -180,7 +180,7 @@ If you discover a security issue, please report it responsibly via Mattermost’
 - **Developer Setup:** [Plugin Developer Setup Guide](https://developers.mattermost.com/extend/plugins/developer-setup/)  
   Step‑by‑step instructions for setting up your development environment.
 
-- **Product Documentation:** [Export Channel Data](https://docs.mattermost.com/comply/export-mattermost-channel-data.html#export-channel-data)  
+- **Product Documentation:** [Export Channel Data](https://docs.mattermost.com/administration-guide/comply/export-mattermost-channel-data.html)  
   Official Mattermost documentation on exporting channel data.
 
 - **Report Issues:**  
