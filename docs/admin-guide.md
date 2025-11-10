@@ -151,7 +151,7 @@ If the plugin uses webhooks (optional), configure them in System Console → Int
 - **Developer Setup:** [Plugin Developer Setup Guide](https://developers.mattermost.com/extend/plugins/developer-setup/)  
   Step‑by‑step instructions for setting up your development environment.
 
-- **Product Documentation:** [Export Channel Data](https://docs.mattermost.com/comply/export-mattermost-channel-data.html#export-channel-data)  
+- **Product Documentation:** [Export Channel Data](https://docs.mattermost.com/administration-guide/comply/export-mattermost-channel-data.html)  
   Official Mattermost documentation on exporting channel data.
 
 - **Report Issues:**  
