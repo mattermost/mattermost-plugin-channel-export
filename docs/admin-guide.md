@@ -11,15 +11,11 @@ The Admin Guide provides instructions for installing, configuring, and managing 
   - [Manual](#manual)
   - [Cloud](#cloud)
   - [Upgrade](#upgrade)
-- [Configuration](#configuration)
-  - [Deploy with local mode](#deploy-with-local-mode)
-  - [Deploy with credentials](#deploy-with-credentials)
-  - [Personal Access Token](#personal-access-token)
 - [Webhooks](#webhooks)
 - [Slash Commands](#slash-commands)
 - [Onboard Users](#onboard-users)
 - [FAQ](#faq)
-- [Get Help](#get-help)
+
 
 ---
 
@@ -62,53 +58,6 @@ This produces :
 
 ---
 
-## Configuration
-### Deploy with local mode
-
-If your Mattermost server is running locally, you can enable [local mode](https://docs.mattermost.com/manage/mmctl-command-line-tool.html#local-mode) to streamline deploying your plugin. Edit your server configuration as follows:
-
-```json
-{
-    "ServiceSettings": {
-        ...
-        "EnableLocalMode": true,
-        "LocalModeSocketLocation": "/var/tmp/mattermost_local.socket"
-    }
-}
-```
-
- Deploy your plugin with ``make deploy``.
-
-You may also customize the Unix socket path if needed:
-
-```bash
-export MM_LOCALSOCKETPATH=/var/tmp/alternate_local.socket
-make deploy
-```
-
-If developing a plugin with a webapp, watch for changes and deploy those automatically using ``make watch``.
-
-### Deploy with credentials
-
-Alternatively, you can authenticate with the server's API with credentials:
-
-```bash
-export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
-export MM_ADMIN_USERNAME=admin
-export MM_ADMIN_PASSWORD=password
-make deploy
-```
-
-### or with a [personal access token](https://developers.mattermost.com/integrate/reference/personal-access-token/):
-
-```bash
-export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
-export MM_ADMIN_TOKEN=j44acwd8obn78cdcx7koid4jkr
-make deploy
-```
-
----
-
 ## Webhooks
 If the plugin uses webhooks (optional), configure them in System Console → Integrations.
 
@@ -143,19 +92,3 @@ If the plugin uses webhooks (optional), configure them in System Console → Int
 
 ---
 
-## Get Help
-
-- **Developer Workflow:** [Mattermost Plugin Developer Workflow](https://developers.mattermost.com/extend/plugins/developer-workflow/)  
-  Learn how to build, extend, and maintain Mattermost plugins.
-
-- **Developer Setup:** [Plugin Developer Setup Guide](https://developers.mattermost.com/extend/plugins/developer-setup/)  
-  Step‑by‑step instructions for setting up your development environment.
-
-- **Product Documentation:** [Export Channel Data](https://docs.mattermost.com/comply/export-mattermost-channel-data.html#export-channel-data)  
-  Official Mattermost documentation on exporting channel data.
-
-- **Report Issues:**  
-  To report a bug or request a feature, please open a GitHub issue in this repository.
-
-- **Community & Support:**  
-  Join the Mattermost community forums or contact Mattermost support if you need additional help.
