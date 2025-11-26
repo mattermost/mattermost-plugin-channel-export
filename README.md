@@ -4,7 +4,7 @@ This plugin exports playbook channels into a CSV format.
 
 ![Plugin Screenshot](docs/images/244165158-2b3fd0bd-75e3-4ae4-8a3c-251a215348a4.png)
 
-See the [Mattermost Product Documentation](https://docs.mattermost.com/comply/export-mattermost-channel-data.html#export-channel-data) for details on installing, configuring, enabling, and using this Mattermost integration.
+See the [Mattermost Product Documentation](https://docs.mattermost.com/administration-guide/comply/export-mattermost-channel-data.html) for details on installing, configuring, enabling, and using this Mattermost integration.
 
 ---
 
@@ -180,7 +180,7 @@ If you discover a security issue, please report it responsibly via Mattermost’
 - **Developer Setup:** [Plugin Developer Setup Guide](https://developers.mattermost.com/extend/plugins/developer-setup/)  
   Step‑by‑step instructions for setting up your development environment.
 
-- **Product Documentation:** [Export Channel Data](https://docs.mattermost.com/comply/export-mattermost-channel-data.html#export-channel-data)  
+- **Product Documentation:** [Export Channel Data](https://docs.mattermost.com/administration-guide/comply/export-mattermost-channel-data.html)  
   Official Mattermost documentation on exporting channel data.
 
 - **Report Issues:**  

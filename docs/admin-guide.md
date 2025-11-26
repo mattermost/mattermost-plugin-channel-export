@@ -89,6 +89,4 @@ If the plugin uses webhooks (optional), configure them in System Console → Int
 
 - How do I test locally? 
     Use Local Mode or Credentials with make deploy.
-
 ---
-
