@@ -12,8 +12,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost/server/public/model"
+
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 )
 
 const (
@@ -59,7 +60,7 @@ func (e *APIError) Error() string {
 	return e.Message
 }
 
-func handleError(w http.ResponseWriter, statusCode int, message string, a ...interface{}) {
+func handleError(w http.ResponseWriter, statusCode int, message string, a ...any) {
 	message = fmt.Sprintf(message, a...)
 	logrus.Warnf("%s (%d): %s", http.StatusText(statusCode), statusCode, message)
 
@@ -146,10 +147,7 @@ func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	areArchivedChannelsVisible := true
-	if h.client.Configuration.GetConfig().TeamSettings.ExperimentalViewArchivedChannels == nil || !*h.client.Configuration.GetConfig().TeamSettings.ExperimentalViewArchivedChannels {
-		areArchivedChannelsVisible = false
-	}
+	areArchivedChannelsVisible := h.client.Configuration.GetConfig().TeamSettings.ExperimentalViewArchivedChannels == nil || *h.client.Configuration.GetConfig().TeamSettings.ExperimentalViewArchivedChannels
 
 	if channel.DeleteAt > 0 && !areArchivedChannelsVisible {
 		handleError(w, http.StatusNotFound, "channel '%s' is archived and not visible anymore", channelID)

@@ -36,7 +36,7 @@ func NewClient(address string) *Client {
 
 // NewMattermostServerClient creates a client to the channel export plugin at the given Mattermost server address.
 //
-//nolint:deadcode,unused
+//nolint:unused
 func NewMattermostServerClient(mattermostServerAddress string) *Client {
 	if !strings.HasSuffix(mattermostServerAddress, "/") {
 		mattermostServerAddress += "/"
@@ -52,7 +52,7 @@ func (c *Client) SetToken(token string) {
 	c.AuthType = model.HeaderBearer
 }
 
-func (c *Client) buildURL(urlPath string, args ...interface{}) string {
+func (c *Client) buildURL(urlPath string, args ...any) string {
 	return fmt.Sprintf("%s/%s", strings.TrimRight(c.Address, "/"), strings.TrimLeft(fmt.Sprintf(urlPath, args...), "/"))
 }
 
@@ -85,7 +85,7 @@ func (c *Client) ExportChannel(w io.Writer, channelID string, format string) err
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	switch resp.StatusCode {
 	case http.StatusOK:

@@ -4,8 +4,9 @@
 package main
 
 import (
-	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost/server/public/model"
+
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 )
 
 // showEmailAddress determines if the given user has access to email addresses within the system.

@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/mattermost/mattermost/server/public/model"
 )
@@ -61,5 +62,5 @@ const manifestStr = `
 `
 
 func init() {
-	_ = json.Unmarshal([]byte(manifestStr), manifest)
+	_ = json.NewDecoder(strings.NewReader(manifestStr)).Decode(&manifest)
 }

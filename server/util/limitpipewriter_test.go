@@ -16,7 +16,7 @@ func TestLimitPipeWriter_WriteWithinLimit(t *testing.T) {
 	data := []byte("hello")
 
 	go func() {
-		defer w.Close()
+		defer func() { _ = w.Close() }()
 		_, err := lpw.Write(data)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -40,7 +40,7 @@ func TestLimitPipeWriter_WriteExceedsLimit(t *testing.T) {
 	data := []byte("hello world")
 
 	go func() {
-		defer w.Close()
+		defer func() { _ = w.Close() }()
 		_, err := lpw.Write(data)
 		if err == nil {
 			t.Error("expected an error due to limit exceeded but got none")
@@ -66,7 +66,7 @@ func TestLimitPipeWriter_MultipleWrites(t *testing.T) {
 	lpw := NewLimitPipeWriter(w, 10) // 10 bytes limit
 
 	go func() {
-		defer w.Close()
+		defer func() { _ = w.Close() }()
 		data1 := []byte("hello")
 		data2 := []byte("world")
 		_, err := lpw.Write(data1)
@@ -95,7 +95,7 @@ func TestLimitPipeWriter_WriteUpToLimit(t *testing.T) {
 	lpw := NewLimitPipeWriter(w, 5) // 5 bytes limit
 
 	go func() {
-		defer w.Close()
+		defer func() { _ = w.Close() }()
 		data := []byte("hello") // exactly 5 bytes
 		_, err := lpw.Write(data)
 		if err != nil {

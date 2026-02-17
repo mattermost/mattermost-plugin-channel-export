@@ -33,14 +33,6 @@ func TestCSVFileName(t *testing.T) {
 	}
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-
-	return b
-}
-
 func exportedPostToCSV(post *ExportedPost) string {
 	fields := []string{
 		post.CreateAt.String(),
@@ -70,7 +62,7 @@ func TestCSVExport(t *testing.T) {
 	}
 	headerCSV := strings.Join(header, ",") + "\n"
 
-	var exportedPost = &ExportedPost{
+	exportedPost := &ExportedPost{
 		CreateAt:     time.Now(),
 		UserID:       "dummyUserID",
 		UserEmail:    "dummy@email.com",
@@ -92,7 +84,7 @@ func TestCSVExport(t *testing.T) {
 			length := min(numPosts-sent, batchSize)
 
 			posts := make([]*ExportedPost, length)
-			for i := 0; i < length; i++ {
+			for i := range length {
 				posts[i] = exportedPost
 			}
 
@@ -126,10 +118,12 @@ func TestCSVExport(t *testing.T) {
 
 		err := exporter.Export(genIterator(10, 4), &actualString)
 
-		expected := headerCSV
-		for i := 0; i < 10; i++ {
-			expected += exportedPostToCSV(exportedPost)
+		var expectedBuilder strings.Builder
+		expectedBuilder.WriteString(headerCSV)
+		for range 10 {
+			expectedBuilder.WriteString(exportedPostToCSV(exportedPost))
 		}
+		expected := expectedBuilder.String()
 
 		require.Nil(t, err)
 		require.Equal(t, expected, actualString.String())

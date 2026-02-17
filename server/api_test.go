@@ -498,10 +498,8 @@ func TestHandler(t *testing.T) {
 		merr := merror.New()
 		wg := sync.WaitGroup{}
 
-		for i := 0; i < countExec; i++ {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+		for range countExec {
+			wg.Go(func() {
 				var buffer bytes.Buffer
 				if err := client.ExportChannel(&buffer, channelID, FormatCSV); err != nil {
 					merr.Append(err)
@@ -511,7 +509,7 @@ func TestHandler(t *testing.T) {
 `
 					require.Equal(t, expected, buffer.String())
 				}
-			}()
+			})
 		}
 
 		wg.Wait()
