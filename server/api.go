@@ -147,7 +147,7 @@ func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	areArchivedChannelsVisible := h.client.Configuration.GetConfig().TeamSettings.ExperimentalViewArchivedChannels == nil || *h.client.Configuration.GetConfig().TeamSettings.ExperimentalViewArchivedChannels
+	areArchivedChannelsVisible := h.client.Configuration.GetConfig().TeamSettings.ExperimentalViewArchivedChannels != nil && *h.client.Configuration.GetConfig().TeamSettings.ExperimentalViewArchivedChannels
 
 	if channel.DeleteAt > 0 && !areArchivedChannelsVisible {
 		handleError(w, http.StatusNotFound, "channel '%s' is archived and not visible anymore", channelID)
