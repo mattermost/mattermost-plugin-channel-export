@@ -13,9 +13,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 
+	"github.com/mattermost/mattermost/server/public/model"
+
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
-	"github.com/mattermost/mattermost/server/public/model"
 )
 
 func TestChannelPostsIterator(t *testing.T) {
@@ -80,7 +81,7 @@ func TestChannelPostsIterator(t *testing.T) {
 		posts := make(map[string]*model.Post, length)
 		order := make([]string, length)
 
-		for i := 0; i < length; i++ {
+		for i := range length {
 			id := strconv.Itoa(i)
 			var newPost model.Post
 			require.NoError(t, post.ShallowCopy(&newPost))

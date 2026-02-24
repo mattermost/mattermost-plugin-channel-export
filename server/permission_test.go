@@ -9,14 +9,15 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/mattermost/mattermost/server/public/model"
+
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
 	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
-	"github.com/mattermost/mattermost/server/public/model"
 )
 
 func TestShowEmailAddress(t *testing.T) {
-	var trueValue = true
-	var falseValue = false
+	trueValue := true
+	falseValue := false
 
 	t.Run("system administrator", func(t *testing.T) {
 		mockCtrl := gomock.NewController(t)

@@ -16,10 +16,11 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
-	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
 	"github.com/mattermost/mattermost/server/public/model"
 	"github.com/mattermost/mattermost/server/public/plugin"
+
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi"
+	"github.com/mattermost/mattermost-plugin-channel-export/server/pluginapi/mock_pluginapi"
 )
 
 func setupPlugin(t *testing.T, mockAPI *pluginapi.Wrapper, now time.Time) (*Plugin, *plugin.Context) {
@@ -438,7 +439,7 @@ func TestExecuteCommand(t *testing.T) {
 		assert.Equal(t, "Exporting ~channel_name. @channelexport will send you a direct message when the export is ready.", commandResponse.Text)
 
 		// concurrent executions should fail
-		for i := 0; i < 3; i++ {
+		for range 3 {
 			commandResponse, appError = plugin.ExecuteCommand(pluginContext, &model.CommandArgs{
 				Command:   "/export",
 				ChannelId: "channel_id",
@@ -452,9 +453,7 @@ func TestExecuteCommand(t *testing.T) {
 		wg.Wait()
 	})
 
-	var (
-		mockTypeString = gomock.AssignableToTypeOf("string")
-	)
+	mockTypeString := gomock.AssignableToTypeOf("string")
 
 	t.Run("export file size exceeds max", func(t *testing.T) {
 		const maxFileSize = 50
@@ -489,7 +488,7 @@ func TestExecuteCommand(t *testing.T) {
 				return func() ([]*ExportedPost, error) {
 					// Return a large number of posts to exceed the size limit
 					posts := make([]*ExportedPost, 100)
-					for i := 0; i < 100; i++ {
+					for i := range 100 {
 						posts[i] = &ExportedPost{
 							CreateAt:     now,
 							UserID:       "post_user_id",

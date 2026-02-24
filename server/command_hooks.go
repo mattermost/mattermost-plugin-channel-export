@@ -14,9 +14,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/mattermost/mattermost-plugin-channel-export/server/util"
 	"github.com/mattermost/mattermost/server/public/model"
 	"github.com/mattermost/mattermost/server/public/plugin"
+
+	"github.com/mattermost/mattermost-plugin-channel-export/server/util"
 )
 
 const exportCommandTrigger = "export"
@@ -192,7 +193,7 @@ func (p *Plugin) executeCommandExport(args *model.CommandArgs) *model.CommandRes
 			return
 		}
 
-		exportedFileWriter.Close()
+		_ = exportedFileWriter.Close()
 	}()
 
 	go func() {
@@ -257,7 +258,7 @@ func (p *Plugin) uploadFileTo(fileName string, contents io.Reader, channelID str
 func (p *Plugin) hasPermissionToExportChannel(userID, channelID string) bool {
 	conf := p.getConfiguration()
 	if conf.EnableAdminRestrictions {
-		if !(p.client.User.HasPermissionToChannel(userID, channelID, model.PermissionManageChannelRoles) || p.client.User.HasPermissionTo(userID, model.PermissionManageSystem)) {
+		if !p.client.User.HasPermissionToChannel(userID, channelID, model.PermissionManageChannelRoles) && !p.client.User.HasPermissionTo(userID, model.PermissionManageSystem) {
 			return false
 		}
 	}
